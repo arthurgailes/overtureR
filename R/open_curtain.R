@@ -28,7 +28,7 @@
 #' @export
 open_curtain <- function(
   type,
-  bbox,
+  bbox = NULL,
   theme = get_theme_from_type(type),
   conn = NULL,
   as_sf = FALSE,

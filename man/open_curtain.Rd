@@ -6,7 +6,7 @@
 \usage{
 open_curtain(
   type,
-  bbox,
+  bbox = NULL,
   theme = get_theme_from_type(type),
   conn = NULL,
   as_sf = FALSE,
