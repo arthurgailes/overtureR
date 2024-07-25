@@ -8,17 +8,19 @@
 #'        of four numbers (xmin, ymin, xmax, ymax). Set to NULL to omit from query
 #' @param theme Inferred from type by default. Must be set if
 #' @return An object of class Arrow Datasets containing the filtered records.
-#' @examples
-#' open_overture("building", c(xmin = -120.5, ymin = 35.5, xmax = -120.0, ymax = 36.0))
+#' @examplesIf interactive()
+#' bbox <- c(xmin = -120.5, ymin = 35.5, xmax = -120.0, ymax = 36.0)
+#' open_curtain("building", bbox)
 #' @export
-open_overture <- function(
-    type,
+open_curtain <- function(
+  type,
   bbox,
   theme = get_theme_from_type(type),
   conn = NULL,
   as_sf = FALSE,
   mode = "view",
   tablename = ifelse(is.null(type) | type == "*", theme, type),
+  union_by_name = FALSE,
   base_url = "s3://overturemaps-us-west-2/release/2024-07-22.0"
 ) {
   # use duckdbfs if no conn provided
@@ -31,10 +33,10 @@ open_overture <- function(
 
 
   url <- glue::glue('{base_url}/theme={theme}/type={type}/*')
-  #' TODO: improve select, handle geometry internally
+  # TODO: improve select, handle geometry internally
   interior_query <- glue::glue(
     "SELECT *
-     FROM read_parquet('{url}', filename=true, hive_partitioning=true)     "
+     FROM read_parquet('{url}', filename=true, hive_partitioning=true, union_by_name = {union_by_name})"
   )
 
   query_suffix <- glue::glue("WHERE 1=1 {bbox} ")
@@ -80,6 +82,7 @@ type_theme_map <- list(
   water = "base"
 )
 
+#' translate sf/list bounding box to SQL syntax
 set_bbox_sql <- function(bbox) {
   if (is.null(bbox)) bbox = ""
   else {
