@@ -22,11 +22,23 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/arthurgailes/overtureR/branch/master/graph/badge.svg)](https://app.codecov.io/gh/arthurgailes/overtureR?branch=master)
 <!-- badges: end -->
 
+## Installation
+
+```{r eval=FALSE}
+devtools::install_github("arthurgailes/overtureR")
+```
+
+
+## Usage
+
+Replicating `duckdb` examples fromm the [Overture docs](https://docs.overturemaps.org/getting-data/duckdb/)
+
 ```{r counties}
 library(overtureR)
 library(dplyr)
+library(ggplot2)
 
-counties <- open_overture("division_area", bbox = NULL) |> 
+counties <- open_curtain("division_area") |> 
   # in R, filtering on variables must come before removing them via select
   filter(subtype == 'county' & country == 'US' & region == 'US-PA') |> 
   transmute(
@@ -39,10 +51,9 @@ counties <- open_overture("division_area", bbox = NULL) |>
 
 # Plot the results
 counties |>
-  head(50) |> 
   collect_sf() |> 
-  pull(geometry) |> 
-  plot()
+  ggplot() +
+    geom_sf(aes(fill = as.numeric(sf::st_area(geometry))))
 ```
 
 ```{r mountains}
@@ -50,7 +61,7 @@ library(overtureR)
 library(dplyr)
 
 # lazily load the full `mountains` dataset
-mountains <- open_overture(type = "*", bbox = NULL, theme = "places") |> 
+mountains <- open_curtain(type = "*", theme = "places") |> 
   transmute(
     id, 
     primary_name = names[["primary"]],
@@ -59,10 +70,9 @@ mountains <- open_overture(type = "*", bbox = NULL, theme = "places") |>
     main_category = categories[["primary"]],
     primary_source = sources[[1]][["dataset"]],
     confidence,
-    geometry # currenlty no duckdb spatial implementation
+    geometry # currently no duckdb spatial implementation
   ) |> 
-  filter(main_category == 'mountain' & confidence > .90) |> 
-  arrange(desc(confidence))
+  filter(main_category == 'mountain' & confidence > .90) 
 
 head(mountains)
 ```
@@ -71,7 +81,6 @@ head(mountains)
 ## Roadmap
 
 - add to_sf param/function?
-- return dbplyr, nothing (view), or data
 - Load all possible views into conn
 - Add beta/alpha datasets
 - load/install duckdb spatial
@@ -79,5 +88,7 @@ head(mountains)
 - rm duckdbfs dependency
 - allow duckdb to write to file
 - improve s3 handling
-- add mapping examples
+- add mapping vignettes
 - use pmtiles
+- rm d[b]plyr dependencies?
+- function to 
