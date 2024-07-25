@@ -1,0 +1,81 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# overtureR
+
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN status](https://www.r-pkg.org/badges/version/overtureR)](https://CRAN.R-project.org/package=overtureR)
+<!-- badges: end -->
+
+```{r counties}
+library(overtureR)
+library(dplyr)
+
+counties <- open_overture("division_area", bbox = NULL) |> 
+  # in R, filtering on variables must come before removing them via select
+  filter(subtype == 'county' & country == 'US' & region == 'US-PA') |> 
+  transmute(
+    id,
+    division_id,
+    # STRUCT/MAP columns can be accessed as column[["subcolumn"]] in transmute
+    primary = names[["primary"]],
+    geometry
+  ) 
+
+# Plot the results
+counties |>
+  head(50) |> 
+  collect_sf() |> 
+  pull(geometry) |> 
+  plot()
+```
+
+```{r mountains}
+library(overtureR)
+library(dplyr)
+
+# lazily load the full `mountains` dataset
+mountains <- open_overture(type = "*", bbox = NULL, theme = "places") |> 
+  transmute(
+    id, 
+    primary_name = names[["primary"]],
+    x = bbox[["xmin"]],
+    y = bbox[["ymin"]],
+    main_category = categories[["primary"]],
+    primary_source = sources[[1]][["dataset"]],
+    confidence,
+    geometry # currenlty no duckdb spatial implementation
+  ) |> 
+  filter(main_category == 'mountain' & confidence > .90) |> 
+  arrange(desc(confidence))
+
+head(mountains)
+```
+
+
+## Roadmap
+
+- add to_sf param/function?
+- return dbplyr, nothing (view), or data
+- Load all possible views into conn
+- Add beta/alpha datasets
+- load/install duckdb spatial
+- allow mirror/local reads via `base_url`
+- rm duckdbfs dependency
+- allow duckdb to write to file
+- improve s3 handling
+- add mapping examples
+- use pmtiles
