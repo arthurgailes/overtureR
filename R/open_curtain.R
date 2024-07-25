@@ -1,13 +1,27 @@
 #' Retrieve (Spatially Filtered) Overture Datasets
 #'
 #' Fetches an Arrow dataset from S3 based on the specified `overture_type`.
-#' If a bounding box is provided, it applies spatial filtering to only include records within that area.
+#' If a bounding box is provided, it applies spatial filtering to only include
+#' records within that area.
 #'
-#' @param type A string specifying the type of overture dataset to read. Setting to `*` or `NULL` will read all types for a given theme.
+#' @param type A string specifying the type of overture dataset to read.
+#' Setting to "*" or `NULL` will read all types for a given theme.
 #' @param bbox Optional bounding box to filter the records, expected as a vector
-#'        of four numbers (xmin, ymin, xmax, ymax). Set to NULL to omit from query
-#' @param theme Inferred from type by default. Must be set if
-#' @return An object of class Arrow Datasets containing the filtered records.
+#' of four numbers (xmin, ymin, xmax, ymax). Set to NULL to omit from query
+#' @param theme Inferred from type by default. Must be set if type is "*" or NULL
+#' @param conn A connection to a duckdb database.
+#' @param as_sf If TRUE, return an sf dataframe
+#' @param mode Either "view" (default) or "table". If "table", will download the
+#' dataset into memory.
+#' @param tablename The name of the table to create in the database.
+#' @param union_by_name If TRUE, will execute a UNION by
+#'  column name across all files (NOTE: this can add considerably to
+#'  the initial execution time)
+#' @param base_url Allows user to download data from a different mirror, such
+#' as a beta or alpha release.
+#'
+#' @return An dbplyr lazy dataframe, or an sf dataframe if as_sf is TRUE
+#'
 #' @examplesIf interactive()
 #' bbox <- c(xmin = -120.5, ymin = 35.5, xmax = -120.0, ymax = 36.0)
 #' open_curtain("building", bbox)
@@ -29,8 +43,7 @@ open_curtain <- function(
   # TODO: improve this.
   duckdbfs::duckdb_s3_config(conn, s3_region='us-west-2')
 
-  bbox <- set_bbox_sql(bbox)
-
+  bbox <- set_bbox_sql(bbox, mode)
 
   url <- glue::glue('{base_url}/theme={theme}/type={type}/*')
   # TODO: improve select, handle geometry internally
@@ -55,7 +68,7 @@ open_curtain <- function(
 }
 
 
-#' mapping specific overture dataset types to their corresponding thematic categories.
+# mapping specific overture dataset types to their corresponding thematic categories.
 get_theme_from_type <- function(type) {
   theme <- type_theme_map[[type]]
   if(length(theme) != 1) {
@@ -82,9 +95,12 @@ type_theme_map <- list(
   water = "base"
 )
 
-#' translate sf/list bounding box to SQL syntax
-set_bbox_sql <- function(bbox) {
-  if (is.null(bbox)) bbox = ""
+# translate sf/list bounding box to SQL syntax
+set_bbox_sql <- function(bbox, mode) {
+  if (is.null(bbox)) {
+    bbox = ""
+    if (mode == "table") warning("No bounding box set. Loading the full (very large!) dataset into memory.")
+  }
   else {
     xmin <- bbox[["xmin"]]
     ymin <- bbox[["ymin"]]
