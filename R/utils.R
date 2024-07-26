@@ -16,3 +16,10 @@ config_extensions <- function(conn) {
     if (isFALSE(status$loaded)) duckdb::dbSendQuery(conn, paste("LOAD", ext))
   }
 }
+
+# follwing R Packages advice on unused imports:
+# https://r-pkgs.org/code.html#sec-code-r-landscape
+ignore_unused_imports <- function() {
+  ignore_con <- DBI::dbConnect(duckdb::duckdb())
+  dbplyr::db_copy_to(ignore_con, data.frame(x=1), "dummy", temporary = TRUE)
+}

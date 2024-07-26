@@ -8,5 +8,5 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
-$inst/figures$
-$inst/scripts$
+^inst/figures$
+^\.dev$

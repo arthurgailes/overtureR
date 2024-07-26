@@ -1,17 +1,16 @@
 Package: overtureR
-Title: overtureR: Load Overture Datasets as 'dbplyr' and 'sf'-Ready Data Frames
+Title: Load Overture Datasets as 'dbplyr' and 'sf'-Ready Data Frames
 Version: 0.0.0.9000
 Authors@R: 
-    person("Arthur", "Gailes", , "agailes1@gmail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+    person("Arthur", "Gailes", , "agailes1@gmail.com", 
+    role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0009-0006-8176-8653"))
 Description: An integrated R interface to several Overture APIs 
   (<https://docs.overturemaps.org/>). Allows R users to return Overture data as 
-  'lazy' dbplyr data frames or materialized sf spatial data frames.
+  'dbplyr' data frames or materialized 'sf' spatial data frames.
 License: MIT + file LICENSE
 Suggests: 
     bench,
-    dbplyr,
-    duckdb (>= 1.0.0),
     duckdbfs,
     httr,
     jsonlite,
@@ -24,6 +23,8 @@ URL: https://github.com/arthurgailes/overtureR, https://arthurgailes.github.io/o
 BugReports: https://github.com/arthurgailes/overtureR/issues
 Imports: 
     DBI,
-    dplyr,
+    dbplyr,
+    dplyr (>= 1.0.0),
+    duckdb (>= 1.0.0),
     glue,
     sf

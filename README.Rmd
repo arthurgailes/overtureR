@@ -28,6 +28,8 @@ knitr::opts_chunk$set(
 ## Installation
 
 ```{r eval=FALSE}
+# CRAN application pending
+# install.packages("overtureR")
 devtools::install_github("arthurgailes/overtureR")
 ```
 

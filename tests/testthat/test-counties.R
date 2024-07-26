@@ -1,10 +1,10 @@
 test_that("Counties download works as expected", {
   testthat::skip_if_offline()
-  library(dplyr)
+  library(dplyr, warn.conflicts = FALSE)
 
-  counties <- open_curtain("division_area", bbox = NULL) |>
+  counties <- open_curtain("division_area", bbox = NULL) %>%
     # in R, filtering on variables must come before removing them via select
-    filter(subtype == "county" & country == "US" & region == "US-PA") |>
+    filter(subtype == "county" & country == "US" & region == "US-PA") %>%
     transmute(
       id,
       division_id,
