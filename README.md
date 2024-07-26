@@ -92,15 +92,12 @@ head(mountains)
 
 ## Roadmap
 
--   add to_sf param/function?
 -   Load all possible views into conn
 -   Add beta/alpha datasets
 -   load/install duckdb spatial
--   allow mirror/local reads via `base_url`
+-   Allow mirror/local reads via `base_url`
 -   rm duckdbfs dependency
--   allow duckdb to write to file
--   improve s3 handling
--   add mapping vignettes
--   use pmtiles
+-   Add mapping vignettes
+-   Use pmtiles
 -   rm d\[b\]plyr dependencies?
--   function to write data (`stage_write`?)
+-   Function to write data (`stage_write`?)
