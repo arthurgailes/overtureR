@@ -13,4 +13,4 @@ test()
 check()
 
 # Build the package
-build()
+build(manual = TRUE)

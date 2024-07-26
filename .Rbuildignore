@@ -10,3 +10,4 @@
 ^pkgdown$
 ^inst/figures$
 ^\.dev$
+^CRAN-SUBMISSION$
