@@ -34,7 +34,7 @@ devtools::install_github("arthurgailes/overtureR")
 
 Replicating `duckdb` examples fromm the [Overture docs](https://docs.overturemaps.org/getting-data/duckdb/)
 
-```{r counties}
+```{r counties, warning=FALSE}
 library(overtureR)
 library(dplyr)
 library(ggplot2)
@@ -92,4 +92,4 @@ head(mountains)
 - add mapping vignettes
 - use pmtiles
 - rm d[b]plyr dependencies?
-- function to 
+- function to write data (`stage_write`?)

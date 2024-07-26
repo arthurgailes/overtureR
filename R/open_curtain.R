@@ -40,8 +40,9 @@ open_curtain <- function(
   # use duckdbfs if no conn provided
   if(is.null(conn)) conn <- duckdbfs::cached_connection()
 
-  # TODO: improve this.
-  duckdbfs::duckdb_s3_config(conn, s3_region='us-west-2')
+  # should I expose this? Should it be set in cache_connection?
+  DBI::dbExecute(conn, "LOAD httpfs")
+  DBI::dbExecute(conn, "SET s3_region='us-west-2'")
 
   bbox <- set_bbox_sql(bbox, mode)
 

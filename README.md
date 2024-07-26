@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# overtureR
+# overtureR <a href="https://arthurgailes.github.io/overtureR/"><img src="man/figures/logo.png" align="right" height="139" alt="overtureR website" /></a>
 
 <!-- badges: start -->
 
@@ -28,7 +28,6 @@ docs](https://docs.overturemaps.org/getting-data/duckdb/)
 ``` r
 library(overtureR)
 library(dplyr)
-#> Warning: package 'dplyr' was built under R version 4.2.3
 #> 
 #> Attaching package: 'dplyr'
 #> The following objects are masked from 'package:stats':
@@ -38,7 +37,6 @@ library(dplyr)
 #> 
 #>     intersect, setdiff, setequal, union
 library(ggplot2)
-#> Warning: package 'ggplot2' was built under R version 4.2.3
 
 counties <- open_curtain("division_area") |> 
   # in R, filtering on variables must come before removing them via select
@@ -105,4 +103,4 @@ head(mountains)
 -   add mapping vignettes
 -   use pmtiles
 -   rm d\[b\]plyr dependencies?
--   function to
+-   function to write data (`stage_write`?)
