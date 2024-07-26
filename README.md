@@ -17,6 +17,8 @@ coverage](https://codecov.io/gh/arthurgailes/overtureR/branch/master/graph/badge
 ## Installation
 
 ``` r
+# CRAN application pending
+# install.packages("overtureR")
 devtools::install_github("arthurgailes/overtureR")
 ```
 
@@ -30,22 +32,22 @@ library(overtureR)
 library(dplyr)
 library(ggplot2)
 
-counties <- open_curtain("division_area") |> 
+counties <- open_curtain("division_area") |>
   # in R, filtering on variables must come before removing them via select
-  filter(subtype == 'county' & country == 'US' & region == 'US-PA') |> 
+  filter(subtype == "county" & country == "US" & region == "US-PA") |>
   transmute(
     id,
     division_id,
     # STRUCT/MAP columns can be accessed as column[["subcolumn"]] in transmute
     primary = names[["primary"]],
     geometry
-  ) 
+  )
 
 # Plot the results
 counties |>
-  collect_sf() |> 
+  collect_sf() |>
   ggplot() +
-    geom_sf(aes(fill = as.numeric(sf::st_area(geometry))))
+  geom_sf(aes(fill = as.numeric(sf::st_area(geometry))))
 ```
 
 <img src="man/figures/README-counties-1.png" width="100%" />
@@ -55,9 +57,9 @@ library(overtureR)
 library(dplyr)
 
 # lazily load the full `mountains` dataset
-mountains <- open_curtain(type = "*", theme = "places") |> 
+mountains <- open_curtain(type = "*", theme = "places") |>
   transmute(
-    id, 
+    id,
     primary_name = names[["primary"]],
     x = bbox[["xmin"]],
     y = bbox[["ymin"]],
@@ -65,8 +67,8 @@ mountains <- open_curtain(type = "*", theme = "places") |>
     primary_source = sources[[1]][["dataset"]],
     confidence,
     geometry # currently no duckdb spatial implementation
-  ) |> 
-  filter(main_category == 'mountain' & confidence > .90) 
+  ) |>
+  filter(main_category == "mountain" & confidence > .90)
 
 head(mountains)
 #> # Source:   SQL [6 x 8]
@@ -84,12 +86,13 @@ head(mountains)
 
 ## Roadmap
 
--   Load all possible views into conn
--   Add beta/alpha datasets
--   load/install duckdb spatial
--   Allow mirror/local reads via `base_url`
--   rm duckdbfs dependency
--   Add mapping vignettes
--   Use pmtiles
--   rm d\[b\]plyr dependencies?
--   Function to write data (`stage_write`?)
+- Load all possible views into conn
+- Add beta/alpha datasets
+- load/install duckdb spatial
+- Allow mirror/local reads via `base_url`
+- rm duckdbfs dependency
+- Add mapping vignettes
+- Use pmtiles
+- rm d\[b\]plyr dependencies?
+- Function to write data (`stage_write`?)
+- Function to preload all types as views
