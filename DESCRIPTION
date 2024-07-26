@@ -12,6 +12,7 @@ Suggests:
     bench,
     dbplyr,
     duckdb (>= 1.0.0),
+    duckdbfs,
     httr,
     jsonlite,
     testthat (>= 3.0.0)
@@ -24,6 +25,5 @@ BugReports: https://github.com/arthurgailes/overtureR/issues
 Imports: 
     DBI,
     dplyr,
-    duckdbfs,
     glue,
     sf

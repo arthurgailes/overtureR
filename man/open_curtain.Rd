@@ -45,9 +45,10 @@ as a beta or alpha release.}
 An dbplyr lazy dataframe, or an sf dataframe if as_sf is TRUE
 }
 \description{
-Fetches an Arrow dataset from S3 based on the specified \code{overture_type}.
+Fetches overture data from AWS.
 If a bounding box is provided, it applies spatial filtering to only include
-records within that area.
+records within that area. The core code is copied from \code{duckdbfs}, which
+deserves all credit for the implementation
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}

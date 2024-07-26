@@ -7,5 +7,4 @@ test_that("bbox filter is reasonably fast", {
 
   expect_lt(timer$median, 30)
   expect_lt(timer$median, 1e6)
-
 })

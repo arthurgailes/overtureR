@@ -1,8 +1,9 @@
 #' Retrieve (Spatially Filtered) Overture Datasets
 #'
-#' Fetches an Arrow dataset from S3 based on the specified `overture_type`.
+#' Fetches overture data from AWS.
 #' If a bounding box is provided, it applies spatial filtering to only include
-#' records within that area.
+#' records within that area. The core code is copied from `duckdbfs`, which
+#' deserves all credit for the implementation
 #'
 #' @param type A string specifying the type of overture dataset to read.
 #' Setting to "*" or `NULL` will read all types for a given theme.
@@ -27,26 +28,25 @@
 #' open_curtain("building", bbox)
 #' @export
 open_curtain <- function(
-  type,
-  bbox = NULL,
-  theme = get_theme_from_type(type),
-  conn = NULL,
-  as_sf = FALSE,
-  mode = "view",
-  tablename = ifelse(is.null(type) | type == "*", theme, type),
-  union_by_name = FALSE,
-  base_url = "s3://overturemaps-us-west-2/release/2024-07-22.0"
-) {
-  # use duckdbfs if no conn provided
-  if(is.null(conn)) conn <- duckdbfs::cached_connection()
+    type,
+    bbox = NULL,
+    theme = get_theme_from_type(type),
+    conn = NULL,
+    as_sf = FALSE,
+    mode = "view",
+    tablename = ifelse(is.null(type) | type == "*", theme, type),
+    union_by_name = FALSE,
+    base_url = "s3://overturemaps-us-west-2/release/2024-07-22.0") {
+  # use cached connection if no conn provided
+  if (is.null(conn)) conn <- stage_conn()
+  config_extensions(conn)
 
   # should I expose this? Should it be set in cache_connection?
-  DBI::dbExecute(conn, "LOAD httpfs")
-  DBI::dbExecute(conn, "SET s3_region='us-west-2'")
+  duckdb::dbSendQuery(conn, "SET s3_region='us-west-2'")
 
   bbox <- set_bbox_sql(bbox, mode)
 
-  url <- glue::glue('{base_url}/theme={theme}/type={type}/*')
+  url <- glue::glue("{base_url}/theme={theme}/type={type}/*")
   # TODO: improve select, handle geometry internally
   interior_query <- glue::glue(
     "SELECT *
@@ -63,7 +63,7 @@ open_curtain <- function(
   DBI::dbExecute(conn, query)
 
   dataset <- dplyr::tbl(conn, tablename)
-  if(isTRUE(as_sf)) dataset <- collect_sf(dataset)
+  if (isTRUE(as_sf)) dataset <- collect_sf(dataset)
 
   return(dataset)
 }
@@ -72,7 +72,7 @@ open_curtain <- function(
 # mapping specific overture dataset types to their corresponding thematic categories.
 get_theme_from_type <- function(type) {
   theme <- type_theme_map[[type]]
-  if(length(theme) != 1) {
+  if (length(theme) != 1) {
     stop("Could not find theme for the provided type, please enter manually")
   }
 
@@ -99,10 +99,9 @@ type_theme_map <- list(
 # translate sf/list bounding box to SQL syntax
 set_bbox_sql <- function(bbox, mode) {
   if (is.null(bbox)) {
-    bbox = ""
+    bbox <- ""
     if (mode == "table") warning("No bounding box set. Loading the full (very large!) dataset into memory.")
-  }
-  else {
+  } else {
     xmin <- bbox[["xmin"]]
     ymin <- bbox[["ymin"]]
     xmax <- bbox[["xmax"]]
@@ -115,5 +114,5 @@ set_bbox_sql <- function(bbox, mode) {
       AND bbox.ymax < {ymax}"
     )
   }
-  return (bbox)
+  return(bbox)
 }

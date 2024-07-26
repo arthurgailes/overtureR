@@ -16,11 +16,11 @@
 #' collect_sf(lazy_tbl)
 #' @export
 collect_sf <- function(tbl, geom_col = NULL, crs = 4326) {
-  if(is.null(geom_col)) {
+  if (is.null(geom_col)) {
     geom_col <- grep("geom", colnames(tbl), ignore.case = TRUE, value = TRUE)
   }
 
-  if(length(geom_col) != 1) stop("could not determine geometry column")
+  if (length(geom_col) != 1) stop("could not determine geometry column")
 
   tbl <- dplyr::collect(tbl)
 
@@ -28,4 +28,3 @@ collect_sf <- function(tbl, geom_col = NULL, crs = 4326) {
   tbl <- sf::st_as_sf(tbl)
   return(tbl)
 }
-
