@@ -2,3 +2,4 @@
 
 export(collect_sf)
 export(open_curtain)
+importFrom(duckdbfs,cached_connection)
