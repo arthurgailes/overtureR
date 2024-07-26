@@ -28,14 +28,6 @@ docs](https://docs.overturemaps.org/getting-data/duckdb/)
 ``` r
 library(overtureR)
 library(dplyr)
-#> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     filter, lag
-#> The following objects are masked from 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
 library(ggplot2)
 
 counties <- open_curtain("division_area") |> 
