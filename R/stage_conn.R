@@ -31,13 +31,11 @@
 #'
 #' @export
 stage_conn <- function(
-  dbdir = ":memory:",
-  read_only = FALSE,
-  bigint = "numeric",
-  config = list(),
-  ...
-) {
-
+    dbdir = ":memory:",
+    read_only = FALSE,
+    bigint = "numeric",
+    config = list(),
+    ...) {
   conn <- getOption("overturer_conn", NULL)
 
   ## destroy invalid (closed) connections first
@@ -55,7 +53,6 @@ stage_conn <- function(
     conn <- DBI::dbConnect(duckdb::duckdb(), ...)
     options(overturer_conn = conn)
     config_extensions(conn)
-
   }
   ## create finalizer to avoid duckdb complaining that connection
   ## was not shut down before gc
