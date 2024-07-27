@@ -34,18 +34,12 @@ If \code{"integer64"} is selected, bigint integers will be set to bit64 encoding
 These flags are only applied when the database object is instantiated.
 Subsequent connections will silently ignore these flags.}
 
-\item{...}{
-  Arguments passed on to \code{\link[DBI:dbConnect]{DBI::dbConnect}}
-  \describe{
-    \item{\code{drv}}{an object that inherits from \linkS4class{DBIDriver},
-or an existing \linkS4class{DBIConnection}
-object (in order to clone an existing connection).}
-  }}
+\item{...}{Further arguments passed to \link[DBI:dbConnect]{DBI::dbConnect}}
 
 \item{conn}{A \code{duckdb_connection} object}
 }
 \value{
-a \code{\link[duckdb:duckdb]{duckdb::duckdb()}} connection object
+a \code{\link[duckdb:duckdb]{duckdb::duckdb()}}connection object
 }
 \description{
 \code{stage_conn} is primarily intended for internal use by other

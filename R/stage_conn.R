@@ -19,11 +19,10 @@
 #' should gracefully shutdown the connection before removing the cache.
 #'
 #' `strike_stage` closes
-#'
 #' @inheritParams duckdb::duckdb
-#' @inheritDotParams DBI::dbConnect
+#' @param ... Further arguments passed to [DBI::dbConnect]
 #'
-#' @returns a [duckdb::duckdb()] connection object
+#' @returns a [duckdb::duckdb()]connection object
 #' @examples
 #'
 #' con <- stage_conn()
