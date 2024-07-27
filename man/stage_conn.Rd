@@ -61,7 +61,7 @@ connection can use this to create or access the existing connection.
 At the close of the global environment, this function's finalizer
 should gracefully shutdown the connection before removing the cache.
 
-\code{strike_stage} closes
+\code{strike_stage} closes the connection.
 }
 \examples{
 

@@ -7,14 +7,19 @@ config_extensions <- function(conn) {
 
   needed <- c("httpfs", "spatial")
 
-  for (ext in needed) {
+  queries <- lapply(needed, function(ext){
     status <- extensions[which(extensions$extension_name == ext), ]
 
-    if (isFALSE(status$installed)) {
-      duckdb::dbSendQuery(conn, paste("INSTALL", ext))
-    }
-    if (isFALSE(status$loaded)) duckdb::dbSendQuery(conn, paste("LOAD", ext))
-  }
+    q <- ""
+    if (isFALSE(status$installed)) q <- paste(q, "INSTALL", ext, ";")
+
+    if (isFALSE(status$loaded)) q <- paste(q, "LOAD", ext, ";")
+    return(q)
+  })
+
+  queries <- paste(queries, collapse = "")
+  print(queries)
+  if(queries != "" ) DBI::dbExecute(conn, queries)
 }
 
 # follwing R Packages advice on unused imports:
