@@ -18,7 +18,6 @@ config_extensions <- function(conn) {
   })
 
   queries <- paste(queries, collapse = "")
-  print(queries)
   if(queries != "" ) DBI::dbExecute(conn, queries)
 }
 
