@@ -86,13 +86,13 @@ head(mountains)
 
 ## Roadmap
 
-- Load all possible views into conn
-- Add beta/alpha datasets
-- load/install duckdb spatial
-- Allow mirror/local reads via `base_url`
-- rm duckdbfs dependency
-- Add mapping vignettes
-- Use pmtiles
-- rm d\[b\]plyr dependencies?
-- Function to write data (`stage_write`?)
-- Function to preload all types as views
+-   Load all possible views into conn
+-   Add beta/alpha datasets
+-   Install and load duckdb spatial
+-   Allow mirror/local reads via base_url
+-   Remove duckdbfs dependency
+-   Add mapping vignettes
+-   Use pmtiles
+-   Remove dbplyr dependencies
+-   Add function to write data (stage_write)
+-   Add function to preload all types as views
