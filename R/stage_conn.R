@@ -18,7 +18,8 @@
 #' At the close of the global environment, this function's finalizer
 #' should gracefully shutdown the connection before removing the cache.
 #'
-#' `strike_stage` closes
+#' `strike_stage` closes the connection.
+#'
 #' @inheritParams duckdb::duckdb
 #' @param ... Further arguments passed to [DBI::dbConnect]
 #'
@@ -51,7 +52,6 @@ stage_conn <- function(
     }
     conn <- DBI::dbConnect(duckdb::duckdb(), ...)
     options(overturer_conn = conn)
-    config_extensions(conn)
   }
   ## create finalizer to avoid duckdb complaining that connection
   ## was not shut down before gc
