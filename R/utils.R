@@ -11,9 +11,9 @@ config_extensions <- function(conn) {
     status <- extensions[which(extensions$extension_name == ext), ]
 
     if (isFALSE(status$installed)) {
-      duckdb::dbSendQuery(conn, paste("INSTALL", ext))
+      DBI::dbExecute(conn, paste("INSTALL", ext))
     }
-    if (isFALSE(status$loaded)) duckdb::dbSendQuery(conn, paste("LOAD", ext))
+    if (isFALSE(status$loaded)) DBI::dbExecute(conn, paste("LOAD", ext))
   }
 }
 
