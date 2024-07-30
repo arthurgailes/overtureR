@@ -8,3 +8,13 @@ test_that("Configuration is fast", {
   expect_lt(init_timer[["elapsed"]], 5)
   expect_lt(redo_timer[["elapsed"]], 0.5)
 })
+
+test_that("stage_conn will pass CRAN", {
+  # cran requires user time <= 2.5x elapsed time
+  timer <- system.time({
+    con <- stage_conn()
+    strike_stage(con)
+  })
+
+  expect_lte(timer[["user.self"]] / timer[["elapsed"]], 2.5)
+})
