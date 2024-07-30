@@ -1,12 +1,12 @@
 Package: overtureR
-Title: Load Overture Datasets as 'dbplyr' and 'sf'-Ready Data Frames
+Title: Load 'Overture' Datasets as 'dbplyr' and 'sf'-Ready Data Frames
 Version: 0.1.0
 Authors@R: 
     person("Arthur", "Gailes", , "agailes1@gmail.com", 
     role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0009-0006-8176-8653"))
-Description: An integrated R interface to the Overture API 
-  (<https://docs.overturemaps.org/>). Allows R users to return Overture data as 
+Description: An integrated R interface to the 'Overture' API 
+  (<https://docs.overturemaps.org/>). Allows R users to return 'Overture' data as 
   'dbplyr' data frames or materialized 'sf' spatial data frames.
 License: MIT + file LICENSE
 Suggests: 
