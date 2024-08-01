@@ -16,5 +16,13 @@ test_that("stage_conn will pass CRAN", {
     strike_stage(con)
   })
 
-  expect_lte(timer[["user.self"]] / timer[["elapsed"]], 2.5)
+  #sys.time tests differently on GH actions
+  user <- ifelse(
+    is.na(timer[["user.self"]]), timer[["user.child"]], timer[["user.self"]]
+  )
+
+  skip_if(is.na(user))
+
+  expect_lte(user / timer[["elapsed"]], 2.5)
 })
+
