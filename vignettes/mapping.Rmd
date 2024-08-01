@@ -3,8 +3,10 @@ title: "Mapping with OvertureR"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Mapping with OvertureR}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -14,6 +16,42 @@ knitr::opts_chunk$set(
 )
 ```
 
+```{r eval=FALSE}
+#install if needed:
+install.packages("mapgl")
+install.packages("overtureR")
+```
+
 ```{r setup}
 library(overtureR)
+library(mapgl)
 ```
+
+
+```{r}
+bbox <- c(xmin = -73.9911, xmax = -73.9855,ymin = 40.7551, ymax = 40.7591)
+
+broadway <- open_curtain("building", bbox) |> collect_sf()
+
+maplibre() |> 
+  add_fill_extrusion_layer(
+    id = "buildings",
+    source = broadway
+  )
+    fill_extrusion_color = interpolate(
+      column = 'render_height',
+      values = c(0, 200, 400),
+      stops = c('lightgray', 'royalblue', 'lightblue')
+    ),
+    fill_extrusion_height = list(
+      'interpolate',
+      list('linear'),
+      list('zoom'),
+      15,
+      0,
+      16,
+      list('get', 'render_height')
+    )
+
+```
+

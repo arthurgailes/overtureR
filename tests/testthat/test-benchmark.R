@@ -10,19 +10,14 @@ test_that("Configuration is fast", {
 })
 
 test_that("stage_conn will pass CRAN", {
-  # cran requires user time <= 2.5x elapsed time
+  # cran requires user time <= 2.5x elapsed time, but also won't accept a test
+  skip_on_cran()
+  skip_if_offline()
   timer <- system.time({
     con <- stage_conn()
     strike_stage(con)
   })
 
-  #sys.time tests differently on GH actions
-  user <- ifelse(
-    is.na(timer[["user.self"]]), timer[["user.child"]], timer[["user.self"]]
-  )
-
-  skip_if(is.na(user))
-
-  expect_lte(user / timer[["elapsed"]], 2.5)
+  expect_lte(timer[["user.self"]] / timer[["elapsed"]], 2.5)
 })
 
