@@ -25,33 +25,19 @@ install.packages("overtureR")
 ```{r setup}
 library(overtureR)
 library(mapgl)
+library(dplyr)
+library(sf)
 ```
-
 
 ```{r}
 bbox <- c(xmin = -73.9911, xmax = -73.9855,ymin = 40.7551, ymax = 40.7591)
 
-broadway <- open_curtain("building", bbox) |> collect_sf()
+broadway <- open_curtain("building", bbox, as_sf = T) |> select(height, geometry)
 
-maplibre() |> 
+maplibre(bounds = broadway, pitch = 45) |> 
   add_fill_extrusion_layer(
-    id = "buildings",
-    source = broadway
+    id = "buildings", source = broadway, fill_extrusion_color = 'lightgray',
+    fill_extrusion_height = list('get', 'height')
   )
-    fill_extrusion_color = interpolate(
-      column = 'render_height',
-      values = c(0, 200, 400),
-      stops = c('lightgray', 'royalblue', 'lightblue')
-    ),
-    fill_extrusion_height = list(
-      'interpolate',
-      list('linear'),
-      list('zoom'),
-      15,
-      0,
-      16,
-      list('get', 'render_height')
-    )
-
 ```
 
