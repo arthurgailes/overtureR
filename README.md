@@ -17,9 +17,10 @@ coverage](https://codecov.io/gh/arthurgailes/overtureR/branch/master/graph/badge
 ## Installation
 
 ``` r
-# CRAN application pending
-# install.packages("overtureR")
-devtools::install_github("arthurgailes/overtureR")
+install.packages("overtureR")
+
+# or, dev version
+# devtools::install_github("arthurgailes/overtureR")
 ```
 
 ## Usage
