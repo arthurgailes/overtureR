@@ -15,16 +15,22 @@
 #' lazy_tbl <- open_curtain("building", bbox)
 #' collect_sf(lazy_tbl)
 #' @export
-collect_sf <- function(tbl, geom_col = NULL, crs = 4326) {
-  if (is.null(geom_col)) {
-    geom_col <- grep("geom", colnames(tbl), ignore.case = TRUE, value = TRUE)
+collect_sf <- function(tbl, geom_col = "geometry", crs = 4326) {
+
+  if (!geom_col %in% colnames(tbl)) stop("Could not find `geom_col`")
+  
+  # DuckDB Geoemtry class conversion. TODO: test for internal geometry type?
+  if("tbl_duckdb_connection" %in% class(tbl)) {
+    tbl <- dplyr::mutate(tbl, {{geom_col}} := ST_AsWKB(.data[[geom_col]]))
   }
+  new_tbl <- dplyr::collect(tbl)
 
-  if (length(geom_col) != 1) stop("could not determine geometry column")
+  new_tbl <- sf::st_as_sf(new_tbl, sf_column_name = geom_col)
 
-  tbl <- dplyr::collect(tbl)
+  if (!is.na(crs)) sf::st_crs(new_tbl) <- crs
 
-  tbl[[geom_col]] <- sf::st_as_sfc(tbl[[geom_col]], crs = crs)
-  tbl <- sf::st_as_sf(tbl)
-  return(tbl)
+  return(new_tbl)
 }
+
+
+utils::globalVariables(c("ST_AsWKB"), package = "overtureR")
