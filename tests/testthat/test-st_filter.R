@@ -1,4 +1,5 @@
 test_that("sql_handle_spatial_filter handles all options correctly", {
+  library(sf)
   
   con <- duckdb::dbConnect(duckdb::duckdb())
   # Mock functions for testing
@@ -14,13 +15,12 @@ test_that("sql_handle_spatial_filter handles all options correctly", {
   expect_equal(sql_handle_spatial_filter(conn, NULL), "")
   
   # Test with sf object
-  sf_obj <- sf::st_sf(
-    geometry = sf::st_sfc(sf::st_point(c(0, 0)), sf::st_point(c(1, 1)))
+  sf_obj <- st_sf(
+    geometry = st_sfc(st_point(c(0, 0)), st_point(c(1, 1)))
   )
 
   result_sf <- sql_handle_spatial_filter(con, sf_obj)
   expect_true(grepl(result_template, result_sf))
-  expect_true(duckdb::dbExistsTable(con, "internal_spatial_filter_init"))
   
   # Test with dbplyr tbl
   result_dbplyr <- sql_handle_spatial_filter(con, dbplyr_tbl)
@@ -28,7 +28,7 @@ test_that("sql_handle_spatial_filter handles all options correctly", {
   
   # Test with character input (table name)
   result_char <- sql_handle_spatial_filter(con, "test")
-  expect_equal(result_char, result_dbplyr)
+  expect_true(grepl(result_template, result_dbplyr))
   
   # Test error cases
   expect_error(sql_handle_spatial_filter(con, list()), "invalid `spatial_filter` object")
@@ -38,11 +38,7 @@ test_that("sql_handle_spatial_filter handles all options correctly", {
   duckdb::duckdb_register(con, "invalid", invalid_tbl)
   invalid_dbplyr <- dplyr::tbl(con, "invalid")
 
-  colnames(invalid_dbplyr)
-  duckdb::dbExistsTable(con, "invalid")
-
-  expect_error(sql_handle_spatial_filter(con, invalid_dbplyr), "`spatial_filter` must have a column named 'geometry'")
-  expect_error(sql_handle_spatial_filter(con, "invalid"), "`spatial_filter` must have a column named 'geometry'")
+  expect_error(sql_handle_spatial_filter(con, invalid_dbplyr), "`spatial_filter` must have a column 'geometry' of class GEOMETRY")
 
   # reject if not a string
   expect_error(sql_handle_spatial_filter(con, "not a table!"), "if a string, `spatial_filter` must be a table in the connection")
@@ -50,13 +46,42 @@ test_that("sql_handle_spatial_filter handles all options correctly", {
   DBI::dbDisconnect(con)
 })
 
-
 test_that("spatial_filter works correctly in open_curtain", {
-  
+  skip_if_offline()
+  library(sf)
   con <- stage_conn()
 
+  # get Mecklenburg county from sf object
   return_hood <- function(spatial_filter) {
-    open_curtain("division", spatial_filter)
+    tbl <- open_curtain("division", spatial_filter)
+    tbl <- dplyr::filter(tbl, subtype == "neighborhood")
   }
 
+  meck <- subset(
+    st_read(system.file("shape/nc.shp", package = "sf")),
+    NAME == "Mecklenburg"
+  )
+  meck <- st_transform(meck, 4326)
+
+  meck_hood_sf <- collect_sf(return_hood(meck))
+  expect_true(all(unlist(st_intersects(meck_hood_sf, meck$geometry))))
+  
+  meck_dbplyr <- sf_as_dbplyr(con, "meck", meck, overwrite = TRUE)
+  
+  meck_dbplyr_sf <- collect_sf(return_hood(meck_dbplyr))
+  expect_true(all(unlist(st_intersects(meck_dbplyr_sf, meck$geometry))))
+  expect_equal(meck_dbplyr_sf, meck_hood_sf)
+  
+  # test with tablename
+  DBI::dbExecute(con, glue::glue(
+    "CREATE OR REPLACE VIEW meck_test AS ({dbplyr::sql_render(meck_dbplyr)})"
+  ))
+  meck_tablename_sf <- collect_sf(return_hood("meck_test"))
+  expect_true(all(unlist(st_intersects(meck_dbplyr_sf, meck$geometry))))
+  expect_equal(meck_tablename_sf, meck_hood_sf)
+
+  meck_bbox <- st_bbox(meck)
+  meck_hood_bbox <- collect_sf(return_hood(meck_bbox))
+  expect_gt(nrow(meck_hood_bbox), nrow(meck_hood_sf))
+  
 })

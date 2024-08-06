@@ -2,5 +2,6 @@
 
 export(collect_sf)
 export(open_curtain)
+export(sf_as_dbplyr)
 export(stage_conn)
 export(strike_stage)

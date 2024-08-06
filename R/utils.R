@@ -27,3 +27,4 @@ ignore_unused_imports <- function() {
   ignore_con <- DBI::dbConnect(duckdb::duckdb())
   dbplyr::db_copy_to(ignore_con, data.frame(x=1), "dummy", temporary = TRUE)
 }
+
