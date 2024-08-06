@@ -7,8 +7,7 @@
 #'
 #' @param type A string specifying the type of overture dataset to read.
 #' Setting to "*" or `NULL` will read all types for a given theme.
-#' @param bbox Optional bounding box to filter the records, expected as a vector
-#' of four numbers (xmin, ymin, xmax, ymax). Set to NULL to omit from query
+#' @param st_filter An object to spatially filter the result. 
 #' @param theme Inferred from type by default. Must be set if type is "*" or NULL
 #' @param conn A connection to a duckdb database.
 #' @param as_sf If TRUE, return an sf dataframe
@@ -20,6 +19,7 @@
 #'  the initial execution time)
 #' @param base_url Allows user to download data from a different mirror, such
 #' as a beta or alpha release.
+#' @param bbox alias for `st_filter`. may be deprecated in the future.
 #'
 #' @return An dbplyr lazy dataframe, or an sf dataframe if as_sf is TRUE
 #'
@@ -29,14 +29,15 @@
 #' @export
 open_curtain <- function(
     type,
-    bbox = NULL,
+    st_filter = NULL,
     theme = get_theme_from_type(type),
     conn = NULL,
     as_sf = FALSE,
     mode = "view",
     tablename = ifelse(is.null(type) | type == "*", theme, type),
     union_by_name = FALSE,
-    base_url = "s3://overturemaps-us-west-2/release/2024-07-22.0") {
+    base_url = "s3://overturemaps-us-west-2/release/2024-07-22.0",
+    bbox = NULL) {
   # use cached connection if no conn provided
   if (is.null(conn)) conn <- stage_conn()
   config_extensions(conn)
@@ -44,7 +45,10 @@ open_curtain <- function(
   # should I expose this? Should it be set in cache_connection?
   duckdb::dbSendQuery(conn, "SET s3_region='us-west-2'")
 
-  bbox <- set_bbox_sql(bbox, mode)
+  if(!is.null(bbox)) {
+    warning("param `bbox` is deprecated. Use `st_filter`")
+  }
+  bbox <- set_bbox_sql(st_filter, mode)
 
   url <- glue::glue("{base_url}/theme={theme}/type={type}/*")
   # TODO: improve select, handle geometry internally
@@ -52,6 +56,8 @@ open_curtain <- function(
     "SELECT * REPLACE (ST_GeomFromWKB(geometry) as geometry)
      FROM read_parquet('{url}', filename=true, hive_partitioning=true, union_by_name = {union_by_name})"
   )
+
+  st_filter <- sql_hanlde_st_filter(st_filter)
 
   query_suffix <- glue::glue("WHERE 1=1 {bbox} ")
 
@@ -100,19 +106,64 @@ type_theme_map <- list(
 set_bbox_sql <- function(bbox, mode) {
   if (is.null(bbox)) {
     bbox <- ""
-    if (mode == "table") warning("No bounding box set. Loading the full (very large!) dataset into memory.")
-  } else {
-    xmin <- bbox[["xmin"]]
-    ymin <- bbox[["ymin"]]
-    xmax <- bbox[["xmax"]]
-    ymax <- bbox[["ymax"]]
+    if (mode == "table") warning("No bounding box set. Loading the full (possibly very large!) dataset into memory.")
+    return(bbox)
+  } 
 
-    bbox <- glue::glue(
-      "AND bbox.xmin > {xmin}
-      AND bbox.xmax < {xmax}
-      AND bbox.ymin > {ymin}
-      AND bbox.ymax < {ymax}"
-    )
-  }
+  # sf objects
+  if (any(grepl("^sf[c]$", class(bbox)))) bbox <- sf::st_bbox(bbox)
+
+  # bbox or list objects
+  xmin <- bbox[["xmin"]]
+  ymin <- bbox[["ymin"]]
+  xmax <- bbox[["xmax"]]
+  ymax <- bbox[["ymax"]]
+
+  if(any(is.null(c(xmin, ymin, xmax, ymax)))) stop("invalid `st_filter` object")
+
+  bbox <- glue::glue(
+    "AND bbox.xmin > {xmin}
+    AND bbox.xmax < {xmax}
+    AND bbox.ymin > {ymin}
+    AND bbox.ymax < {ymax}"
+  )
+
   return(bbox)
 }
+
+sql_handle_st_filter <- function(st_filter, conn) {
+  if (is.null(st_filter)) return("")
+  
+  # for sf, upload geom only to duckdb
+  if (any(grepl("^sf[c]$", class(bbox)))) {
+    geom <- sf::st_as_sfc(st_filter)
+    data <- as.data.frame(geometry = st_as_text(geom, EKWT = TRUE))
+
+    duckdb::duckdb_register(
+      conn, "internal_st_filter_init", st_filter, overwrite = TRUE
+    )
+
+    sql_init <- "(SELECT ST_GeomFromText(geometry) AS geometry FROM internal_st_filter_init)"
+  }
+  # if dbplyr, use sql subquery directly
+  if("tbl_duckdb_connection" %in% class(tbl)) {
+    if(!"geometry" %in% colnames(st_filter)) stop("`st_filter` must have a column named 'geometry'")
+      
+      sql_init <- dbplyr::sql_render(within)
+      
+  }
+  # if char, use table/view name
+  if (is.character(st_filter)) {
+    is_valid <- length(st_filter) != 1
+    existing <- duckdb::dbExistsTable(conn, st_filter)
+    if(!is_valid | !existing) stop("if a string, `st_filter` must be a table in the connection")
+      
+    sql_init <- st_filter
+    
+  }
+    
+  agg_query <- "(SELECT ST_Union_Agg(geometry) AS geometry FROM {sql_init})"
+
+  where_clause <- glue::glue("WHERE ST_Intersects(master.geometry, {agg_query})")
+  return(where_clause)
+  }
