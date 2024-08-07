@@ -9,6 +9,7 @@ sf_as_dbplyr(
   name,
   sf_obj,
   geom_only = isFALSE("sf" \%in\% class(sf_obj)),
+  overwrite = FALSE,
   ...
 )
 }
@@ -22,10 +23,12 @@ sf_as_dbplyr(
 \item{geom_only}{if TRUE, only the geometry column is registered. Always
 FALSE for sfc or sfg objects}
 
+\item{overwrite}{Should an existing registration be overwritten?}
+
 \item{...}{additional arguments passed to duckdb_register}
 }
 \value{
-a dbplyr tbl
+a \code{dbplyr} lazy table
 }
 \description{
 A thin wrapper around \code{duckdb::duckdb_register()} that creates a virtual
@@ -33,12 +36,18 @@ table, then selects the geometry column to DuckDB.'s GEOMETRY type in the
 returned \code{dbplyr} representation. Mostly useful for join and spatial
 operations within DuckDB. No data is copied.
 }
+\details{
+Behind the scenes, this function creates an initial view (\code{name}_init) with
+the geometry stored as text via \code{sf::st_as_text}. It then creates the view
+\code{name} which replaces the geometry column with DuckDB's internal geometry
+type.
+}
 \examples{
 library(sf)
 
 con <- duckdb::dbConnect(duckdb::duckdb())
-sf_obj = st_sf(a = 3, geometry = st_sfc(st_point(1:2)))
-sf_as_duckdb_dbplyr(con, "test", sf_obj)
+sf_obj <- st_sf(a = 3, geometry = st_sfc(st_point(1:2)))
+sf_as_dbplyr(con, "test", sf_obj)
 
 dbDisconnect(con)
 

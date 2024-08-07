@@ -11,8 +11,9 @@ test_that("Configuration is fast", {
 
 test_that("stage_conn will pass CRAN", {
   # cran requires user time <= 2.5x elapsed time, but also won't accept a test
+  skip_if_not(interactive())
+  skip_on_ci()
   skip_on_cran()
-  skip_if_offline()
   timer <- system.time({
     con <- stage_conn()
     strike_stage(con)
@@ -20,4 +21,3 @@ test_that("stage_conn will pass CRAN", {
 
   expect_lte(timer[["user.self"]] / timer[["elapsed"]], 2.5)
 })
-

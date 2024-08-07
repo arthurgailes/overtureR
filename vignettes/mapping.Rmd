@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r eval=FALSE}
-#install if needed:
+# install if needed:
 install.packages("mapgl")
 install.packages("overtureR")
 ```
@@ -30,14 +30,24 @@ library(sf)
 ```
 
 ```{r}
-bbox <- c(xmin = -73.9911, xmax = -73.9855,ymin = 40.7551, ymax = 40.7591)
+bbox <- c(xmin = -73.9911, xmax = -73.9855, ymin = 40.7551, ymax = 40.7591)
 
 broadway <- open_curtain("building", bbox, as_sf = T) |> select(height, geometry)
 
-maplibre(bounds = broadway, pitch = 45) |> 
+maplibre(bounds = broadway, pitch = 45) |>
   add_fill_extrusion_layer(
-    id = "buildings", source = broadway, fill_extrusion_color = 'lightgray',
-    fill_extrusion_height = list('get', 'height')
+    id = "buildings", source = broadway, fill_extrusion_color = "lightgray",
+    fill_extrusion_height = list("get", "height")
   )
 ```
 
+Where is the opera? 
+
+For this example, we're going to take a flight into DC to see the opera at the
+Kennedy center. We're flying into Ronald Regan Airport:
+
+```{r}
+dca
+```
+
+I'd 

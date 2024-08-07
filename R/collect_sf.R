@@ -16,12 +16,11 @@
 #' collect_sf(lazy_tbl)
 #' @export
 collect_sf <- function(tbl, geom_col = "geometry", crs = 4326) {
-
   if (!geom_col %in% colnames(tbl)) stop("Could not find `geom_col`")
-  
+
   # DuckDB Geoemtry class conversion. TODO: test for internal geometry type?
-  if("tbl_duckdb_connection" %in% class(tbl)) {
-    tbl <- dplyr::mutate(tbl, {{geom_col}} := ST_AsWKB(.data[[geom_col]]))
+  if ("tbl_duckdb_connection" %in% class(tbl)) {
+    tbl <- dplyr::mutate(tbl, {{ geom_col }} := ST_AsWKB(.data[[geom_col]]))
   }
   new_tbl <- dplyr::collect(tbl)
 
