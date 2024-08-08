@@ -25,20 +25,10 @@ install.packages("overtureR")
 ```{r setup}
 library(overtureR)
 library(mapgl)
+library(ggplot2)
+library(bench)
 library(dplyr)
 library(sf)
-```
-
-```{r}
-bbox <- c(xmin = -73.9911, xmax = -73.9855, ymin = 40.7551, ymax = 40.7591)
-
-broadway <- open_curtain("building", bbox, as_sf = T) |> select(height, geometry)
-
-maplibre(bounds = broadway, pitch = 45) |>
-  add_fill_extrusion_layer(
-    id = "buildings", source = broadway, fill_extrusion_color = "lightgray",
-    fill_extrusion_height = list("get", "height")
-  )
 ```
 
 Where is the opera? 
@@ -47,37 +37,117 @@ For this example, we're going to take a flight into DC to see the opera at the
 Kennedy center. We're flying into Ronald Regan Airport:
 
 ```{r}
-dca
+# Overture Maps
+system_time({
+  va_airports <- open_curtain("place") |> 
+    filter(
+      addresses[[1]][["Region"]] == "US-VA" | addresses[[1]][["Region"]] == "US-VA"
+      # grepl("Airport", names$primary, ignore.case = TRUE),
+      # grepl("Reagan", names[["primary"]], ignore.case = TRUE)
+    ) |> dbplyr::sql_render()
+    select(names, brand, addresses)
+    collect()
+})
+  
+va_airports
 ```
 
+That worked. But it was slow! `overtureR` The query above is searching through the properties of several columns, meaning it has to scan millions of places before finding our Airport. But there's a faster way: We can subset with a bounding box, which is quite fast!
+
+Let's set set up a bounding box that's captures everything within 20 miles of DC.
+
+```{r}
+dc <- open_curtain("division_area") |> 
+  filter(subtype == "region", region == "US-DC") |> 
+  collect_sf()
+
+# adding a bounding box makes the query faster:
+dc_catchment <- st_geometry(dc) |>
+  # 10 miles from DC
+  st_buffer(10 * 1609.34) |> 
+  st_bbox()
+
+reagan_airport <- open_curtain("place", spatial_filter = dc_catchment) |> 
+    filter(
+      names$primary == "Ronald Reagan Washington National Airport",
+      categories$primary == "airport"
+    ) |> 
+    collect_sf()
+
+reagan_airport
+
+```
+
+That's much faster. Let's take a look:
+
+```{r}
+reagan_plot <- ggplot() + 
+  geom_sf(data = dc) + 
+  geom_sf(data = reagan_airport, color = "red") +
+  theme_minimal()
+
+reagan_plot
+```
+
+Hmm. That's pretty good.
 OK, now that we're at the airport, it's time to find the Kennedy Cennter itself. Luckily, that's pretty easy:
 
 
 ```{r}
+kennedy_center <- open_curtain("place", st_bbox(dc)) |>
+  filter(names$primary == "The John F. Kennedy Center For the Performing Arts") |> 
+  collect_sf()
 
+kennedy_plot <- reagan_plot + geom_sf(data = kennedy_center, color = "blue")
+kennedy_plot
 ```
 
 Better yet, let's get the building it's in.
 
 ```{r}
+kennedy_radius <- st_geometry(kennedy_center) |> st_buffer(200)
+kennedy_building <- open_curtain("building", kennedy_radius, as_sf = TRUE) 
 
+ggplot(kennedy_building) + geom_sf()
 ```
 
 Cool! But there's a problem. How do we get there? Let's see if there's any public transit nearby:
 
 ```{r}
+dc_bbox <- st_bbox(c(xmin = -77.1, xmax = -76.9, ymin = 38.8, ymax = 39))
+transit <- open_curtain("place", spatial_filter = dc_bbox, as_sf = TRUE) |>
+  filter(categories[["primary"]] == "transportation.station.transit")
 
+maplibre(center = kennedy_center) |>
+  add_fill_layer(source = kennedy_building, color = "blue", opacity = 0.5) |>
+  add_circle_layer(source = transit, radius = 5, color = "red")
 ```
 
 That might actually be too much information. I only really want the transit stations that are between DCA and the Kennedy Center. To do that, let's limit ourselves to those stations that are within a straight line of the two points.
 
 ```{r}
+line <- st_linestring(rbind(st_coordinates(dca), st_coordinates(st_centroid(kennedy_building)))) |>
+  st_sfc(crs = 4326) |>
+  st_buffer(dist = 0.01)  # Buffer of about 1km
 
+filtered_transit <- transit[st_intersects(transit, line, sparse = FALSE), ]
+
+maplibre(center = kennedy_center, zoom = 11) |>
+  add_fill_layer(source = kennedy_building, color = "blue", opacity = 0.5) |>
+  add_circle_layer(source = dca, radius = 500, color = "red") |>
+  add_line_layer(source = line, color = "green", width = 2) |>
+  add_circle_layer(source = filtered_transit, radius = 5, color = "purple")
 ```
 
 
 Perfect, it looks like we can take the blue line straight there.
 ```{r}
-
+bbox <- c(xmin = -73.9911, xmax = -73.9855, ymin = 40.7551, ymax = 40.7591)
+broadway <- open_curtain("building", bbox, as_sf = T) |> select(height, geometry)
+maplibre(bounds = broadway, pitch = 45) |>
+  add_fill_extrusion_layer(
+    id = "buildings", source = broadway, fill_extrusion_color = "lightgray",
+    fill_extrusion_height = list("get", "height")
+  )
 ```
 
