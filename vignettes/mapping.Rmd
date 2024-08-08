@@ -1,5 +1,5 @@
 ---
-title: "Mapping with OvertureR"
+title: "Merging Overture Maps with Custom Data"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Mapping with OvertureR}
@@ -50,4 +50,34 @@ Kennedy center. We're flying into Ronald Regan Airport:
 dca
 ```
 
-I'd 
+OK, now that we're at the airport, it's time to find the Kennedy Cennter itself. Luckily, that's pretty easy:
+
+
+```{r}
+
+```
+
+Better yet, let's get the building it's in.
+
+```{r}
+
+```
+
+Cool! But there's a problem. How do we get there? Let's see if there's any public transit nearby:
+
+```{r}
+
+```
+
+That might actually be too much information. I only really want the transit stations that are between DCA and the Kennedy Center. To do that, let's limit ourselves to those stations that are within a straight line of the two points.
+
+```{r}
+
+```
+
+
+Perfect, it looks like we can take the blue line straight there.
+```{r}
+
+```
+
