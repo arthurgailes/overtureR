@@ -29,13 +29,13 @@ con <- stage_conn()
 dc <- open_curtain("division") |> 
   filter(region == "US-DC", subtype == "neighborhood")
 
-dc_head <- head(dc) |> collect_sf()
+dc_head <- head(dc) |> collect()
 
 overture_bbox(dc)
 
 View(dc_head)
 
-dc_data <- collect_sf(dc)
+dc_data <- collect(dc)
 
 dc_data |> filter(grepl(""))
 head(as.data.frame(dc_data))
@@ -69,7 +69,7 @@ writeClipboard(geomed$geometry)
 dbExecute(con, "update division set geometry = st_GeomFromWKB(geometry)")
 
 
-hoods <- collect_sf(dc)
+hoods <- collect(dc)
 
 types <- dbGetQuery(con, "select column_name, data_type from duckdb_columns() where table_name == 'division'")
 View(types)

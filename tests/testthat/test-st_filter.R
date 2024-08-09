@@ -63,12 +63,12 @@ test_that("spatial_filter works correctly in open_curtain", {
   )
   meck <- st_transform(meck, 4326)
 
-  meck_hood_sf <- collect_sf(return_hood(meck))
+  meck_hood_sf <- collect(return_hood(meck))
   expect_true(all(unlist(st_intersects(meck_hood_sf, meck$geometry))))
 
   meck_dbplyr <- sf_as_dbplyr(con, "meck", meck, overwrite = TRUE)
 
-  meck_dbplyr_sf <- collect_sf(return_hood(meck_dbplyr))
+  meck_dbplyr_sf <- collect(return_hood(meck_dbplyr))
   expect_true(all(unlist(st_intersects(meck_dbplyr_sf, meck$geometry))))
   expect_equal(meck_dbplyr_sf, meck_hood_sf)
 
@@ -76,11 +76,11 @@ test_that("spatial_filter works correctly in open_curtain", {
   DBI::dbExecute(con, glue::glue(
     "CREATE OR REPLACE VIEW meck_test AS ({dbplyr::sql_render(meck_dbplyr)})"
   ))
-  meck_tablename_sf <- collect_sf(return_hood("meck_test"))
+  meck_tablename_sf <- collect(return_hood("meck_test"))
   expect_true(all(unlist(st_intersects(meck_dbplyr_sf, meck$geometry))))
   expect_equal(meck_tablename_sf, meck_hood_sf)
 
   meck_bbox <- st_bbox(meck)
-  meck_hood_bbox <- collect_sf(return_hood(meck_bbox))
+  meck_hood_bbox <- collect(return_hood(meck_bbox))
   expect_gt(nrow(meck_hood_bbox), nrow(meck_hood_sf))
 })

@@ -4,7 +4,7 @@ test_that("Counties download works as expected", {
 
   counties <- open_curtain("division_area", bbox = NULL) %>%
     # in R, filtering on variables must come before removing them via select
-    filter(subtype == "county" & country == "US" & region == "US-PA") %>%
+    filter(subtype == "county" & region == "US-PA") %>%
     transmute(
       id,
       division_id,
@@ -13,13 +13,30 @@ test_that("Counties download works as expected", {
       geometry
     )
 
-  counties_sf <- collect_sf(counties)
-
+  expect_true(class(counties)[[1]] == "tbl_overture")
   expect_true("tbl_lazy" %in% class(counties))
+
+  counties_sf <- collect(counties)
+
+  expect_false("tbl_overture" %in% class(counties_sf))
   expect_true("sf" %in% class(counties_sf))
   expect_equal(pull(count(counties), n), 67)
 
   expect_true(all(grepl("County", counties_sf$primary)))
   expect_true(all(sf::st_is_valid(counties_sf$geometry)))
   expect_true(sf::st_crs(counties_sf$geometry) == sf::st_crs(4326))
+})
+
+test_that("class assignment works", {
+  conn <- DBI::dbConnect(duckdb::duckdb())
+  division <- open_curtain("division", conn = conn, tablename = "test")
+
+  # convert arbitrary sql into `tbl_overture`
+  division2 <- tbl(conn, "test")
+  division2 <- as_overture(division2)
+
+  expect_true(class(counties)[[1]] == "tbl_overture")
+  expect_error(as_overture(mtcars), "Input must be a tbl_sql object")
+
+  DBI::dbDisconnect(conn, shutdown = TRUE)
 })
