@@ -4,7 +4,7 @@
 \alias{collect_sf}
 \title{Convert dbplyr table to sf Object}
 \usage{
-collect_sf(tbl, geom_col = NULL, crs = 4326)
+collect_sf(tbl, geom_col = "geometry", crs = 4326)
 }
 \arguments{
 \item{tbl}{A dbplyr view object containing a 'geometry' column.}

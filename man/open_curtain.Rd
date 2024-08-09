@@ -6,22 +6,22 @@
 \usage{
 open_curtain(
   type,
-  bbox = NULL,
+  spatial_filter = NULL,
   theme = get_theme_from_type(type),
   conn = NULL,
   as_sf = FALSE,
   mode = "view",
-  tablename = ifelse(is.null(type) | type == "*", theme, type),
+  tablename = NULL,
   union_by_name = FALSE,
-  base_url = "s3://overturemaps-us-west-2/release/2024-07-22.0"
+  base_url = "s3://overturemaps-us-west-2/release/2024-07-22.0",
+  bbox = NULL
 )
 }
 \arguments{
 \item{type}{A string specifying the type of overture dataset to read.
 Setting to "*" or \code{NULL} will read all types for a given theme.}
 
-\item{bbox}{Optional bounding box to filter the records, expected as a vector
-of four numbers (xmin, ymin, xmax, ymax). Set to NULL to omit from query}
+\item{spatial_filter}{An object to spatially filter the result.}
 
 \item{theme}{Inferred from type by default. Must be set if type is "*" or NULL}
 
@@ -40,6 +40,8 @@ the initial execution time)}
 
 \item{base_url}{Allows user to download data from a different mirror, such
 as a beta or alpha release.}
+
+\item{bbox}{alias for \code{spatial_filter}. may be deprecated in the future.}
 }
 \value{
 An dbplyr lazy dataframe, or an sf dataframe if as_sf is TRUE

@@ -1,0 +1,154 @@
+---
+title: "Raising the Curtain: Getting Started with overtureR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Mapping with OvertureR}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10, 
+  fig.height = 6,
+  out.width = "100%",
+  comment = "#>"
+)
+
+```
+
+```{r eval=FALSE}
+# install if needed:
+install.packages("overtureR")
+```
+
+```{r setup}
+library(overtureR)
+library(ggplot2)
+library(dplyr)
+library(sf)
+```
+
+This vignette demonstrates how to use overtureR to access and visualize Overture Maps data, focusing on a practical example in Washington, DC: finding the theater.
+
+Overture Maps is an open-source mapping initiative aimed at developers who build map services or use geospatial data. It provides a collaborative, globally-referenced, and quality-assured dataset with a structured schema. This makes it an excellent resource for creating reliable and interoperable map products.
+Using overtureR, we can easily tap into this rich dataset. In this guide, we'll walk through the process of:
+
+1. Fetching the boundary of Washington, DC
+2. Locating Ronald Reagan National Airport
+3. Finding the Kennedy Center theater
+4. Getting to the Kennedy Center with public transit
+
+`open_curtain()` function is our primary tool for accessing Overture Maps data. We'll start by using `open_curtain()` to retrieve the DC boundary and pinpoint the airport:
+
+```{r reagan}
+# Washington, DC boundary
+dc <- open_curtain("division_area") |> 
+  filter(subtype == "region", region == "US-DC") |> 
+  collect_sf()
+
+# adding a bounding box makes the query faster:
+dc_catchment <- st_geometry(dc) |>
+  # 10 miles from DC
+  st_buffer(10 * 1609.34) |> 
+  st_bbox()
+
+reagan_airport <- open_curtain("place", spatial_filter = dc_catchment) |> 
+    filter(
+      names$primary == "Ronald Reagan Washington National Airport",
+      categories$primary == "airport"
+    ) |> 
+    collect_sf()
+
+print(reagan_airport)
+```
+
+By default, `open_curtain` would search through every "place" (aka point of interest) in the world - an enormous dataset. Obviously, that's too much to load into most computers' memory, so `open_curtain` does this lazily. Only after calling `collect_sf` does it load data onto your computer. So we filter the data first, spatially and by name, like so:
+
+1. fetch the boundary of Washington, DC from the "division_area" dataset;
+2. filter for the specific region we wanted;
+3. create a spatial buffer around DC to define our area of interest for subsequent queries; and
+4. locate Ronald Reagan National Airport using the "place" dataset, filtering by name and category.
+
+Afterwards, `collect_sf` brings the only the data need into memory. For more on lazy programming, see the [dbplyr documentation](https://dbplyr.tidyverse.org/).
+
+Now that we've set the stage with our starting point, let's spotlight our destination. In the next code block, we'll locate the Kennedy Center:
+
+```{r reagan_plot}
+reagan_plot <- ggplot() + 
+  geom_sf(data = dc, fill = "purple", alpha = 0.05) + 
+  geom_sf(data = reagan_airport, color = "red", size = 4) +
+  geom_sf_label(
+    data = reagan_airport, nudge_y = 0.01, aes(label = names$primary)
+  ) +
+  theme_minimal() +
+  theme(
+      axis.title = element_blank(),
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      panel.grid = element_blank()
+    )
+
+reagan_plot
+```
+
+In this code, we've queried the "building" dataset within our defined DC area. We used a text filter to find buildings with "The Kennedy Center" in their name. This demonstrates overtureR's ability to perform text-based searches within the Overture Maps dataset.
+
+To get to the theater, we'll need to know our transit options. The following code showcases overtureR's capacity to handle more complex spatial and attribute queries:
+
+```{r kennedy}
+kennedy_center <- open_curtain("building", st_bbox(dc)) |>
+  filter(grepl("Kennedy Center", names$primary)) |> 
+  collect_sf()
+
+kennedy_plot <- reagan_plot + 
+  geom_sf(data = kennedy_center, fill = "green") +
+  geom_sf_label(data = kennedy_center, nudge_y = 0.01, aes(label = names$primary)) 
+kennedy_plot
+```
+
+In the code above, we've created a bounding box that encompasses both the airport and the Kennedy Center, plus a one-mile buffer. We then used this to filter the "segment" dataset for rail transit, specifically the Blue Line of the DC Metro.
+
+For the grand finale, we'll create a map that displays all the elements we've gathered:
+
+```{r metro}
+# filter town to areas that are within 1 mile of our two points
+kennedy_reagan_bbox <- bind_rows(kennedy_center, reagan_airport) |> 
+  st_bbox() |> 
+  st_as_sfc() |> 
+  st_buffer(1 * 1609.34) |> 
+  st_bbox()
+
+dc_transit <- open_curtain("segment", kennedy_reagan_bbox) |> 
+  filter(
+    subtype == "rail", 
+    # filter to the Blue Line of the DC Metro
+    grepl("Metro", names$primary),
+    grepl("Blue", names$primary)
+  ) |> 
+  select(id, names, geometry) |> 
+  collect_sf()
+
+print(dc_transit)
+```
+
+This final step uses ggplot2 to create a map that displays the airport, the Kennedy Center, and the Metro Blue Line connecting them. This visualizes the route from our arrival point to our theatrical destination.
+
+```{r kennedy_plot}
+
+kennedy_plot +
+  geom_sf(data = dc_transit, color = "blue") +
+  coord_sf(
+    xlim = c(kennedy_reagan_bbox[["xmin"]], kennedy_reagan_bbox[["xmax"]]),
+    ylim = c(kennedy_reagan_bbox[["ymin"]], kennedy_reagan_bbox[["ymax"]]),
+  )
+
+```
+
+
+Perfect, it looks like we can take the blue line straight there. Break a leg!
