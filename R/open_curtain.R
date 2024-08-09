@@ -183,10 +183,10 @@ set_stage_boundary <- function(conn, spatial_filter) {
   if (any(is.null(c(xmin, ymin, xmax, ymax)))) stop("invalid `spatial_filter` object")
 
   bbox <- glue::glue(
-    "AND bbox.xmin > {xmin}
-    AND bbox.xmax < {xmax}
-    AND bbox.ymin > {ymin}
-    AND bbox.ymax < {ymax}"
+    "AND bbox.xmax >= {xmin}
+    AND bbox.xmin <= {xmax}
+    AND bbox.ymax >= {ymin}
+    AND bbox.ymin <= {ymax}"
   )
 
   return(bbox)
