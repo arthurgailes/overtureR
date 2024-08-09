@@ -68,9 +68,16 @@ reagan_airport <- open_curtain("place", spatial_filter = dc_catchment) |>
 print(reagan_airport)
 ```
 
-In the code above, we've used `open_curtain()` to fetch the boundary of Washington, DC from the "division_area" dataset. We then filtered for the specific region we wanted. Next, we created a spatial buffer around DC to define our area of interest for subsequent queries. Finally, we located Ronald Reagan National Airport using the "place" dataset, filtering by name and category.
+By default, `open_curtain` would search through every "place" (aka point of interest) in the world - an enormous dataset. Obviously, that's too much to load into most computers' memory, so `open_curtain` does this lazily. Only after calling `collect_sf` does it load data onto your computer. So we filter the data first, spatially and by name, like so:
 
-Now that we've set the stage with our starting point, let's find our destination. In the next code block, we'll locate the Kennedy Center:
+1. fetch the boundary of Washington, DC from the "division_area" dataset;
+2. filter for the specific region we wanted;
+3. create a spatial buffer around DC to define our area of interest for subsequent queries; and
+4. locate Ronald Reagan National Airport using the "place" dataset, filtering by name and category.
+
+Afterwards, `collect_sf` brings the only the data need into memory. For more on lazy programming, see the [dbplyr documentation](https://dbplyr.tidyverse.org/).
+
+Now that we've set the stage with our starting point, let's spotlight our destination. In the next code block, we'll locate the Kennedy Center:
 
 ```{r reagan_plot}
 reagan_plot <- ggplot() + 
@@ -107,7 +114,7 @@ kennedy_plot
 
 In the code above, we've created a bounding box that encompasses both the airport and the Kennedy Center, plus a one-mile buffer. We then used this to filter the "segment" dataset for rail transit, specifically the Blue Line of the DC Metro.
 
-Let's bring it all together with a visualization. In the next code block, we'll create a map that displays all the elements we've gathered:
+For the grand finale, we'll create a map that displays all the elements we've gathered:
 
 ```{r metro}
 # filter town to areas that are within 1 mile of our two points
