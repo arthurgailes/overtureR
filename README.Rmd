@@ -57,7 +57,7 @@ counties <- open_curtain("division_area") |>
 
 # Plot the results
 counties |>
-  collect_sf() |>
+  collect() |>
   ggplot() +
   geom_sf(aes(fill = as.numeric(sf::st_area(geometry))))
 ```
