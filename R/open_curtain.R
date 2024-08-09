@@ -71,7 +71,9 @@ open_curtain <- function(
   DBI::dbExecute(conn, query)
 
   dataset <- dplyr::tbl(conn, tablename)
-  if (isTRUE(as_sf)) dataset <- collect_sf(dataset)
+  dataset <- as_overture(dataset)
+
+  if (isTRUE(as_sf)) dataset <- collect(dataset)
 
   return(dataset)
 }

@@ -50,7 +50,7 @@ Using overtureR, we can easily tap into this rich dataset. In this guide, we'll 
 # Washington, DC boundary
 dc <- open_curtain("division_area") |> 
   filter(subtype == "region", region == "US-DC") |> 
-  collect_sf()
+  collect()
 
 # adding a bounding box makes the query faster:
 dc_catchment <- st_geometry(dc) |>
@@ -63,7 +63,7 @@ reagan_airport <- open_curtain("place", spatial_filter = dc_catchment) |>
       names$primary == "Ronald Reagan Washington National Airport",
       categories$primary == "airport"
     ) |> 
-    collect_sf()
+    collect()
 
 print(reagan_airport)
 ```
@@ -104,7 +104,7 @@ To get to the theater, we'll need to know our transit options. The following cod
 ```{r kennedy}
 kennedy_center <- open_curtain("building", st_bbox(dc)) |>
   filter(grepl("Kennedy Center", names$primary)) |> 
-  collect_sf()
+  collect()
 
 kennedy_plot <- reagan_plot + 
   geom_sf(data = kennedy_center, fill = "green") +
@@ -132,7 +132,7 @@ dc_transit <- open_curtain("segment", kennedy_reagan_bbox) |>
     grepl("Blue", names$primary)
   ) |> 
   select(id, names, geometry) |> 
-  collect_sf()
+  collect()
 
 print(dc_transit)
 ```
