@@ -58,7 +58,7 @@ open_curtain <- function(
   # TODO: improve select, handle geometry internally
   interior_query <- glue::glue(
     "SELECT * REPLACE (ST_GeomFromWKB(geometry) as geometry)
-     FROM read_parquet('{url}', filename=true, hive_partitioning=true, union_by_name = {union_by_name})"
+     FROM read_parquet('{url}', hive_partitioning=true, union_by_name = {union_by_name})"
   )
 
   query_suffix <- glue::glue("WHERE 1=1 {bbox} {spatial_query} ")

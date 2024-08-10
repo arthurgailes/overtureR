@@ -18,7 +18,7 @@
 #' lazy_tbl <- open_curtain("building", bbox)
 #' collect(lazy_tbl)
 #' @export
-collect.tbl_overture <- function(x, ..., geom_col = "geometry", crs = 4326) {
+collect.overture_call <- function(x, ..., geom_col = "geometry", crs = 4326) {
 
   has_geom <- geom_col %in% colnames(x)
 
@@ -37,7 +37,7 @@ collect.tbl_overture <- function(x, ..., geom_col = "geometry", crs = 4326) {
   return(result)
 }
 
-#' @rdname collect.tbl_overture
+#' @rdname collect.overture_call
 collect_sf <- function(...) {
   warning("collect_sf is deprecated, use collect")
   dplyr::collect(...)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/as_overture.R
 \name{as_overture}
 \alias{as_overture}
-\title{Convert a tbl_sql object to a tbl_overture object}
+\title{Convert a tbl_sql object to a overture_call object}
 \usage{
 as_overture(x)
 }
@@ -10,17 +10,17 @@ as_overture(x)
 \item{x}{A tbl_sql object representing an Overture Maps dataset.}
 }
 \value{
-A tbl_sql object with the additional class tbl_overture and
+A tbl_sql object with the additional class overture_call and
 attributes overture_type and overture_theme.
 }
 \description{
-This function adds the tbl_overture class to a tbl_sql object and sets
+This function adds the overture_call class to a tbl_sql object and sets
 attributes specific to Overture Maps data. It is primarily used internally
 by the open_curtain() function but can also be used directly on tbl_sql
 objects representing Overture Maps data.
 }
 \details{
-The function adds the tbl_overture class as the first class of the object,
+The function adds the overture_call class as the first class of the object,
 allowing for potential method dispatch specific to Overture Maps data.
 It also adds two attributes:
 \itemize{
@@ -44,6 +44,6 @@ exit_stage(conn)
 # The open_curtain() function already uses as_overture() internally,
 # but you can also use it directly:
 buildings_overture <- as_overture(buildings)
-class(buildings_overture)  # Should include "tbl_overture"
+class(buildings_overture)  # Should include "overture_call"
 \dontshow{\}) # examplesIf}
 }

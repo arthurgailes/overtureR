@@ -13,7 +13,7 @@ test_that("Counties download works as expected", {
       geometry
     )
 
-  expect_true(class(counties)[[1]] == "tbl_overture")
+  expect_true(class(counties)[[1]] == "overture_call")
   playbill <- attr(counties, "overture_playbill")
 
   expect_equal(playbill[["type"]], "division_area")
@@ -23,7 +23,7 @@ test_that("Counties download works as expected", {
 
   counties_sf <- collect(counties)
 
-  expect_false("tbl_overture" %in% class(counties_sf))
+  expect_false("overture_call" %in% class(counties_sf))
   expect_true("sf" %in% class(counties_sf))
   expect_equal(pull(count(counties), n), 67)
 
@@ -36,11 +36,11 @@ test_that("class assignment works", {
   conn <- DBI::dbConnect(duckdb::duckdb())
   division <- open_curtain("division", conn = conn, tablename = "test")
 
-  # convert arbitrary sql into `tbl_overture`
+  # convert arbitrary sql into `overture_call`
   division2 <- tbl(conn, "test")
   division2 <- as_overture(division2)
 
-  expect_true(class(counties)[[1]] == "tbl_overture")
+  expect_true(class(counties)[[1]] == "overture_call")
   expect_error(as_overture(mtcars), "Input must be a tbl_sql object")
 
   DBI::dbDisconnect(conn, shutdown = TRUE)
