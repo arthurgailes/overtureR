@@ -71,7 +71,7 @@ open_curtain <- function(
   DBI::dbExecute(conn, query)
 
   dataset <- dplyr::tbl(conn, tablename)
-  dataset <- as_overture(dataset)
+  dataset <- as_overture(dataset, type = type, theme = theme)
 
   if (isTRUE(as_sf)) dataset <- collect(dataset)
 

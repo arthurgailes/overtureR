@@ -30,7 +30,7 @@
 #' buildings_overture <- as_overture(buildings)
 #' class(buildings_overture)  # Should include "tbl_overture"
 
-as_overture <- function(x) {
+as_overture <- function(x, type, theme = get_theme_from_type(type)) {
   if (!inherits(x, "tbl_sql")) stop("Input must be a tbl_sql object")
 
   if (!inherits(x, "tbl_overture")) class(x) <- c("tbl_overture", class(x))
