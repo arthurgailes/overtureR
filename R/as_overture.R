@@ -33,7 +33,10 @@
 as_overture <- function(x, type, theme = get_theme_from_type(type)) {
   if (!inherits(x, "tbl_sql")) stop("Input must be a tbl_sql object")
 
-  if (!inherits(x, "tbl_overture")) class(x) <- c("tbl_overture", class(x))
+  if (!inherits(x, "tbl_overture")) {
+    class(x) <- c("tbl_overture", class(x))
+    attr(x, "overture_playbill") <- c(type = type, theme = theme)
+  }
 
   return(x)
 }

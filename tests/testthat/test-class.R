@@ -14,6 +14,11 @@ test_that("Counties download works as expected", {
     )
 
   expect_true(class(counties)[[1]] == "tbl_overture")
+  playbill <- attr(counties, "overture_playbill")
+
+  expect_equal(playbill[["type"]], "division_area")
+  expect_equal(playbill[["theme"]], "divisions")
+
   expect_true("tbl_lazy" %in% class(counties))
 
   counties_sf <- collect(counties)

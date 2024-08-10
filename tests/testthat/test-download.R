@@ -9,28 +9,27 @@ test_that("downloading works by directory", {
   sql <- dbplyr::sql_render(counties)
 
   dir <- tempdir()
+
+  playbill <- attr(counties, "overture_playbill")
   timer <- bench::mark(
     copy = DBI::dbExecute(con, glue::glue(
-      "COPY  ({sql}) TO '{dir}' (FORMAT PARQUET, PARTITION_BY (theme, type), OVERWRITE_OR_IGNORE)")
+      "COPY  ({sql}) TO '{dir}'
+      (FORMAT PARQUET, PARTITION_BY (theme, type), OVERWRITE_OR_IGNORE)")
     ),
-    load = DBI::dbGetQuery(con, sql),
     exec = DBI::dbExecute(con, sql),
     check = FALSE
   )
 
-  timer
+  type <- playbill[["type"]]
+  theme <- playbill[["theme"]]
 
-  expect_true(class(counties)[[1]] == "tbl_overture")
-  expect_true("tbl_lazy" %in% class(counties))
 
-  counties_sf <- collect(counties)
+  sizes <- file.size(list.files(dir, ".parquet", recursive = TRUE))
 
-  expect_false("tbl_overture" %in% class(counties_sf))
-  expect_true("sf" %in% class(counties_sf))
-  expect_equal(pull(count(counties), n), 67)
 
-  expect_true(all(grepl("County", counties_sf$primary)))
-  expect_true(all(sf::st_is_valid(counties_sf$geometry)))
-  expect_true(sf::st_crs(counties_sf$geometry) == sf::st_crs(4326))
+
+  expect_lt(timer$mem_alloc, 1024^2)
+
+  unlink(dir)
 
 })
