@@ -48,6 +48,7 @@ download_overture <- function(
   }
 
   sql <- dbplyr::sql_render(curtain_call)
+  print(sql)
 
   # overwrite = ifelse(isTRUE(overwrite), "OVERWRITE_OR_IGNORE", "")
 
@@ -68,3 +69,5 @@ download_overture <- function(
 
   return(new_tbl)
 }
+
+# TODO: add opts to function args

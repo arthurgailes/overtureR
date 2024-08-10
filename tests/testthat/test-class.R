@@ -4,7 +4,7 @@ test_that("Counties download works as expected", {
 
   counties <- open_curtain("division_area", bbox = NULL) %>%
     # in R, filtering on variables must come before removing them via select
-    filter(subtype == "county" & region == "US-PA") %>%
+    filter(subtype == "county" & country == "US") %>%
     transmute(
       id,
       division_id,
@@ -13,6 +13,7 @@ test_that("Counties download works as expected", {
       geometry
     )
 
+  counties_collected <- collect(counties)
   expect_true(class(counties)[[1]] == "overture_call")
   playbill <- attr(counties, "overture_playbill")
 
