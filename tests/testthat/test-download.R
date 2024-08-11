@@ -1,39 +1,60 @@
 test_that("downloading works by directory", {
   library(dplyr, warn.conflicts = FALSE)
 
-  con <- stage_conn()
+  con <- DBI::dbConnect(duckdb::duckdb())
   counties <- open_curtain("division_area", bbox = NULL) %>%
     # in R, filtering on variables must come before removing them via select
-    filter(subtype == "county" & region == "US-PA")
+    filter(subtype == "county" & country == "US")
 
 
   dir <- tempdir()
 
-
   timer <- bench::mark(
-    method = download_overture(dir, counties, conn = con),
+    exec = DBI::dbExecute(con, dbplyr::sql_render(counties)),
     copy = {
-      sql <- dbplyr::sql_render(counties)
+      # test some pieces of the function for performance
       playbill <- attr(counties, "overture_playbill")
 
       type <- playbill[["type"]]
       theme <- playbill[["theme"]]
+
+      cols <- colnames(curtain_call)
+      county_copy <- dplyr::mutate(counties, geometry = ST_AsWKB(geometry))
+
+      sql <- dbplyr::sql_render(county_copy)
       DBI::dbExecute(con, glue::glue(
       "COPY  ({sql}) TO '{dir}'
       (FORMAT PARQUET, PARTITION_BY (theme, type), OVERWRITE_OR_IGNORE)")
     )},
-    # exec = DBI::dbExecute(con, sql),
+    func = {
+      counties_dl <- download_overture(dir, counties, conn = con)
+    },
     check = FALSE
   )
-  timer
-  View(timer$memory[[1]])
-  View(timer$memory[[2]])
+  timer$expression
 
-  sizes <- file.size(list.files(dir, ".parquet", recursive = TRUE))
+  exec_mem <- filter(timer, as.character(expression) == "exec")$mem_alloc
+  func_mem <- filter(timer, as.character(expression) == "func")$mem_alloc
+  # copy_mem <- filter(timer, expression == "copy") |> pull(mem_alloc)
 
-  expect_lt(timer$mem_alloc, 1024^2)
+  # check that function uses < 10% of actual memory. TODO: make stricter (1%?)
+  expect_lt(func_mem, exec_mem / 10)
+
+  materialize_timer <- bench::mark(
+    default = {collect(counties)},
+    dl = {collect(counties_dl)},
+    check = FALSE
+  )
+
+  materialize_timer
+  m_def <- filter(materialize_timer, as.character(expression) == "default")$median
+  m_dl <- filter(materialize_timer, as.character(expression) == "dl")$median
+
+  expect_lt(m_dl, m_def / 50)
+
+  expect_equal(m_def, m_dl)
 
   unlink(dir)
-
+  DBI::dbDisconnect(con)
 })
 

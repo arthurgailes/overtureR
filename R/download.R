@@ -47,10 +47,12 @@ download_overture <- function(
     }
   }
 
-  sql <- dbplyr::sql_render(curtain_call)
-  print(sql)
+  # recast geometry to wkb
+  if("geometry" %in% cols) {
+    curtain_call <- dplyr::mutate(curtain_call, geometry = ST_AsWKB(geometry))
+  }
 
-  # overwrite = ifelse(isTRUE(overwrite), "OVERWRITE_OR_IGNORE", "")
+  sql <- dbplyr::sql_render(curtain_call)
 
   query <- glue::glue(
     "COPY ({sql}) TO '{output_dir}' (

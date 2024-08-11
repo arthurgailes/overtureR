@@ -56,6 +56,9 @@ open_curtain <- function(
 
   url <- glue::glue("{base_url}/theme={theme}/type={type}/*")
   # TODO: improve select, handle geometry internally
+
+  # parquet_opts <- modifyList(default_read_opts, opts)
+
   interior_query <- glue::glue(
     "SELECT * REPLACE (ST_GeomFromWKB(geometry) as geometry)
      FROM read_parquet('{url}', hive_partitioning=true, union_by_name = {union_by_name})"
@@ -78,6 +81,11 @@ open_curtain <- function(
   return(dataset)
 }
 
+default_read_opts <- list(
+  filename = FALSE,
+  hive_partitioning = TRUE,
+  union_by_name = FALSE
+)
 
 # mapping specific overture dataset types to their corresponding thematic categories.
 get_theme_from_type <- function(type) {
