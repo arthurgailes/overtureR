@@ -2,7 +2,7 @@ test_that("downloading works by directory", {
   library(dplyr, warn.conflicts = FALSE)
 
   con <- DBI::dbConnect(duckdb::duckdb())
-  counties <- open_curtain("division_area", bbox = NULL) %>%
+  counties <- open_curtain("division_area", bbox = NULL, conn = con) %>%
     # in R, filtering on variables must come before removing them via select
     filter(subtype == "county" & country == "US")
 
@@ -18,7 +18,7 @@ test_that("downloading works by directory", {
       type <- playbill[["type"]]
       theme <- playbill[["theme"]]
 
-      cols <- colnames(curtain_call)
+      cols <- colnames(counties)
       county_copy <- dplyr::mutate(counties, geometry = ST_AsWKB(geometry))
 
       sql <- dbplyr::sql_render(county_copy)
@@ -31,7 +31,6 @@ test_that("downloading works by directory", {
     },
     check = FALSE
   )
-  timer$expression
 
   exec_mem <- filter(timer, as.character(expression) == "exec")$mem_alloc
   func_mem <- filter(timer, as.character(expression) == "func")$mem_alloc
@@ -40,19 +39,21 @@ test_that("downloading works by directory", {
   # check that function uses < 10% of actual memory. TODO: make stricter (1%?)
   expect_lt(func_mem, exec_mem / 10)
 
-  materialize_timer <- bench::mark(
-    default = {collect(counties)},
-    dl = {collect(counties_dl)},
-    check = FALSE
+  collect_timer <- bench::mark(
+    default = {default <- collect(counties)},
+    dl = {dl <- collect(counties_dl)},
+    check = FALSE, max_iterations = 5
   )
 
-  materialize_timer
-  m_def <- filter(materialize_timer, as.character(expression) == "default")$median
-  m_dl <- filter(materialize_timer, as.character(expression) == "dl")$median
+  m_def <- filter(collect_timer, as.character(expression) == "default")$median
+  m_dl <- filter(collect_timer, as.character(expression) == "dl")$median
 
   expect_lt(m_dl, m_def / 50)
 
-  expect_equal(m_def, m_dl)
+  expect_equal(colnames(default), colnames(dl))
+  expect_equal(dim(default), dim(dl))
+  expect_equal(class(default), class(dl))
+  expect_equal(st_area(default), st_area(dl))
 
   unlink(dir)
   DBI::dbDisconnect(con)
