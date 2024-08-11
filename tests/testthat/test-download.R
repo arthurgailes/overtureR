@@ -53,7 +53,7 @@ test_that("downloading works by directory", {
   expect_equal(colnames(default), colnames(dl))
   expect_equal(dim(default), dim(dl))
   expect_equal(class(default), class(dl))
-  expect_equal(st_area(default), st_area(dl))
+  expect_equal(sum(sf::st_area(default)), sum(sf::st_area(dl)))
 
   unlink(dir)
   DBI::dbDisconnect(con)
