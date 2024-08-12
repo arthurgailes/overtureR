@@ -103,6 +103,6 @@ process_write_opts <- function(opts, overwrite){
 
 #' @rdname record_overture
 #' @export
-snapshot_overture <- function(output_dir = tempdir(), overwrite = TRUE, ...) {
+snapshot_overture <- function(..., output_dir = tempdir(), overwrite = TRUE) {
   record_overture(output_dir, overwrite = overwrite, ...)
 }
