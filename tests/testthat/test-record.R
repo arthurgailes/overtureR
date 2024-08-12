@@ -48,7 +48,7 @@ test_that("record_overture handles NULL curtain_call correctly", {
   dir <- tempdir()
 
   # Test with NULL curtain_call
-  broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
+
   result <- record_overture(dir, type = "place", spatial_filter = broadway, overwrite = TRUE)
 
   expect_s3_class(result, "overture_call")
@@ -61,7 +61,7 @@ test_that("record_overture respects overwrite parameter", {
   skip_if_offline()
 
   dir <- tempdir()
-  broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
+
 
   # First write
   record_overture(dir, type = "place", spatial_filter = broadway)
@@ -79,7 +79,7 @@ test_that("record_overture handles custom write_opts", {
   skip_if_offline()
 
   dir <- tempdir()
-  broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
+
 
   expect_error(record_overture(dir, type = "place", write_opts = "OVERWRITE"))
   expect_error(record_overture(dir, type = "place", write_opts = "PARTITION_BY(thing)"))
@@ -98,7 +98,6 @@ test_that("record_overture handles custom write_opts", {
 test_that("snapshot_overture works correctly", {
   skip_if_offline()
 
-  broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
   result <- snapshot_overture(type = "place", spatial_filter = broadway)
 
   expect_s3_class(result, "overture_call")
