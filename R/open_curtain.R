@@ -35,7 +35,7 @@ open_curtain <- function(
     as_sf = FALSE,
     mode = "view",
     tablename = NULL,
-    union_by_name = FALSE,
+    read_opts = list(),
     base_url = "s3://overturemaps-us-west-2/release/2024-07-22.0",
     bbox = NULL) {
   # use cached connection if no conn provided
@@ -57,11 +57,11 @@ open_curtain <- function(
   url <- glue::glue("{base_url}/theme={theme}/type={type}/*")
   # TODO: improve select, handle geometry internally
 
-  # parquet_opts <- modifyList(default_read_opts, opts)
+  read_opts <- process_parquet_read_opts(read_opts)
 
   interior_query <- glue::glue(
     "SELECT * REPLACE (ST_GeomFromWKB(geometry) as geometry)
-     FROM read_parquet('{url}', hive_partitioning=true, union_by_name = {union_by_name})"
+     FROM read_parquet('{url}', {read_opts})"
   )
 
   query_suffix <- glue::glue("WHERE 1=1 {bbox} {spatial_query} ")
@@ -81,11 +81,21 @@ open_curtain <- function(
   return(dataset)
 }
 
-default_read_opts <- list(
-  filename = FALSE,
-  hive_partitioning = TRUE,
-  union_by_name = FALSE
-)
+process_parquet_read_opts <- function(opts){
+  default_read_opts <- list(
+    filename = FALSE,
+    hive_partitioning = TRUE,
+    union_by_name = FALSE
+  )
+
+  parquet_opts <- modifyList(default_read_opts, opts)
+
+  parquet_opts_str <- paste(
+    names(parquet_opts), parquet_opts, sep = "=", collapse = ", "
+  )
+
+  return(parquet_opts_str)
+}
 
 # mapping specific overture dataset types to their corresponding thematic categories.
 get_theme_from_type <- function(type) {

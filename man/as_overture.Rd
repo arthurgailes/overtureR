@@ -4,7 +4,7 @@
 \alias{as_overture}
 \title{Convert a tbl_sql object to a overture_call object}
 \usage{
-as_overture(x)
+as_overture(x, type, theme = get_theme_from_type(type))
 }
 \arguments{
 \item{x}{A tbl_sql object representing an Overture Maps dataset.}
@@ -14,19 +14,12 @@ A tbl_sql object with the additional class overture_call and
 attributes overture_type and overture_theme.
 }
 \description{
-This function adds the overture_call class to a tbl_sql object and sets
-attributes specific to Overture Maps data. It is primarily used internally
-by the open_curtain() function but can also be used directly on tbl_sql
-objects representing Overture Maps data.
+This function adds the overture_call class to a tbl_sql object.  It is
+primarily used internally#' by the open_curtain() function but can also be
+used directly on tbl_sql #' objects representing Overture Maps data.
 }
 \details{
-The function adds the overture_call class as the first class of the object,
-allowing for potential method dispatch specific to Overture Maps data.
-It also adds two attributes:
-\itemize{
-\item overture_type: The type of Overture Maps data (e.g., "building", "place")
-\item overture_theme: The theme of the Overture Maps data (e.g., "buildings", "places")
-}
+The function adds the overture_call class as the first class of the object
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}

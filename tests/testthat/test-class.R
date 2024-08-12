@@ -4,7 +4,7 @@ test_that("Counties download works as expected", {
 
   counties <- open_curtain("division_area", bbox = NULL) %>%
     # in R, filtering on variables must come before removing them via select
-    filter(subtype == "county" & country == "US") %>%
+    filter(subtype == "county" & region == "US-PA") %>%
     transmute(
       id,
       division_id,
@@ -39,7 +39,7 @@ test_that("class assignment works", {
 
   # convert arbitrary sql into `overture_call`
   division2 <- tbl(conn, "test")
-  division2 <- as_overture(division2)
+  division2 <- as_overture(division2, "division")
 
   expect_true(class(counties)[[1]] == "overture_call")
   expect_error(as_overture(mtcars), "Input must be a tbl_sql object")

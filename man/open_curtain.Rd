@@ -12,7 +12,7 @@ open_curtain(
   as_sf = FALSE,
   mode = "view",
   tablename = NULL,
-  union_by_name = FALSE,
+  read_opts = list(),
   base_url = "s3://overturemaps-us-west-2/release/2024-07-22.0",
   bbox = NULL
 )
@@ -34,14 +34,14 @@ dataset into memory.}
 
 \item{tablename}{The name of the table to create in the database.}
 
-\item{union_by_name}{If TRUE, will execute a UNION by
-column name across all files (NOTE: this can add considerably to
-the initial execution time)}
-
 \item{base_url}{Allows user to download data from a different mirror, such
 as a beta or alpha release.}
 
 \item{bbox}{alias for \code{spatial_filter}. may be deprecated in the future.}
+
+\item{union_by_name}{If TRUE, will execute a UNION by
+column name across all files (NOTE: this can add considerably to
+the initial execution time)}
 }
 \value{
 An dbplyr lazy dataframe, or an sf dataframe if as_sf is TRUE

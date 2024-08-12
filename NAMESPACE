@@ -2,6 +2,7 @@
 
 S3method(collect,overture_call)
 export(as_overture)
+export(download_overture)
 export(open_curtain)
 export(sf_as_dbplyr)
 export(stage_conn)

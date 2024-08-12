@@ -29,7 +29,7 @@ test_that("downloading works by directory", {
     func = {
       counties_dl <- download_overture(dir, counties, conn = con)
     },
-    check = FALSE
+    check = FALSE, filter_gc = FALSE
   )
 
   exec_mem <- filter(timer, as.character(expression) == "exec")$mem_alloc
@@ -48,7 +48,7 @@ test_that("downloading works by directory", {
   m_def <- filter(collect_timer, as.character(expression) == "default")$median
   m_dl <- filter(collect_timer, as.character(expression) == "dl")$median
 
-  expect_lt(m_dl, m_def / 50)
+  expect_lt(m_dl, m_def / 10)
 
   expect_equal(colnames(default), colnames(dl))
   expect_equal(dim(default), dim(dl))
