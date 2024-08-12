@@ -1,4 +1,5 @@
 test_that("downloading works by directory", {
+  skip_if_offline()
   library(dplyr, warn.conflicts = FALSE)
 
   con <- DBI::dbConnect(duckdb::duckdb())
@@ -27,7 +28,7 @@ test_that("downloading works by directory", {
     #   (FORMAT PARQUET, PARTITION_BY (theme, type), OVERWRITE_OR_IGNORE)")
     # )},
     func = {
-      counties_dl <- download_overture(dir, counties, conn = con, overwrite = TRUE)
+      counties_dl <- record_overture(dir, counties, conn = con, overwrite = TRUE)
     },
     check = FALSE, filter_gc = FALSE
   )

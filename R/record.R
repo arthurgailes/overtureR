@@ -1,7 +1,8 @@
 #' Download Overture Data to Local Directory
 #'
 #' This function downloads Overture Maps data to a local directory, maintaining
-#' the same partition structure as in S3.
+#' the same partition structure as in S3. `snapshot_overture` defaults
+#' 'output_dir' to `tempdir()`
 #'
 #' @param output_dir The directory where the data will be saved.
 #' @param curtain_call A overture_call object or NULL. If NULL,
@@ -14,7 +15,7 @@
 #'
 #' @return Invisibly returns NULL.
 #' @export
-download_overture <- function(
+record_overture <- function(
   output_dir,
   curtain_call = NULL,
   overwrite = FALSE,
@@ -91,3 +92,6 @@ process_write_opts <- function(opts, overwrite){
 
   return(opts_str)
 }
+
+#' @rdname record_overture
+snapshot_overture <- function(...) record_overture(output_dir = tempdir())
