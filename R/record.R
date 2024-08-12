@@ -1,19 +1,25 @@
-#' Download Overture Data to Local Directory
+#' Download Overture Maps Data to Local Directory
 #'
 #' This function downloads Overture Maps data to a local directory, maintaining
 #' the same partition structure as in S3. `snapshot_overture` defaults
-#' 'output_dir' to `tempdir()`
+#' 'output_dir' to `tempdir()` and overwrite to TRUE.
 #'
 #' @param output_dir The directory where the data will be saved.
 #' @param curtain_call A overture_call object or NULL. If NULL,
 #' 'type' must be provided, and `open_curtain` will open a connection.
-#' @param overwrite Logical, if FALSE, existing directories will not be
+#' @param overwrite Logical, if FALSE (default), existing directories will not be
 #' overwritten.
-#' @param write_opts a character vector passed to DuckDB's copy See
-#' \href{https://duckdb.org/docs/data/partitioning/partitioned_writes}{DuckDB documentation on partitioned writes}
+#' @param write_opts a character vector passed to DuckDB's COPY command.
+#'
+#' @seealso \href{https://duckdb.org/docs/data/partitioning/partitioned_writes}{DuckDB documentation on partitioned writes}
 #' @inheritDotParams open_curtain
 #'
-#' @return Invisibly returns NULL.
+#' @examplesIf interactive()
+#' broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
+#' buildings <- open_curtain("building", spatial_filter = bbox)
+#' local_buildings <- record_overture(tempdir(), buildings, overwrite = TRUE)
+#'
+#' @return An 'overture_call' for the downloaded data
 #' @export
 record_overture <- function(
   output_dir,
@@ -24,6 +30,10 @@ record_overture <- function(
 ) {
   dots <- list(...)
   conn <- dots[["conn"]]
+
+  if(isFALSE(overwrite) & length(list.files(output_dir, include.dirs = TRUE))){
+    stop("'output_dir' is not empty; 'overwrite' must be set to TRUE")
+  }
 
   if (is.null(conn)) conn <- stage_conn()
   config_extensions(conn)
@@ -76,17 +86,15 @@ record_overture <- function(
   return(new_tbl)
 }
 
-
 process_write_opts <- function(opts, overwrite){
 
   has_opt <- function(str, x) isTRUE(any(grepl(str, x, ignore.case = TRUE)))
+  if(has_opt("overwrite", opts)) stop("use 'overwrite' paramater; not implemented as write_opts")
+  if(has_opt("PARTITION_BY", opts)) stop("custom partitions are not implemented")
 
-  default_partition <- "PARTITION_BY (theme, type)"
+  opts <- c(opts, "PARTITION_BY (theme, type)")
 
-  overwrite <- if(isTRUE(overwrite)) "OVERWRITE_OR_IGNORE" else NULL
-
-  if(!has_opt("overwrite", opts)) opts <- c(opts, overwrite)
-  if(!has_opt("PARTITION_BY", opts)) opts <- c(opts, default_partition)
+  if(isTRUE(overwrite)) opts <- c(opts, "OVERWRITE_OR_IGNORE")
 
   opts_str <- paste(opts, collapse = ", ")
 
@@ -94,4 +102,7 @@ process_write_opts <- function(opts, overwrite){
 }
 
 #' @rdname record_overture
-snapshot_overture <- function(...) record_overture(output_dir = tempdir())
+#' @export
+snapshot_overture <- function(output_dir = tempdir(), overwrite = TRUE, ...) {
+  record_overture(output_dir, overwrite = overwrite, ...)
+}

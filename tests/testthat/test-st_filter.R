@@ -1,5 +1,4 @@
 test_that("focus_spotlight handles all options correctly", {
-  library(sf)
 
   con <- duckdb::dbConnect(duckdb::duckdb())
   # Mock functions for testing

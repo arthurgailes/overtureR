@@ -97,16 +97,12 @@ process_parquet_read_opts <- function(opts){
 }
 
 focus_spotlight <- function(conn, spatial_filter) {
-  if (is.null(spatial_filter)) {
-    return("")
-  }
+  if (is.null(spatial_filter)) return("")
 
   # class test. Put in own function?
   spatial_class <- audition_data(spatial_filter)
 
-  if (grepl("bbox", spatial_class)) {
-    return("")
-  } # processed as bbox directly
+  if (grepl("bbox", spatial_class)) return("") # processed as bbox directly
 
   # for sf/sfc, upload geom only to duckdb
   if (spatial_class == "sf") {
