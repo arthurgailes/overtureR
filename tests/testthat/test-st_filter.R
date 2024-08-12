@@ -48,7 +48,6 @@ test_that("focus_spotlight handles all options correctly", {
 
 test_that("spatial_filter works correctly in open_curtain", {
   skip_if_offline()
-  library(sf)
   con <- stage_conn()
 
   # get Mecklenburg county from sf object
@@ -58,18 +57,18 @@ test_that("spatial_filter works correctly in open_curtain", {
   }
 
   meck <- subset(
-    st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE),
+    sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE),
     NAME == "Mecklenburg"
   )
-  meck <- st_transform(meck, 4326)
+  meck <- sf::st_transform(meck, 4326)
 
   meck_hood_sf <- collect(return_hood(meck))
-  expect_true(all(unlist(st_intersects(meck_hood_sf, meck$geometry))))
+  expect_true(all(unlist(sf::st_intersects(meck_hood_sf, meck$geometry))))
 
   meck_dbplyr <- sf_as_dbplyr(con, "meck", meck, overwrite = TRUE)
 
   meck_dbplyr_sf <- collect(return_hood(meck_dbplyr))
-  expect_true(all(unlist(st_intersects(meck_dbplyr_sf, meck$geometry))))
+  expect_true(all(unlist(sf::st_intersects(meck_dbplyr_sf, meck$geometry))))
   expect_equal(meck_dbplyr_sf, meck_hood_sf)
 
   # test with tablename
@@ -77,10 +76,10 @@ test_that("spatial_filter works correctly in open_curtain", {
     "CREATE OR REPLACE VIEW meck_test AS ({dbplyr::sql_render(meck_dbplyr)})"
   ))
   meck_tablename_sf <- collect(return_hood("meck_test"))
-  expect_true(all(unlist(st_intersects(meck_dbplyr_sf, meck$geometry))))
+  expect_true(all(unlist(sf::st_intersects(meck_dbplyr_sf, meck$geometry))))
   expect_equal(meck_tablename_sf, meck_hood_sf)
 
-  meck_bbox <- st_bbox(meck)
+  meck_bbox <- sf::st_bbox(meck)
   meck_hood_bbox <- collect(return_hood(meck_bbox))
   expect_gt(nrow(meck_hood_bbox), nrow(meck_hood_sf))
 })

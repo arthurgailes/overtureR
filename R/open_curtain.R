@@ -14,9 +14,8 @@
 #' @param mode Either "view" (default) or "table". If "table", will download the
 #' dataset into memory.
 #' @param tablename The name of the table to create in the database.
-#' @param union_by_name If TRUE, will execute a UNION by
-#'  column name across all files (NOTE: this can add considerably to
-#'  the initial execution time)
+#' @param read_opts A named list of key-value pairs passed to
+#' \href{https://duckdb.org/docs/data/parquet/overview.html#parameters}{DuckDB's read_parquet}
 #' @param base_url Allows user to download data from a different mirror, such
 #' as a beta or alpha release.
 #' @param bbox alias for `spatial_filter`. may be deprecated in the future.

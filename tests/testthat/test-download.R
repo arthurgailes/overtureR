@@ -11,23 +11,23 @@ test_that("downloading works by directory", {
 
   timer <- bench::mark(
     exec = DBI::dbExecute(con, dbplyr::sql_render(counties)),
-    copy = {
-      # test some pieces of the function for performance
-      playbill <- attr(counties, "overture_playbill")
-
-      type <- playbill[["type"]]
-      theme <- playbill[["theme"]]
-
-      cols <- colnames(counties)
-      county_copy <- dplyr::mutate(counties, geometry = ST_AsWKB(geometry))
-
-      sql <- dbplyr::sql_render(county_copy)
-      DBI::dbExecute(con, glue::glue(
-      "COPY  ({sql}) TO '{dir}'
-      (FORMAT PARQUET, PARTITION_BY (theme, type), OVERWRITE_OR_IGNORE)")
-    )},
+    # copy = {
+    #   # test some pieces of the function for performance
+    #   playbill <- attr(counties, "overture_playbill")
+    #
+    #   type <- playbill[["type"]]
+    #   theme <- playbill[["theme"]]
+    #
+    #   cols <- colnames(counties)
+    #   county_copy <- dplyr::mutate(counties, geometry = ST_AsWKB(geometry))
+    #
+    #   sql <- dbplyr::sql_render(county_copy)
+    #   DBI::dbExecute(con, glue::glue(
+    #   "COPY  ({sql}) TO '{dir}'
+    #   (FORMAT PARQUET, PARTITION_BY (theme, type), OVERWRITE_OR_IGNORE)")
+    # )},
     func = {
-      counties_dl <- download_overture(dir, counties, conn = con)
+      counties_dl <- download_overture(dir, counties, conn = con, overwrite = TRUE)
     },
     check = FALSE, filter_gc = FALSE
   )
@@ -42,7 +42,7 @@ test_that("downloading works by directory", {
   collect_timer <- bench::mark(
     default = {default <- collect(counties)},
     dl = {dl <- collect(counties_dl)},
-    check = FALSE, max_iterations = 5
+    check = FALSE, max_iterations = 5, filter_gc = FALSE
   )
 
   m_def <- filter(collect_timer, as.character(expression) == "default")$median

@@ -34,14 +34,13 @@ dataset into memory.}
 
 \item{tablename}{The name of the table to create in the database.}
 
+\item{read_opts}{A named list of key-value pairs passed to
+\href{https://duckdb.org/docs/data/parquet/overview.html#parameters}{DuckDB's read_parquet}}
+
 \item{base_url}{Allows user to download data from a different mirror, such
 as a beta or alpha release.}
 
 \item{bbox}{alias for \code{spatial_filter}. may be deprecated in the future.}
-
-\item{union_by_name}{If TRUE, will execute a UNION by
-column name across all files (NOTE: this can add considerably to
-the initial execution time)}
 }
 \value{
 An dbplyr lazy dataframe, or an sf dataframe if as_sf is TRUE

@@ -4,7 +4,13 @@
 \alias{download_overture}
 \title{Download Overture Data to Local Directory}
 \usage{
-download_overture(output_dir, curtain_call = NULL, overwrite = TRUE, ...)
+download_overture(
+  output_dir,
+  curtain_call = NULL,
+  overwrite = FALSE,
+  write_opts = NULL,
+  ...
+)
 }
 \arguments{
 \item{output_dir}{The directory where the data will be saved.}
@@ -14,6 +20,9 @@ download_overture(output_dir, curtain_call = NULL, overwrite = TRUE, ...)
 
 \item{overwrite}{Logical, if FALSE, existing directories will not be
 overwritten.}
+
+\item{write_opts}{a character vector passed to DuckDB's copy See
+\href{https://duckdb.org/docs/data/partitioning/partitioned_writes}{DuckDB documentation on partitioned writes}}
 
 \item{...}{
   Arguments passed on to \code{\link[=open_curtain]{open_curtain}}
@@ -27,6 +36,8 @@ Setting to "*" or \code{NULL} will read all types for a given theme.}
     \item{\code{mode}}{Either "view" (default) or "table". If "table", will download the
 dataset into memory.}
     \item{\code{tablename}}{The name of the table to create in the database.}
+    \item{\code{read_opts}}{A named list of key-value pairs passed to
+\href{https://duckdb.org/docs/data/parquet/overview.html#parameters}{DuckDB's read_parquet}}
     \item{\code{base_url}}{Allows user to download data from a different mirror, such
 as a beta or alpha release.}
     \item{\code{bbox}}{alias for \code{spatial_filter}. may be deprecated in the future.}

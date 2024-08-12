@@ -41,7 +41,7 @@ test_that("class assignment works", {
   division2 <- tbl(conn, "test")
   division2 <- as_overture(division2, "division")
 
-  expect_true(class(counties)[[1]] == "overture_call")
+  expect_true(class(division2)[[1]] == "overture_call")
   expect_error(as_overture(mtcars), "Input must be a tbl_sql object")
 
   DBI::dbDisconnect(conn, shutdown = TRUE)
