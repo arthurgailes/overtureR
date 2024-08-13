@@ -11,9 +11,10 @@
 #'
 #' @details
 #' The function adds the overture_call class as the first class of the object
-#' @export
 #'
 #' @examplesIf interactive()
+#' # The open_curtain() function already uses as_overture() internally,
+#' # but you can also use it directly:
 #' conn <- stage_conn()
 #' division <- open_curtain("division", tablename = "test")
 #'
@@ -24,12 +25,7 @@
 #' division2 <- as_overture(division2)
 #'
 #' exit_stage(conn)
-#'
-#' # The open_curtain() function already uses as_overture() internally,
-#' # but you can also use it directly:
-#' buildings_overture <- as_overture(buildings)
-#' class(buildings_overture)  # Should include "overture_call"
-
+#' @export
 as_overture <- function(x, type, theme = get_theme_from_type(type)) {
   if (!inherits(x, "tbl_sql")) stop("Input must be a tbl_sql object")
 

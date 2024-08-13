@@ -22,16 +22,15 @@
 #' @return An 'overture_call' for the downloaded data
 #' @export
 record_overture <- function(
-  output_dir,
-  curtain_call = NULL,
-  overwrite = FALSE,
-  write_opts = NULL,
-  ...
-) {
+    output_dir,
+    curtain_call = NULL,
+    overwrite = FALSE,
+    write_opts = NULL,
+    ...) {
   dots <- list(...)
   conn <- dots[["conn"]]
 
-  if(isFALSE(overwrite) & length(list.files(output_dir, include.dirs = TRUE))){
+  if (isFALSE(overwrite) & length(list.files(output_dir, include.dirs = TRUE))) {
     stop("'output_dir' is not empty; 'overwrite' must be set to TRUE")
   }
 
@@ -57,13 +56,13 @@ record_overture <- function(
 
   cols <- colnames(curtain_call)
   for (col in c("theme", "type")) {
-    if(!col %in% cols) {
+    if (!col %in% cols) {
       curtain_call <- dplyr::mutate(curtain_call, {{ col }} := get(col))
     }
   }
 
   # recast geometry to wkb
-  if("geometry" %in% cols) {
+  if ("geometry" %in% cols) {
     curtain_call <- dplyr::mutate(curtain_call, geometry = ST_AsWKB(geometry))
   }
 
@@ -86,15 +85,14 @@ record_overture <- function(
   return(new_tbl)
 }
 
-process_write_opts <- function(opts, overwrite){
-
+process_write_opts <- function(opts, overwrite) {
   has_opt <- function(str, x) isTRUE(any(grepl(str, x, ignore.case = TRUE)))
-  if(has_opt("overwrite", opts)) stop("use 'overwrite' paramater; not implemented as write_opts")
-  if(has_opt("PARTITION_BY", opts)) stop("custom partitions are not implemented")
+  if (has_opt("overwrite", opts)) stop("use 'overwrite' paramater; not implemented as write_opts")
+  if (has_opt("PARTITION_BY", opts)) stop("custom partitions are not implemented")
 
   opts <- c(opts, "PARTITION_BY (theme, type)")
 
-  if(isTRUE(overwrite)) opts <- c(opts, "OVERWRITE_OR_IGNORE")
+  if (isTRUE(overwrite)) opts <- c(opts, "OVERWRITE_OR_IGNORE")
 
   opts_str <- paste(opts, collapse = ", ")
 

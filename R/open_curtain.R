@@ -80,7 +80,7 @@ open_curtain <- function(
   return(dataset)
 }
 
-process_parquet_read_opts <- function(opts){
+process_parquet_read_opts <- function(opts) {
   default_read_opts <- list(
     filename = FALSE,
     hive_partitioning = TRUE,
@@ -90,19 +90,24 @@ process_parquet_read_opts <- function(opts){
   parquet_opts <- modifyList(default_read_opts, opts)
 
   parquet_opts_str <- paste(
-    names(parquet_opts), parquet_opts, sep = "=", collapse = ", "
+    names(parquet_opts), parquet_opts,
+    sep = "=", collapse = ", "
   )
 
   return(parquet_opts_str)
 }
 
 focus_spotlight <- function(conn, spatial_filter) {
-  if (is.null(spatial_filter)) return("")
+  if (is.null(spatial_filter)) {
+    return("")
+  }
 
   # class test. Put in own function?
   spatial_class <- audition_data(spatial_filter)
 
-  if (grepl("bbox", spatial_class)) return("") # processed as bbox directly
+  if (grepl("bbox", spatial_class)) {
+    return("")
+  } # processed as bbox directly
 
   # for sf/sfc, upload geom only to duckdb
   if (spatial_class == "sf") {

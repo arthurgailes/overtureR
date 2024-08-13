@@ -23,8 +23,12 @@ test_that("downloading works by directory", {
   expect_lt(func_mem, exec_mem / 10)
 
   collect_timer <- bench::mark(
-    default = {default <- dplyr::collect(counties)},
-    dl = {dl <- dplyr::collect(counties_dl)},
+    default = {
+      default <- dplyr::collect(counties)
+    },
+    dl = {
+      dl <- dplyr::collect(counties_dl)
+    },
     check = FALSE, max_iterations = 5, filter_gc = FALSE
   )
 

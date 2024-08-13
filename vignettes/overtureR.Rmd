@@ -14,12 +14,11 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   message = FALSE,
-  fig.width = 10, 
+  fig.width = 10,
   fig.height = 6,
   out.width = "100%",
   comment = "#>"
 )
-
 ```
 
 ```{r eval=FALSE}
@@ -48,22 +47,22 @@ Using overtureR, we can easily tap into this rich dataset. In this guide, we'll 
 
 ```{r reagan}
 # Washington, DC boundary
-dc <- open_curtain("division_area") |> 
-  filter(subtype == "region", region == "US-DC") |> 
+dc <- open_curtain("division_area") |>
+  filter(subtype == "region", region == "US-DC") |>
   collect()
 
 # adding a bounding box makes the query faster:
 dc_catchment <- st_geometry(dc) |>
   # 10 miles from DC
-  st_buffer(10 * 1609.34) |> 
+  st_buffer(10 * 1609.34) |>
   st_bbox()
 
-reagan_airport <- open_curtain("place", spatial_filter = dc_catchment) |> 
-    filter(
-      names$primary == "Ronald Reagan Washington National Airport",
-      categories$primary == "airport"
-    ) |> 
-    collect()
+reagan_airport <- open_curtain("place", spatial_filter = dc_catchment) |>
+  filter(
+    names$primary == "Ronald Reagan Washington National Airport",
+    categories$primary == "airport"
+  ) |>
+  collect()
 
 print(reagan_airport)
 ```
@@ -80,19 +79,19 @@ Afterwards, `collect_sf` brings the only the data need into memory. For more on 
 Now that we've set the stage with our starting point, let's spotlight our destination. In the next code block, we'll locate the Kennedy Center:
 
 ```{r reagan_plot}
-reagan_plot <- ggplot() + 
-  geom_sf(data = dc, fill = "purple", alpha = 0.05) + 
+reagan_plot <- ggplot() +
+  geom_sf(data = dc, fill = "purple", alpha = 0.05) +
   geom_sf(data = reagan_airport, color = "red", size = 4) +
   geom_sf_label(
     data = reagan_airport, nudge_y = 0.01, aes(label = names$primary)
   ) +
   theme_minimal() +
   theme(
-      axis.title = element_blank(),
-      axis.text = element_blank(),
-      axis.ticks = element_blank(),
-      panel.grid = element_blank()
-    )
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank()
+  )
 
 reagan_plot
 ```
@@ -103,12 +102,12 @@ To get to the theater, we'll need to know our transit options. The following cod
 
 ```{r kennedy}
 kennedy_center <- open_curtain("building", st_bbox(dc)) |>
-  filter(grepl("Kennedy Center", names$primary)) |> 
+  filter(grepl("Kennedy Center", names$primary)) |>
   collect()
 
-kennedy_plot <- reagan_plot + 
+kennedy_plot <- reagan_plot +
   geom_sf(data = kennedy_center, fill = "green") +
-  geom_sf_label(data = kennedy_center, nudge_y = 0.01, aes(label = names$primary)) 
+  geom_sf_label(data = kennedy_center, nudge_y = 0.01, aes(label = names$primary))
 kennedy_plot
 ```
 
@@ -118,20 +117,20 @@ For the grand finale, we'll create a map that displays all the elements we've ga
 
 ```{r metro}
 # filter town to areas that are within 1 mile of our two points
-kennedy_reagan_bbox <- bind_rows(kennedy_center, reagan_airport) |> 
-  st_bbox() |> 
-  st_as_sfc() |> 
-  st_buffer(1 * 1609.34) |> 
+kennedy_reagan_bbox <- bind_rows(kennedy_center, reagan_airport) |>
+  st_bbox() |>
+  st_as_sfc() |>
+  st_buffer(1 * 1609.34) |>
   st_bbox()
 
-dc_transit <- open_curtain("segment", kennedy_reagan_bbox) |> 
+dc_transit <- open_curtain("segment", kennedy_reagan_bbox) |>
   filter(
-    subtype == "rail", 
+    subtype == "rail",
     # filter to the Blue Line of the DC Metro
     grepl("Metro", names$primary),
     grepl("Blue", names$primary)
-  ) |> 
-  select(id, names, geometry) |> 
+  ) |>
+  select(id, names, geometry) |>
   collect()
 
 print(dc_transit)
@@ -140,14 +139,12 @@ print(dc_transit)
 This final step uses ggplot2 to create a map that displays the airport, the Kennedy Center, and the Metro Blue Line connecting them. This visualizes the route from our arrival point to our theatrical destination.
 
 ```{r kennedy_plot}
-
 kennedy_plot +
   geom_sf(data = dc_transit, color = "blue") +
   coord_sf(
     xlim = c(kennedy_reagan_bbox[["xmin"]], kennedy_reagan_bbox[["xmax"]]),
     ylim = c(kennedy_reagan_bbox[["ymin"]], kennedy_reagan_bbox[["ymax"]]),
   )
-
 ```
 
 

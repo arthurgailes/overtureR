@@ -19,7 +19,6 @@
 #' collect(lazy_tbl)
 #' @export
 collect.overture_call <- function(x, ..., geom_col = "geometry", crs = 4326) {
-
   has_geom <- geom_col %in% colnames(x)
 
   # DuckDB Geoemtry class conversion. TODO: test for internal geometry type?
@@ -30,7 +29,7 @@ collect.overture_call <- function(x, ..., geom_col = "geometry", crs = 4326) {
   # Call the parent method (dbplyr::collect.tbl_sql)
   result <- NextMethod(x, ...)
 
-  if(isTRUE(has_geom)) {
+  if (isTRUE(has_geom)) {
     result <- sf::st_as_sf(result, sf_column_name = geom_col, crs = crs)
   }
 
