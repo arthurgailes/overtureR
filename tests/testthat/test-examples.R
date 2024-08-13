@@ -52,7 +52,7 @@ test_that("snapshot_overture works", {
 test_that("sf_as_dbplyr example works", {
 
   con <- duckdb::dbConnect(duckdb::duckdb())
-  sf_obj <- sf::st_sf(a = 3, geometry = sf::st_sfst_sfc(st_point(1:2)))
+  sf_obj <- sf::st_sf(a = 3, geometry = sf::st_sfc(st_point(1:2)))
   sf_tbl <- sf::st_sf(con, "test", sf_obj)
 
   expect_s3_class(sf_tbl, "tbl_duckdb")

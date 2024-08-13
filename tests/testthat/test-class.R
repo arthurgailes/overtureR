@@ -1,11 +1,10 @@
 test_that("Counties download works as expected", {
   testthat::skip_if_offline()
-  library(dplyr, warn.conflicts = FALSE)
 
   counties <- open_curtain("division_area", bbox = NULL) %>%
     # in R, filtering on variables must come before removing them via select
-    filter(subtype == "county" & region == "US-PA") %>%
-    transmute(
+    dplyr::filter(subtype == "county" & region == "US-PA") %>%
+    dplyr::transmute(
       id,
       division_id,
       # STRUCT/MAP columns can be accessed as column[["subcolumn"]] in transmute
@@ -13,7 +12,7 @@ test_that("Counties download works as expected", {
       geometry
     )
 
-  counties_collected <- collect(counties)
+  counties_collected <- dplyr::collect(counties)
   expect_true(class(counties)[[1]] == "overture_call")
   playbill <- attr(counties, "overture_playbill")
 
@@ -22,7 +21,7 @@ test_that("Counties download works as expected", {
 
   expect_true("tbl_lazy" %in% class(counties))
 
-  counties_sf <- collect(counties)
+  counties_sf <- dplyr::collect(counties)
 
   expect_false("overture_call" %in% class(counties_sf))
   expect_true("sf" %in% class(counties_sf))
@@ -38,7 +37,7 @@ test_that("class assignment works", {
   division <- open_curtain("division", conn = conn, tablename = "test")
 
   # convert arbitrary sql into `overture_call`
-  division2 <- tbl(conn, "test")
+  division2 <- dplyr::tbl(conn, "test")
   division2 <- as_overture(division2, "division")
 
   expect_true(class(division2)[[1]] == "overture_call")
