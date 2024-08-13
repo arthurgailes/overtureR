@@ -13,7 +13,7 @@ deserves all credit for the implementation"><meta property="og:image" content="h
 
     <a class="navbar-brand me-2" href="../index.html">overtureR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,11 +21,8 @@ deserves all credit for the implementation"><meta property="og:image" content="h
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/mapping.html">Mapping with OvertureR</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/overtureR.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -53,14 +50,15 @@ deserves all credit for the implementation</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">open_curtain</span><span class="op">(</span></span>
 <span>  <span class="va">type</span>,</span>
-<span>  bbox <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  spatial_filter <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  theme <span class="op">=</span> <span class="fu">get_theme_from_type</span><span class="op">(</span><span class="va">type</span><span class="op">)</span>,</span>
 <span>  conn <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  as_sf <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  mode <span class="op">=</span> <span class="st">"view"</span>,</span>
-<span>  tablename <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">type</span><span class="op">)</span> <span class="op">|</span> <span class="va">type</span> <span class="op">==</span> <span class="st">"*"</span>, <span class="va">theme</span>, <span class="va">type</span><span class="op">)</span>,</span>
-<span>  union_by_name <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  base_url <span class="op">=</span> <span class="st">"s3://overturemaps-us-west-2/release/2024-07-22.0"</span></span>
+<span>  tablename <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  read_opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  base_url <span class="op">=</span> <span class="st">"s3://overturemaps-us-west-2/release/2024-07-22.0"</span>,</span>
+<span>  bbox <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -73,9 +71,8 @@ deserves all credit for the implementation</p>
 Setting to "*" or <code>NULL</code> will read all types for a given theme.</p></dd>
 
 
-<dt id="arg-bbox">bbox<a class="anchor" aria-label="anchor" href="#arg-bbox"></a></dt>
-<dd><p>Optional bounding box to filter the records, expected as a vector
-of four numbers (xmin, ymin, xmax, ymax). Set to NULL to omit from query</p></dd>
+<dt id="arg-spatial-filter">spatial_filter<a class="anchor" aria-label="anchor" href="#arg-spatial-filter"></a></dt>
+<dd><p>An object to spatially filter the result.</p></dd>
 
 
 <dt id="arg-theme">theme<a class="anchor" aria-label="anchor" href="#arg-theme"></a></dt>
@@ -99,15 +96,18 @@ dataset into memory.</p></dd>
 <dd><p>The name of the table to create in the database.</p></dd>
 
 
-<dt id="arg-union-by-name">union_by_name<a class="anchor" aria-label="anchor" href="#arg-union-by-name"></a></dt>
-<dd><p>If TRUE, will execute a UNION by
-column name across all files (NOTE: this can add considerably to
-the initial execution time)</p></dd>
+<dt id="arg-read-opts">read_opts<a class="anchor" aria-label="anchor" href="#arg-read-opts"></a></dt>
+<dd><p>A named list of key-value pairs passed to
+<a href="https://duckdb.org/docs/data/parquet/overview.html#parameters" class="external-link">DuckDB's read_parquet</a></p></dd>
 
 
 <dt id="arg-base-url">base_url<a class="anchor" aria-label="anchor" href="#arg-base-url"></a></dt>
 <dd><p>Allows user to download data from a different mirror, such
 as a beta or alpha release.</p></dd>
+
+
+<dt id="arg-bbox">bbox<a class="anchor" aria-label="anchor" href="#arg-bbox"></a></dt>
+<dd><p>alias for <code>spatial_filter</code>. may be deprecated in the future.</p></dd>
 
 </dl></div>
     <div class="section level2">

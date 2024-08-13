@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">overtureR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,13 +32,8 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="articles/overtureR.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/mapping.html">Mapping with OvertureR</a></li>
-  </ul>
-</li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -67,8 +62,19 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"overtureR"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># or, dev version</span></span>
 <span><span class="co"># devtools::install_github("arthurgailes/overtureR")</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="key-features">Key Features<a class="anchor" aria-label="anchor" href="#key-features"></a>
+</h2>
+<ul>
+<li>Query global <a href="https://overturemaps.org/" class="external-link">Overture Maps</a> data directly in R</li>
+<li>Conduct analysis on massive dataset without loading into memory using <a href="https://dbplyr.tidyverse.org/" class="external-link">dbplyr’s</a> lazy evaluation</li>
+<li>Seamless <code>dplyr</code> and <code>sf</code> integration</li>
+<li>Merge with your local <code>sf</code> data within <code>duckdb</code> or with <code>sf</code>
+</li>
+<li>Local downloading for offline use and perforamnce</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
@@ -85,16 +91,20 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html" class="external-link">transmute</a></span><span class="op">(</span></span>
 <span>    <span class="va">id</span>,</span>
 <span>    <span class="va">division_id</span>,</span>
-<span>    <span class="co"># STRUCT/MAP columns can be accessed as column[["subcolumn"]] in transmute</span></span>
-<span>    primary <span class="op">=</span> <span class="va">names</span><span class="op">[[</span><span class="st">"primary"</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>    primary <span class="op">=</span> <span class="va">names</span><span class="op">$</span><span class="va">primary</span>,</span>
 <span>    <span class="va">geometry</span></span>
-<span>  <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot the results</span></span>
-<span><span class="va">counties</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/collect_sf.html">collect_sf</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_sf</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>fill <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_measures.html" class="external-link">st_area</a></span><span class="op">(</span><span class="va">geometry</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">counties</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_measures.html" class="external-link">st_area</a></span><span class="op">(</span><span class="va">geometry</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, color <span class="op">=</span> <span class="st">"white"</span>, size <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">viridis</span><span class="fu">::</span><span class="fu">scale_fill_viridis</span><span class="op">(</span>option <span class="op">=</span> <span class="st">"plasma"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Pennsylvania Counties by Area"</span>,</span>
+<span>    caption <span class="op">=</span> <span class="st">"Data: Overture Maps"</span></span>
+<span>  <span class="op">)</span> </span></code></pre></div>
 <p><img src="reference/figures/README-counties-1.png" width="100%"></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/arthurgailes/overtureR" class="external-link">overtureR</a></span><span class="op">)</span></span>
@@ -104,11 +114,11 @@
 <span><span class="va">mountains</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/open_curtain.html">open_curtain</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"*"</span>, theme <span class="op">=</span> <span class="st">"places"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html" class="external-link">transmute</a></span><span class="op">(</span></span>
 <span>    <span class="va">id</span>,</span>
-<span>    primary_name <span class="op">=</span> <span class="va">names</span><span class="op">[[</span><span class="st">"primary"</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>    x <span class="op">=</span> <span class="va">bbox</span><span class="op">[[</span><span class="st">"xmin"</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>    y <span class="op">=</span> <span class="va">bbox</span><span class="op">[[</span><span class="st">"ymin"</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>    main_category <span class="op">=</span> <span class="va">categories</span><span class="op">[[</span><span class="st">"primary"</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>    primary_source <span class="op">=</span> <span class="va">sources</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="st">"dataset"</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>    primary_name <span class="op">=</span> <span class="va">names</span><span class="op">$</span><span class="va">primary</span>,</span>
+<span>    x <span class="op">=</span> <span class="va">bbox</span><span class="op">$</span><span class="va">xmin</span>,</span>
+<span>    y <span class="op">=</span> <span class="va">bbox</span><span class="op">$</span><span class="va">ymin</span>,</span>
+<span>    main_category <span class="op">=</span> <span class="va">categories</span><span class="op">$</span><span class="va">primary</span>,</span>
+<span>    primary_source <span class="op">=</span> <span class="va">sources</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">dataset</span>,</span>
 <span>    <span class="va">confidence</span>,</span>
 <span>    <span class="va">geometry</span> <span class="co"># currently no duckdb spatial implementation</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -125,22 +135,67 @@
 <span><span class="co">#&gt; 4 08f464e3a4d0… Nounou-East… -159.  22.1 mountain      meta                0.945</span></span>
 <span><span class="co">#&gt; 5 08f464e05514… Makaleha Mo… -159.  22.1 mountain      meta                0.965</span></span>
 <span><span class="co">#&gt; 6 08f464e03538… Makana       -160.  22.2 mountain      meta                0.938</span></span>
-<span><span class="co">#&gt; # ℹ 1 more variable: geometry &lt;list&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; # ℹ 1 more variable: geometry &lt;POINT [°]&gt;</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="downloading-data-locally">Downloading data locally<a class="anchor" aria-label="anchor" href="#downloading-data-locally"></a>
+</h2>
+<p>The record_overture function allows you to download Overture Maps data to a local directory, maintaining the same partition structure as in S3. This is useful for offline analysis or when you need to work with the data repeatedly. Here’s an example:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/arthurgailes/overtureR" class="external-link">overtureR</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sjmgarnier.github.io/viridis/" class="external-link">viridis</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.rayshader.com" class="external-link">rayshader</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Define a bounding box for New York City</span></span>
+<span><span class="va">broadway</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>xmin <span class="op">=</span> <span class="op">-</span><span class="fl">73.9901</span>, ymin <span class="op">=</span> <span class="fl">40.755488</span>, xmax <span class="op">=</span> <span class="op">-</span><span class="fl">73.98</span>, ymax <span class="op">=</span> <span class="fl">40.76206</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Download building data for NYC to a local directory</span></span>
+<span><span class="va">local_buildings</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/record_overture.html">record_overture</a></span><span class="op">(</span></span>
+<span>  output_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"building"</span>,</span>
+<span>  spatial_filter <span class="op">=</span> <span class="va">broadway</span>,</span>
+<span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># The downloaded data is returned as a `dbplyr` object, same as the original (but faster!)</span></span>
+<span><span class="va">broadway_buildings</span> <span class="op">&lt;-</span> <span class="va">local_buildings</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">broadway_buildings</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">height</span><span class="op">)</span>, color <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_fill_viridis</span><span class="op">(</span>option <span class="op">=</span> <span class="st">"plasma"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># coord_sf(crs = st_crs(broadway_buildings)) +</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Building Heights in Broadway, NYC"</span>, </span>
+<span>    caption <span class="op">=</span> <span class="st">"Data: Overture Maps"</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Convert to 3D and render</span></span>
+<span><span class="fu">plot_gg</span><span class="op">(</span></span>
+<span>  <span class="va">p</span>,</span>
+<span>  multicore <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  width <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  height <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  scale <span class="op">=</span> <span class="fl">300</span>,</span>
+<span>  windowsize <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1400</span>, <span class="fl">866</span><span class="op">)</span>,</span>
+<span>  zoom <span class="op">=</span> <span class="fl">0.55</span>, </span>
+<span>  phi <span class="op">=</span> <span class="fl">30</span>, </span>
+<span>  theta <span class="op">=</span> <span class="op">-</span><span class="fl">30</span>,</span>
+<span>  shadow_intensity <span class="op">=</span> <span class="fl">0.7</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">render_snapshot</span><span class="op">(</span>clear <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-record-1.png" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="roadmap">Roadmap<a class="anchor" aria-label="anchor" href="#roadmap"></a>
 </h2>
 <ul>
-<li>Load all possible views into conn</li>
+<li>Read pmtiles</li>
 <li>Add beta/alpha datasets</li>
-<li>Install and load duckdb spatial</li>
-<li>Allow mirror/local reads via base_url</li>
-<li>Remove duckdbfs dependency</li>
-<li>Add mapping vignettes</li>
-<li>Use pmtiles</li>
-<li>Remove dbplyr dependencies</li>
-<li>Add function to write data (stage_write)</li>
-<li>Add function to preload all types as views</li>
+<li>Add mapping vignette</li>
+<li>Add performance vignette</li>
 </ul>
 </div>
 </div>
@@ -187,7 +242,7 @@
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#stable" class="external-link"><img src="https://img.shields.io/badge/lifecycle-stable-green.svg" alt="Lifecycle: experimental"></a></li>
 <li><a href="https://CRAN.R-project.org/package=overtureR" class="external-link"><img src="https://www.r-pkg.org/badges/version/overtureR" alt="CRAN status"></a></li>
 <li><a href="https://github.com/arthurgailes/overtureR/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/arthurgailes/overtureR/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://app.codecov.io/gh/arthurgailes/overtureR?branch=master" class="external-link"><img src="https://codecov.io/gh/arthurgailes/overtureR/branch/master/graph/badge.svg" alt="Codecov test coverage"></a></li>

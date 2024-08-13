@@ -2,8 +2,8 @@ pandoc: 3.1.11
 pkgdown: 2.1.0
 pkgdown_sha: ~
 articles:
-  mapping: mapping.html
-last_built: 2024-08-01T15:40Z
+  overtureR: overtureR.html
+last_built: 2024-08-13T21:26Z
 urls:
   reference: https://arthurgailes.github.io/overtureR/reference
   article: https://arthurgailes.github.io/overtureR/articles

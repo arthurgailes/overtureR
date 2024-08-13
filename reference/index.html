@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">overtureR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,11 +15,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/mapping.html">Mapping with OvertureR</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/overtureR.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -47,7 +44,13 @@
 
       <dl><dt>
 
-          <code><a href="collect_sf.html">collect_sf()</a></code>
+          <code><a href="as_overture.html">as_overture()</a></code>
+
+        </dt>
+        <dd>Convert a tbl_sql object to a overture_call object</dd>
+      </dl><dl><dt>
+
+          <code><a href="collect.overture_call.html">collect(<i>&lt;overture_call&gt;</i>)</a></code> <code><a href="collect.overture_call.html">collect_sf()</a></code>
 
         </dt>
         <dd>Convert dbplyr table to sf Object</dd>
@@ -63,6 +66,18 @@
 
         </dt>
         <dd>Retrieve (Spatially Filtered) Overture Datasets</dd>
+      </dl><dl><dt>
+
+          <code><a href="record_overture.html">record_overture()</a></code> <code><a href="record_overture.html">snapshot_overture()</a></code>
+
+        </dt>
+        <dd>Download Overture Maps Data to Local Directory</dd>
+      </dl><dl><dt>
+
+          <code><a href="sf_as_dbplyr.html">sf_as_dbplyr()</a></code>
+
+        </dt>
+        <dd>Registeran sf object as a DuckDB virtual table</dd>
       </dl><dl><dt>
 
           <code><a href="stage_conn.html">stage_conn()</a></code> <code><a href="stage_conn.html">strike_stage()</a></code>
