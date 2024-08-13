@@ -25,7 +25,7 @@ test_that("Counties download works as expected", {
 
   expect_false("overture_call" %in% class(counties_sf))
   expect_true("sf" %in% class(counties_sf))
-  expect_equal(pull(count(counties), n), 67)
+  expect_equal(dplyr::pull(dplyr::count(counties), n), 67)
 
   expect_true(all(grepl("County", counties_sf$primary)))
   expect_true(all(sf::st_is_valid(counties_sf$geometry)))

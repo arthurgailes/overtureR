@@ -8,7 +8,7 @@ sf_as_dbplyr(
   conn,
   name,
   sf_obj,
-  geom_only = isFALSE("sf" \%in\% class(sf_obj)),
+  geom_only = isFALSE(inherits(sf_obj, "sf")),
   overwrite = FALSE,
   ...
 )
@@ -49,6 +49,6 @@ con <- duckdb::dbConnect(duckdb::duckdb())
 sf_obj <- st_sf(a = 3, geometry = st_sfc(st_point(1:2)))
 sf_as_dbplyr(con, "test", sf_obj)
 
-dbDisconnect(con)
+DBI::dbDisconnect(con)
 
 }

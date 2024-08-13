@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 [![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+experimental](https://img.shields.io/badge/lifecycle-stable-green.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/overtureR)](https://CRAN.R-project.org/package=overtureR)
 [![R-CMD-check](https://github.com/arthurgailes/overtureR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/arthurgailes/overtureR/actions/workflows/R-CMD-check.yaml)
@@ -19,9 +19,18 @@ coverage](https://codecov.io/gh/arthurgailes/overtureR/branch/master/graph/badge
 ``` r
 install.packages("overtureR")
 
-# or, dev version
 # devtools::install_github("arthurgailes/overtureR")
 ```
+
+## Key Features
+
+- Query global [Overture Maps](https://overturemaps.org/) data directly
+  in R
+- Conduct analysis on massive dataset without loading into memory using
+  [dbplyr’s](https://dbplyr.tidyverse.org/) lazy evaluation
+- Seamless `dplyr` and `sf` integration
+- Merge with your local `sf` data within `duckdb` or with `sf`
+- Local downloading for offline use and perforamnce
 
 ## Usage
 
@@ -39,16 +48,20 @@ counties <- open_curtain("division_area") |>
   transmute(
     id,
     division_id,
-    # STRUCT/MAP columns can be accessed as column[["subcolumn"]] in transmute
-    primary = names[["primary"]],
+    primary = names$primary,
     geometry
-  )
+  ) |>
+  collect()
 
 # Plot the results
-counties |>
-  collect() |>
-  ggplot() +
-  geom_sf(aes(fill = as.numeric(sf::st_area(geometry))))
+ggplot(counties) +
+  geom_sf(aes(fill = as.numeric(sf::st_area(geometry))), color = "white", size = 0.2) +
+  viridis::scale_fill_viridis(option = "plasma") +
+  guides(fill = FALSE) +
+  labs(
+    title = "Pennsylvania Counties by Area",
+    caption = "Data: Overture Maps"
+  ) 
 ```
 
 <img src="man/figures/README-counties-1.png" width="100%" />
@@ -61,11 +74,11 @@ library(dplyr)
 mountains <- open_curtain(type = "*", theme = "places") |>
   transmute(
     id,
-    primary_name = names[["primary"]],
-    x = bbox[["xmin"]],
-    y = bbox[["ymin"]],
-    main_category = categories[["primary"]],
-    primary_source = sources[[1]][["dataset"]],
+    primary_name = names$primary,
+    x = bbox$xmin,
+    y = bbox$ymin,
+    main_category = categories$primary,
+    primary_source = sources[[1]]$dataset,
     confidence,
     geometry # currently no duckdb spatial implementation
   ) |>
@@ -82,18 +95,68 @@ head(mountains)
 #> 4 08f464e3a4d0… Nounou-East… -159.  22.1 mountain      meta                0.945
 #> 5 08f464e05514… Makaleha Mo… -159.  22.1 mountain      meta                0.965
 #> 6 08f464e03538… Makana       -160.  22.2 mountain      meta                0.938
-#> # ℹ 1 more variable: geometry <list>
+#> # ℹ 1 more variable: geometry <POINT [°]>
 ```
+
+## Downloading data locally
+
+The record_overture function allows you to download Overture Maps data
+to a local directory, maintaining the same partition structure as in S3.
+This is useful for offline analysis or when you need to work with the
+data repeatedly. Here’s an example:
+
+``` r
+library(overtureR)
+library(ggplot2)
+library(viridis)
+library(rayshader)
+
+# Define a bounding box for New York City
+broadway <- c(xmin = -73.9901, ymin = 40.755488, xmax = -73.98, ymax = 40.76206)
+
+# Download building data for NYC to a local directory
+local_buildings <- record_overture(
+  output_dir = tempdir(),
+  type = "building",
+  spatial_filter = broadway,
+  overwrite = TRUE
+)
+
+# The downloaded data is returned as a `dbplyr` object, same as the original (but faster!)
+broadway_buildings <- local_buildings |> collect() 
+
+p <- ggplot(broadway_buildings) +
+  geom_sf(aes(fill = height), color = NA) +
+  scale_fill_viridis(option = "plasma") +
+  guides(fill = FALSE) +
+  # coord_sf(crs = st_crs(broadway_buildings)) +
+  labs(
+    title = "Building Heights in Broadway, NYC", 
+    caption = "Data: Overture Maps"
+  )
+
+# Convert to 3D and render
+plot_gg(
+  p,
+  multicore = TRUE,
+  width = 5,
+  height = 5,
+  scale = 300,
+  windowsize = c(1400, 866),
+  zoom = 0.55, 
+  phi = 30, 
+  theta = -30,
+  shadow_intensity = 0.7
+)
+
+render_snapshot(clear = TRUE)
+```
+
+<img src="man/figures/README-record-1.png" width="100%" />
 
 ## Roadmap
 
--   Load all possible views into conn
--   Add beta/alpha datasets
--   Install and load duckdb spatial
--   Allow mirror/local reads via base_url
--   Remove duckdbfs dependency
--   Add mapping vignettes
--   Use pmtiles
--   Remove dbplyr dependencies
--   Add function to write data (stage_write)
--   Add function to preload all types as views
+- Read pmtiles
+- Add beta/alpha datasets
+- Add mapping vignette
+- Add performance vignette

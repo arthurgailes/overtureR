@@ -27,21 +27,21 @@
 #' sf_obj <- st_sf(a = 3, geometry = st_sfc(st_point(1:2)))
 #' sf_as_dbplyr(con, "test", sf_obj)
 #'
-#' dbDisconnect(con)
+#' DBI::dbDisconnect(con)
 #'
 #' @export
 sf_as_dbplyr <- function(
     conn,
     name,
     sf_obj,
-    geom_only = isFALSE("sf" %in% class(sf_obj)),
+    geom_only = isFALSE(inherits(sf_obj, "sf")),
     overwrite = FALSE,
     ...) {
-  if (class(conn) != "duckdb_connection") stop("only supports duckdb connections")
+  if (isFALSE(inherits(conn, "duckdb_connection"))) stop("only supports duckdb connections")
   config_extensions(conn)
   geom <- sf::st_as_text(sf::st_geometry(sf_obj), EWKT = TRUE)
 
-  if (isFALSE("sf" %in% class(sf_obj))) geom_only <- TRUE
+  if (isFALSE(inherits(sf_obj, "sf"))) geom_only <- TRUE
 
   if (isFALSE(geom_only)) {
     df <- sf::st_drop_geometry(sf_obj)

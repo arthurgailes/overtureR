@@ -87,7 +87,7 @@ process_parquet_read_opts <- function(opts) {
     union_by_name = FALSE
   )
 
-  parquet_opts <- modifyList(default_read_opts, opts)
+  parquet_opts <- utils::modifyList(default_read_opts, opts)
 
   parquet_opts_str <- paste(
     names(parquet_opts), parquet_opts,
@@ -112,7 +112,7 @@ focus_spotlight <- function(conn, spatial_filter) {
   # for sf/sfc, upload geom only to duckdb
   if (spatial_class == "sf") {
     # give view a random suffix to prevent overwriting
-    rnum <- round(abs(runif(1, max = 1e5)))
+    rnum <- round(abs(stats::runif(1, max = 1e5)))
     sf_dbplyr <- sf_as_dbplyr(
       conn, paste0("overtureR_spatial_filter_", rnum),
       sf_obj = spatial_filter, overwrite = TRUE, geom_only = TRUE

@@ -12,6 +12,7 @@ License: MIT + file LICENSE
 Suggests: 
     bench,
     duckdbfs,
+    ggplot2,
     httr,
     jsonlite,
     knitr,
@@ -29,5 +30,6 @@ Imports:
     dplyr (>= 1.0.0),
     duckdb (>= 1.0.0),
     glue,
+    rlang,
     sf
 VignetteBuilder: knitr

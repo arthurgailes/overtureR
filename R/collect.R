@@ -11,6 +11,8 @@
 #'        by its EPSG code. The default is 4326 (WGS 84).
 #' @param ... Further arguments passed to [dplyr::collect()].
 #' @importFrom dplyr collect
+#' @importFrom rlang .data :=
+#'
 #' @return An 'sf' object with the dataset converted to spatial features.
 #' @examplesIf interactive()
 #'

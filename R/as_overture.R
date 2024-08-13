@@ -5,6 +5,7 @@
 #' used directly on tbl_sql #' objects representing Overture Maps data.
 #'
 #' @param x A tbl_sql object representing an Overture Maps dataset.
+#' @inheritParams open_curtain
 #'
 #' @return A tbl_sql object with the additional class overture_call and
 #'         attributes overture_type and overture_theme.

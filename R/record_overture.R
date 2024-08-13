@@ -13,6 +13,7 @@
 #'
 #' @seealso \href{https://duckdb.org/docs/data/partitioning/partitioned_writes}{DuckDB documentation on partitioned writes}
 #' @inheritDotParams open_curtain
+#' @importFrom rlang := .data
 #'
 #' @examplesIf interactive()
 #' broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
@@ -63,7 +64,7 @@ record_overture <- function(
 
   # recast geometry to wkb
   if ("geometry" %in% cols) {
-    curtain_call <- dplyr::mutate(curtain_call, geometry = ST_AsWKB(geometry))
+    curtain_call <- dplyr::mutate(curtain_call, geometry = ST_AsWKB(.data$geometry))
   }
 
   sql <- dbplyr::sql_render(curtain_call)

@@ -8,6 +8,11 @@ as_overture(x, type, theme = get_theme_from_type(type))
 }
 \arguments{
 \item{x}{A tbl_sql object representing an Overture Maps dataset.}
+
+\item{type}{A string specifying the type of overture dataset to read.
+Setting to "*" or \code{NULL} will read all types for a given theme.}
+
+\item{theme}{Inferred from type by default. Must be set if type is "*" or NULL}
 }
 \value{
 A tbl_sql object with the additional class overture_call and
@@ -23,6 +28,8 @@ The function adds the overture_call class as the first class of the object
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+# The open_curtain() function already uses as_overture() internally,
+# but you can also use it directly:
 conn <- stage_conn()
 division <- open_curtain("division", tablename = "test")
 
@@ -33,10 +40,5 @@ division2 <- tbl(conn, "test")
 division2 <- as_overture(division2)
 
 exit_stage(conn)
-
-# The open_curtain() function already uses as_overture() internally,
-# but you can also use it directly:
-buildings_overture <- as_overture(buildings)
-class(buildings_overture)  # Should include "overture_call"
 \dontshow{\}) # examplesIf}
 }

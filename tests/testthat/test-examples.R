@@ -4,7 +4,7 @@ test_that("record examples work", {
   buildings <- open_curtain("building", spatial_filter = broadway)
   local_buildings <- record_overture(tempdir(), buildings, overwrite = TRUE)
 
-  expect_gt(pull(count(local_buildings), n), 0)
+  expect_gt(dplyr::pull(dplyr::count(local_buildings), n), 0)
 })
 
 
@@ -35,7 +35,7 @@ test_that("record_overture example works", {
   local_buildings <- record_overture(tempdir(), buildings, overwrite = TRUE)
 
   expect_s3_class(local_buildings, "overture_call")
-  expect_gt(pull(count(local_buildings), n), 0)
+  expect_gt(dplyr::pull(dplyr::count(local_buildings), n), 0)
 })
 
 test_that("snapshot_overture works", {
@@ -46,16 +46,16 @@ test_that("snapshot_overture works", {
   snapshot <- snapshot_overture(buildings, overwrite = TRUE)
 
   expect_s3_class(snapshot, "overture_call")
-  expect_gt(pull(count(snapshot), n), 0)
+  expect_gt(dplyr::pull(dplyr::count(snapshot), n), 0)
 })
 
 test_that("sf_as_dbplyr example works", {
   con <- duckdb::dbConnect(duckdb::duckdb())
-  sf_obj <- sf::st_sf(a = 3, geometry = sf::st_sfc(st_point(1:2)))
-  sf_tbl <- sf::st_sf(con, "test", sf_obj)
+  sf_obj <- sf::st_sf(a = 3, geometry = sf::st_sfc(sf::st_point(1:2)))
+  sf_tbl <- sf_as_dbplyr(con, "test", sf_obj)
 
-  expect_s3_class(sf_tbl, "tbl_duckdb")
-  expect_equal(pull(sf_tbl, a), 3)
+  expect_s3_class(sf_tbl, "tbl_duckdb_connection")
+  expect_equal(dplyr::pull(sf_tbl, a), 3)
 
   duckdb::dbDisconnect(con)
 })
@@ -65,7 +65,7 @@ test_that("as_overture example works", {
   conn <- stage_conn()
   division <- open_curtain("division", conn = conn, tablename = "test")
 
-  division2 <- tbl(conn, "test")
+  division2 <- dplyr::tbl(conn, "test")
   division2 <- as_overture(division2, "division")
 
   expect_s3_class(division2, "overture_call")
