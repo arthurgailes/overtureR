@@ -19,7 +19,7 @@ snapshot_overture(..., output_dir = tempdir(), overwrite = TRUE)
 \item{output_dir}{The directory where the data will be saved.}
 
 \item{curtain_call}{A overture_call object or NULL. If NULL,
-'type' must be provided, and \code{open_curtain} will open a connection.}
+'type' must be provided, and \code{\link[=open_curtain]{open_curtain()}} will open a connection.}
 
 \item{overwrite}{Logical, if FALSE (default), existing directories will not be
 overwritten.}
@@ -46,6 +46,9 @@ as a beta or alpha release.}
   }}
 }
 \value{
+Another tbl_lazy. Use \code{\link[dplyr:explain]{dplyr::show_query()}} to see the generated query, and
+use \code{\link[=collect]{collect()}} to execute the query and return data to R.
+
 An 'overture_call' for the downloaded data
 }
 \description{

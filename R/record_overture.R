@@ -6,7 +6,7 @@
 #'
 #' @param output_dir The directory where the data will be saved.
 #' @param curtain_call A overture_call object or NULL. If NULL,
-#' 'type' must be provided, and `open_curtain` will open a connection.
+#' 'type' must be provided, and [open_curtain()] will open a connection.
 #' @param overwrite Logical, if FALSE (default), existing directories will not be
 #' overwritten.
 #' @param write_opts a character vector passed to DuckDB's COPY command.
@@ -19,6 +19,9 @@
 #' broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
 #' buildings <- open_curtain("building", spatial_filter = bbox)
 #' local_buildings <- record_overture(tempdir(), buildings, overwrite = TRUE)
+#'
+#' @returns Another tbl_lazy. Use [dplyr::show_query()] to see the generated query, and
+#' use [collect()] to execute the query and return data to R.
 #'
 #' @return An 'overture_call' for the downloaded data
 #' @export

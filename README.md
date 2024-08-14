@@ -56,8 +56,7 @@ counties <- open_curtain("division_area") |>
 # Plot the results
 ggplot(counties) +
   geom_sf(aes(fill = as.numeric(sf::st_area(geometry))), color = "white", size = 0.2) +
-  viridis::scale_fill_viridis(option = "plasma") +
-  guides(fill = FALSE) +
+  viridis::scale_fill_viridis(option = "plasma", guide = FALSE) +
   labs(
     title = "Pennsylvania Counties by Area",
     caption = "Data: Overture Maps"
@@ -108,48 +107,42 @@ data repeatedly. Here’s an example:
 ``` r
 library(overtureR)
 library(ggplot2)
-library(viridis)
+library(dplyr)
 library(rayshader)
 
 # Define a bounding box for New York City
 broadway <- c(xmin = -73.9901, ymin = 40.755488, xmax = -73.98, ymax = 40.76206)
 
 # Download building data for NYC to a local directory
-local_buildings <- record_overture(
-  output_dir = tempdir(),
-  type = "building",
-  spatial_filter = broadway,
-  overwrite = TRUE
-)
+local_buildings <- open_curtain("building", broadway) |> 
+  record_overture(output_dir = tempdir(), overwrite = TRUE)
 
 # The downloaded data is returned as a `dbplyr` object, same as the original (but faster!)
-broadway_buildings <- local_buildings |> collect() 
+broadway_buildings <- local_buildings |> 
+  filter(!is.na(height)) |> 
+  mutate(height = round(height)) |> 
+  collect() 
 
 p <- ggplot(broadway_buildings) +
-  geom_sf(aes(fill = height), color = NA) +
-  scale_fill_viridis(option = "plasma") +
-  guides(fill = FALSE) +
-  # coord_sf(crs = st_crs(broadway_buildings)) +
-  labs(
-    title = "Building Heights in Broadway, NYC", 
-    caption = "Data: Overture Maps"
-  )
+  geom_sf(aes(fill = height)) +
+  scale_fill_distiller(palette = "Oranges", direction = 1) +
+  # guides(fill = FALSE) +
+  labs(title = "Buildings on Broadway", caption = "Data: Overture Maps", fill = "")
 
 # Convert to 3D and render
 plot_gg(
   p,
   multicore = TRUE,
-  width = 5,
-  height = 5,
-  scale = 300,
-  windowsize = c(1400, 866),
+  width = 7, height = 5, scale = 250,
+  windowsize = c(1100, 860),
   zoom = 0.55, 
-  phi = 30, 
-  theta = -30,
-  shadow_intensity = 0.7
+  phi = 40, theta = 0,
+  solid = FALSE,
+  offset_edges = TRUE,
+  sunangle = 75
 )
 
-render_snapshot(clear = TRUE)
+render_snapshot(clear=TRUE)
 ```
 
 <img src="man/figures/README-record-1.png" width="100%" />
