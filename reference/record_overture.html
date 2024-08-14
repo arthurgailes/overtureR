@@ -66,7 +66,7 @@ the same partition structure as in S3. <code>snapshot_overture</code> defaults
 
 <dt id="arg-curtain-call">curtain_call<a class="anchor" aria-label="anchor" href="#arg-curtain-call"></a></dt>
 <dd><p>A overture_call object or NULL. If NULL,
-'type' must be provided, and <code>open_curtain</code> will open a connection.</p></dd>
+'type' must be provided, and <code><a href="open_curtain.html">open_curtain()</a></code> will open a connection.</p></dd>
 
 
 <dt id="arg-overwrite">overwrite<a class="anchor" aria-label="anchor" href="#arg-overwrite"></a></dt>
@@ -119,7 +119,9 @@ as a beta or alpha release.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An 'overture_call' for the downloaded data</p>
+    <p>Another tbl_lazy. Use <code><a href="https://dplyr.tidyverse.org/reference/explain.html" class="external-link">dplyr::show_query()</a></code> to see the generated query, and
+use <code><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect()</a></code> to execute the query and return data to R.</p>
+<p>An 'overture_call' for the downloaded data</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
