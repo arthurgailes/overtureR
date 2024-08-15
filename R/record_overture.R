@@ -34,8 +34,9 @@ record_overture <- function(
   dots <- list(...)
   conn <- dots[["conn"]]
 
+  if(!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
   if (isFALSE(overwrite) & length(list.files(output_dir, include.dirs = TRUE))) {
-    stop("'output_dir' is not empty; 'overwrite' must be set to TRUE")
+      stop("'output_dir' is not empty; 'overwrite' must be set to TRUE")
   }
 
   if (is.null(conn)) conn <- stage_conn()

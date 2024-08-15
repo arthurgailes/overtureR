@@ -7,7 +7,8 @@ test_that("downloading works by directory", {
   counties <- open_curtain("division_area", bbox = NULL, conn = con) |>
     dplyr::filter(subtype == "county" & country == "US")
 
-  dir <- tempdir()
+  # use a dir that doesn't exist
+  dir <- paste0(tempdir(), "/test")
 
   timer <- bench::mark(
     exec = DBI::dbExecute(con, dbplyr::sql_render(counties)),
