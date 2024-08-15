@@ -7,7 +7,12 @@
 \usage{
 record_overture(curtain_call, output_dir, overwrite = FALSE, write_opts = NULL)
 
-snapshot_overture(curtain_call, output_dir = tempdir(), overwrite = TRUE, ...)
+snapshot_overture(
+  curtain_call,
+  output_dir = tempdir(),
+  overwrite = TRUE,
+  write_opts = NULL
+)
 }
 \arguments{
 \item{curtain_call}{A overture_call object.}

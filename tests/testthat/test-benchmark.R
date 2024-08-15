@@ -1,4 +1,5 @@
 test_that("Configuration is fast", {
+  skip_on_cran()
   conn <- duckdb::dbConnect(duckdb::duckdb())
   init_timer <- system.time(config_extensions(conn))
   redo_timer <- system.time(config_extensions(conn))

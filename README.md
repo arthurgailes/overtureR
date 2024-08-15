@@ -133,8 +133,8 @@ p <- ggplot(broadway_buildings) +
 plot_gg(
   p,
   multicore = TRUE,
-  width = 7, height = 5, scale = 250,
-  windowsize = c(1100, 860),
+  width = 6, height = 5, scale = 250,
+  windowsize = c(1032, 860),
   zoom = 0.55, 
   phi = 40, theta = 0,
   solid = FALSE,
@@ -150,6 +150,7 @@ render_snapshot(clear=TRUE)
 ## Roadmap
 
 - Read pmtiles
+- Add partition, chunking to record_overture
 - Add beta/alpha datasets
 - Add mapping vignette
 - Add performance vignette

@@ -165,6 +165,7 @@ render_snapshot(clear=TRUE)
 ## Roadmap
 
 - Read pmtiles
+- Add partition, chunking to record_overture
 - Add beta/alpha datasets
 - Add mapping vignette
 - Add performance vignette

@@ -100,6 +100,10 @@ snapshot_overture <- function(
   curtain_call,
   output_dir = tempdir(),
   overwrite = TRUE,
-  ...) {
-  record_overture(curtain_call, output_dir, overwrite = overwrite, ...)
+  write_opts = NULL) {
+  return(
+    record_overture(
+      curtain_call, output_dir, overwrite = overwrite, write_opts = write_opts
+    )
+  )
 }
