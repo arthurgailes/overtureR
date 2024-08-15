@@ -13,7 +13,7 @@ test_that("downloading works by directory", {
   timer <- bench::mark(
     exec = DBI::dbExecute(con, dbplyr::sql_render(counties)),
     func = {
-      counties_dl <- record_overture(dir, counties, conn = con, overwrite = TRUE)
+      counties_dl <- record_overture(counties, dir, overwrite = TRUE)
     },
     check = FALSE, filter_gc = FALSE
   )
@@ -47,35 +47,23 @@ test_that("downloading works by directory", {
   DBI::dbDisconnect(con)
 })
 
-test_that("record_overture handles NULL curtain_call correctly", {
-  skip_if_offline()
-
-  dir <- tempdir()
-
-  # Test with NULL curtain_call
-
-  result <- record_overture(dir, type = "place", spatial_filter = broadway, overwrite = TRUE)
-
-  expect_s3_class(result, "overture_call")
-  expect_true("place" %in% attr(result, "overture_playbill"))
-
-  unlink(dir, recursive = TRUE)
-})
 
 test_that("record_overture respects overwrite parameter", {
   skip_if_offline()
 
   dir <- tempdir()
+  unlink(dir, recursive = TRUE)
 
+  place <- open_curtain("place", broadway)
 
   # First write
-  record_overture(dir, type = "place", spatial_filter = broadway)
+  record_overture(place, dir)
 
   # Second write without overwrite
-  expect_error(record_overture(dir, type = "place", spatial_filter = broadway))
+  expect_error(record_overture(place, dir))
 
   # Second write with overwrite
-  expect_no_error(record_overture(dir, type = "place", spatial_filter = broadway, overwrite = TRUE))
+  expect_no_error(record_overture(place, dir, overwrite = TRUE))
 
   unlink(dir, recursive = TRUE)
 })
@@ -84,13 +72,13 @@ test_that("record_overture handles custom write_opts", {
   skip_if_offline()
 
   dir <- tempdir()
+  place <- open_curtain("place", broadway)
 
-
-  expect_error(record_overture(dir, type = "place", write_opts = "OVERWRITE"))
-  expect_error(record_overture(dir, type = "place", write_opts = "PARTITION_BY(thing)"))
+  expect_error(record_overture(place, dir, write_opts = "OVERWRITE"))
+  expect_error(record_overture(place, dir, write_opts = "PARTITION_BY(thing)"))
 
   custom_opts <- c("ROW_GROUP_SIZE 100000")
-  result <- record_overture(dir, type = "place", spatial_filter = broadway, write_opts = custom_opts, overwrite = TRUE)
+  result <- record_overture(place, dir, write_opts = custom_opts, overwrite = TRUE)
 
   expect_s3_class(result, "overture_call")
 
@@ -103,7 +91,7 @@ test_that("record_overture handles custom write_opts", {
 test_that("snapshot_overture works correctly", {
   skip_if_offline()
 
-  result <- snapshot_overture(type = "place", spatial_filter = broadway)
+  result <- snapshot_overture(open_curtain("place", spatial_filter = broadway))
 
   expect_s3_class(result, "overture_call")
   expect_true(dir.exists(file.path(tempdir(), "theme=places")))

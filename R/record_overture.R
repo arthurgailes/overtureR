@@ -4,21 +4,19 @@
 #' the same partition structure as in S3. `snapshot_overture` defaults
 #' 'output_dir' to `tempdir()` and overwrite to TRUE.
 #'
+#' @param curtain_call A overture_call object.
 #' @param output_dir The directory where the data will be saved.
-#' @param curtain_call A overture_call object or NULL. If NULL,
-#' 'type' must be provided, and [open_curtain()] will open a connection.
 #' @param overwrite Logical, if FALSE (default), existing directories will not be
 #' overwritten.
 #' @param write_opts a character vector passed to DuckDB's COPY command.
 #'
 #' @seealso \href{https://duckdb.org/docs/data/partitioning/partitioned_writes}{DuckDB documentation on partitioned writes}
-#' @inheritDotParams open_curtain
 #' @importFrom rlang := .data
 #'
 #' @examplesIf interactive()
 #' broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
 #' buildings <- open_curtain("building", spatial_filter = bbox)
-#' local_buildings <- record_overture(tempdir(), buildings, overwrite = TRUE)
+#' local_buildings <- record_overture(buildings, tempdir(), overwrite = TRUE)
 #'
 #' @returns Another tbl_lazy. Use [dplyr::show_query()] to see the generated query, and
 #' use [collect()] to execute the query and return data to R.
@@ -26,30 +24,21 @@
 #' @return An 'overture_call' for the downloaded data
 #' @export
 record_overture <- function(
+    curtain_call,
     output_dir,
-    curtain_call = NULL,
     overwrite = FALSE,
-    write_opts = NULL,
-    ...) {
-  dots <- list(...)
-  conn <- dots[["conn"]]
+    write_opts = NULL) {
+
+  conn <- dbplyr::remote_con(curtain_call)
 
   if(!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
   if (isFALSE(overwrite) & length(list.files(output_dir, include.dirs = TRUE))) {
       stop("'output_dir' is not empty; 'overwrite' must be set to TRUE")
   }
 
-  if (is.null(conn)) conn <- stage_conn()
   config_extensions(conn)
 
-  if (is.null(curtain_call)) {
-    # Check if necessary parameters for open_curtain are provided
-    if (!"type" %in% names(dots)) {
-      stop("When 'curtain_call' is NULL, 'type' must be specified")
-    }
-    # Call open_curtain with the captured arguments
-    curtain_call <- open_curtain(...)
-  } else if (!inherits(curtain_call, "overture_call")) {
+  if (!inherits(curtain_call, "overture_call")) {
     stop("Input must be a overture_call object or NULL.")
   }
 
@@ -59,6 +48,7 @@ record_overture <- function(
   type <- playbill[["type"]]
   theme <- playbill[["theme"]]
 
+  # TODO: allow custom partition scheme
   cols <- colnames(curtain_call)
   for (col in c("theme", "type")) {
     if (!col %in% cols) {
@@ -106,6 +96,10 @@ process_write_opts <- function(opts, overwrite) {
 
 #' @rdname record_overture
 #' @export
-snapshot_overture <- function(..., output_dir = tempdir(), overwrite = TRUE) {
-  record_overture(output_dir, overwrite = overwrite, ...)
+snapshot_overture <- function(
+  curtain_call,
+  output_dir = tempdir(),
+  overwrite = TRUE,
+  ...) {
+  record_overture(curtain_call, output_dir, overwrite = overwrite, ...)
 }

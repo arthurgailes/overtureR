@@ -5,45 +5,19 @@
 \alias{snapshot_overture}
 \title{Download Overture Maps Data to Local Directory}
 \usage{
-record_overture(
-  output_dir,
-  curtain_call = NULL,
-  overwrite = FALSE,
-  write_opts = NULL,
-  ...
-)
+record_overture(curtain_call, output_dir, overwrite = FALSE, write_opts = NULL)
 
-snapshot_overture(..., output_dir = tempdir(), overwrite = TRUE)
+snapshot_overture(curtain_call, output_dir = tempdir(), overwrite = TRUE, ...)
 }
 \arguments{
-\item{output_dir}{The directory where the data will be saved.}
+\item{curtain_call}{A overture_call object.}
 
-\item{curtain_call}{A overture_call object or NULL. If NULL,
-'type' must be provided, and \code{\link[=open_curtain]{open_curtain()}} will open a connection.}
+\item{output_dir}{The directory where the data will be saved.}
 
 \item{overwrite}{Logical, if FALSE (default), existing directories will not be
 overwritten.}
 
 \item{write_opts}{a character vector passed to DuckDB's COPY command.}
-
-\item{...}{
-  Arguments passed on to \code{\link[=open_curtain]{open_curtain}}
-  \describe{
-    \item{\code{type}}{A string specifying the type of overture dataset to read.
-Setting to "*" or \code{NULL} will read all types for a given theme.}
-    \item{\code{spatial_filter}}{An object to spatially filter the result.}
-    \item{\code{theme}}{Inferred from type by default. Must be set if type is "*" or NULL}
-    \item{\code{conn}}{A connection to a duckdb database.}
-    \item{\code{as_sf}}{If TRUE, return an sf dataframe}
-    \item{\code{mode}}{Either "view" (default) or "table". If "table", will download the
-dataset into memory.}
-    \item{\code{tablename}}{The name of the table to create in the database.}
-    \item{\code{read_opts}}{A named list of key-value pairs passed to
-\href{https://duckdb.org/docs/data/parquet/overview.html#parameters}{DuckDB's read_parquet}}
-    \item{\code{base_url}}{Allows user to download data from a different mirror, such
-as a beta or alpha release.}
-    \item{\code{bbox}}{alias for \code{spatial_filter}. may be deprecated in the future.}
-  }}
 }
 \value{
 Another tbl_lazy. Use \code{\link[dplyr:explain]{dplyr::show_query()}} to see the generated query, and
@@ -60,7 +34,7 @@ the same partition structure as in S3. \code{snapshot_overture} defaults
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
 buildings <- open_curtain("building", spatial_filter = bbox)
-local_buildings <- record_overture(tempdir(), buildings, overwrite = TRUE)
+local_buildings <- record_overture(buildings, tempdir(), overwrite = TRUE)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

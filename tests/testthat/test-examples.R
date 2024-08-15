@@ -2,7 +2,7 @@ test_that("record examples work", {
   skip_if_offline()
   broadway <- c(xmin = -73.99011, ymin = 40.755488, xmax = -73.98, ymax = 40.76206)
   buildings <- open_curtain("building", spatial_filter = broadway)
-  local_buildings <- record_overture(tempdir(), buildings, overwrite = TRUE)
+  local_buildings <- record_overture(buildings, tempdir(), overwrite = TRUE)
 
   expect_gt(dplyr::pull(dplyr::count(local_buildings), n), 0)
 })
@@ -32,7 +32,7 @@ test_that("record_overture example works", {
 
   broadway <- c(xmin = -73.99011, ymin = 40.755488, xmax = -73.98, ymax = 40.76206)
   buildings <- open_curtain("building", spatial_filter = broadway)
-  local_buildings <- record_overture(tempdir(), buildings, overwrite = TRUE)
+  local_buildings <- record_overture(buildings, tempdir(), overwrite = TRUE)
 
   expect_s3_class(local_buildings, "overture_call")
   expect_gt(dplyr::pull(dplyr::count(local_buildings), n), 0)
@@ -43,7 +43,7 @@ test_that("snapshot_overture works", {
 
   broadway <- c(xmin = -73.99011, ymin = 40.755488, xmax = -73.98, ymax = 40.76206)
   buildings <- open_curtain("building", spatial_filter = broadway)
-  snapshot <- snapshot_overture(buildings, overwrite = TRUE)
+  snapshot <- snapshot_overture(buildings)
 
   expect_s3_class(snapshot, "overture_call")
   expect_gt(dplyr::pull(dplyr::count(snapshot), n), 0)
