@@ -2,4 +2,4 @@
 
 0 errors | 0 warnings | 0 notes
 
-* This is an update.
+* Addresses CRAN note: "Found the following Rd file(s) with Rd \link{} targets missing package anchors: record_overture.Rd: collect"

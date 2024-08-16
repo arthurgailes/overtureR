@@ -19,7 +19,7 @@
 #' local_buildings <- record_overture(buildings, tempdir(), overwrite = TRUE)
 #'
 #' @returns Another tbl_lazy. Use [dplyr::show_query()] to see the generated query, and
-#' use [collect()] to execute the query and return data to R.
+#' use [dplyr::collect()] to execute the query and return data to R.
 #'
 #' @return An 'overture_call' for the downloaded data
 #' @export
