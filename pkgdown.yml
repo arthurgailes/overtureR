@@ -2,8 +2,9 @@ pandoc: 3.1.11
 pkgdown: 2.1.0
 pkgdown_sha: ~
 articles:
+  articles/getting_started: getting_started.html
   overtureR: overtureR.html
-last_built: 2024-08-16T14:41Z
+last_built: 2024-08-16T17:23Z
 urls:
   reference: https://arthurgailes.github.io/overtureR/reference
   article: https://arthurgailes.github.io/overtureR/articles
