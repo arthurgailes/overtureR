@@ -169,3 +169,4 @@ render_snapshot(clear=TRUE)
 - Add beta/alpha datasets
 - Add mapping vignette
 - Add performance vignette
+- Download overture files via open_curtain
