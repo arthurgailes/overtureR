@@ -1,5 +1,6 @@
 test_that("record examples work", {
   skip_if_offline()
+  skip_on_ci()
   broadway <- c(xmin = -73.99011, ymin = 40.755488, xmax = -73.98, ymax = 40.76206)
   buildings <- open_curtain("building", spatial_filter = broadway)
   local_buildings <- record_overture(buildings, tempdir(), overwrite = TRUE)
@@ -10,10 +11,11 @@ test_that("record examples work", {
 
 test_that("collect.overture_call example works", {
   skip_if_offline()
+  skip_on_ci()
 
   bbox <- c(xmin = -120.5, ymin = 35.5, xmax = -120.0, ymax = 36.0)
   lazy_tbl <- open_curtain("building", bbox)
-  collected_tbl <- collect(lazy_tbl)
+  collected_tbl <- dplyr::collect(lazy_tbl)
 
   expect_s3_class(collected_tbl, "sf")
   expect_gt(nrow(collected_tbl), 0)
@@ -29,6 +31,7 @@ test_that("stage_conn and strike_stage examples work", {
 
 test_that("record_overture example works", {
   skip_if_offline()
+  skip_on_ci()
 
   broadway <- c(xmin = -73.99011, ymin = 40.755488, xmax = -73.98, ymax = 40.76206)
   buildings <- open_curtain("building", spatial_filter = broadway)
@@ -40,6 +43,7 @@ test_that("record_overture example works", {
 
 test_that("snapshot_overture works", {
   skip_if_offline()
+  skip_on_ci()
 
   broadway <- c(xmin = -73.99011, ymin = 40.755488, xmax = -73.98, ymax = 40.76206)
   buildings <- open_curtain("building", spatial_filter = broadway)
@@ -62,6 +66,8 @@ test_that("sf_as_dbplyr example works", {
 
 test_that("as_overture example works", {
   skip_if_offline()
+  skip_on_ci()
+
   conn <- stage_conn()
   division <- open_curtain("division", conn = conn, tablename = "test")
 
