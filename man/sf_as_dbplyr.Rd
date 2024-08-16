@@ -43,12 +43,13 @@ the geometry stored as text via \code{sf::st_as_text}. It then creates the view
 type.
 }
 \examples{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 library(sf)
 
-con <- duckdb::dbConnect(duckdb::duckdb())
+con <- stage_conn()
 sf_obj <- st_sf(a = 3, geometry = st_sfc(st_point(1:2)))
 sf_as_dbplyr(con, "test", sf_obj)
 
 DBI::dbDisconnect(con)
-
+\dontshow{\}) # examplesIf}
 }

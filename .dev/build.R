@@ -10,7 +10,7 @@ install(upgrade = FALSE)
 test()
 
 # Check the package
-check(remote = TRUE, manual = TRUE)
+check(remote = TRUE, manual = FALSE)
 
 # cran helpers
 devtools::check_win_devel()
