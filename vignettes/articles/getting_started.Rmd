@@ -1,5 +1,5 @@
 ---
-title: "getting_started"
+title: "Raising the Curtain: Getting Started with overtureR"
 editor_options: 
   chunk_output_type: console
 ---
