@@ -26,7 +26,7 @@ overwritten.}
 }
 \value{
 Another tbl_lazy. Use \code{\link[dplyr:explain]{dplyr::show_query()}} to see the generated query, and
-use \code{\link[=collect]{collect()}} to execute the query and return data to R.
+use \code{\link[dplyr:compute]{dplyr::collect()}} to execute the query and return data to R.
 
 An 'overture_call' for the downloaded data
 }
