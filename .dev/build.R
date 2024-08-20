@@ -21,4 +21,4 @@ revdepcheck::revdep_check(num_workers = 2)
 build(manual = TRUE)
 
 # submit to cran
-release()
+# release()
