@@ -1,4 +1,5 @@
 test_that("focus_spotlight handles all options correctly", {
+  skip_on_cran()
   con <- duckdb::dbConnect(duckdb::duckdb())
   # Mock functions for testing
 
@@ -46,6 +47,7 @@ test_that("focus_spotlight handles all options correctly", {
 
 test_that("spatial_filter works correctly in open_curtain", {
   skip_if_offline()
+  skip_on_cran()
   con <- stage_conn()
 
   # get Mecklenburg county from sf object

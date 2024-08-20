@@ -25,7 +25,6 @@ test_that("stage_conn will pass CRAN", {
 
 
 test_that("sf_as_dbplyr will pass CRAN", {
-  # cran requires user time <= 2.5x elapsed time, but also won't accept a test
   skip()
     con <- duckdb::dbConnect(duckdb::duckdb())
     sf_obj <- sf::st_sf(a = 3, geometry = sf::st_sfc(sf::st_point(1:2)))

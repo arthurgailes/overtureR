@@ -1,6 +1,7 @@
 test_that("Establishing a view is low-memory", {
-  testthat::skip_if_offline()
-  testthat::skip_if_not_installed("bench")
+  skip_if_offline()
+  skip_on_cran()
+  skip_if_not_installed("bench")
 
   bbox <- sf::st_bbox(c(xmin = -120.5, ymin = 35.5, xmax = -120.0, ymax = 36.0))
   timer <- bench::mark(iterations = 2, filter_gc = FALSE, time_unit = "s", {

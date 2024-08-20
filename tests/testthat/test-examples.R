@@ -1,6 +1,8 @@
 test_that("record examples work", {
   skip_if_offline()
   skip_on_ci()
+  skip_on_cran()
+
   broadway <- c(xmin = -73.99011, ymin = 40.755488, xmax = -73.98, ymax = 40.76206)
   buildings <- open_curtain("building", spatial_filter = broadway)
   local_buildings <- record_overture(buildings, tempdir(), overwrite = TRUE)
@@ -12,6 +14,7 @@ test_that("record examples work", {
 test_that("collect.overture_call example works", {
   skip_if_offline()
   skip_on_ci()
+  skip_on_cran()
 
   bbox <- c(xmin = -120.5, ymin = 35.5, xmax = -120.0, ymax = 36.0)
   lazy_tbl <- open_curtain("building", bbox)
@@ -32,6 +35,7 @@ test_that("stage_conn and strike_stage examples work", {
 test_that("record_overture example works", {
   skip_if_offline()
   skip_on_ci()
+  skip_on_cran()
 
   broadway <- c(xmin = -73.99011, ymin = 40.755488, xmax = -73.98, ymax = 40.76206)
   buildings <- open_curtain("building", spatial_filter = broadway)
@@ -44,6 +48,7 @@ test_that("record_overture example works", {
 test_that("snapshot_overture works", {
   skip_if_offline()
   skip_on_ci()
+  skip_on_cran()
 
   broadway <- c(xmin = -73.99011, ymin = 40.755488, xmax = -73.98, ymax = 40.76206)
   buildings <- open_curtain("building", spatial_filter = broadway)
@@ -54,6 +59,8 @@ test_that("snapshot_overture works", {
 })
 
 test_that("sf_as_dbplyr example works", {
+  skip_on_cran()
+
   con <- duckdb::dbConnect(duckdb::duckdb())
   sf_obj <- sf::st_sf(a = 3, geometry = sf::st_sfc(sf::st_point(1:2)))
   sf_tbl <- sf_as_dbplyr(con, "test", sf_obj)
@@ -67,6 +74,7 @@ test_that("sf_as_dbplyr example works", {
 test_that("as_overture example works", {
   skip_if_offline()
   skip_on_ci()
+  skip_on_cran()
 
   conn <- stage_conn()
   division <- open_curtain("division", conn = conn, tablename = "test")

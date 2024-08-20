@@ -1,5 +1,6 @@
 test_that("Counties download works as expected", {
-  testthat::skip_if_offline()
+  skip_if_offline()
+  skip_on_cran()
 
   counties <- open_curtain("division_area", bbox = NULL) %>%
     # in R, filtering on variables must come before removing them via select
@@ -33,6 +34,9 @@ test_that("Counties download works as expected", {
 })
 
 test_that("class assignment works", {
+  skip_on_cran()
+  skip_if_offline()
+
   conn <- DBI::dbConnect(duckdb::duckdb())
   division <- open_curtain("division", conn = conn, tablename = "test")
 
