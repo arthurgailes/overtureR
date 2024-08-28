@@ -17,7 +17,7 @@
 #' @param read_opts A named list of key-value pairs passed to
 #' \href{https://duckdb.org/docs/data/parquet/overview.html#parameters}{DuckDB's read_parquet}
 #' @param base_url Allows user to download data from a different mirror, such
-#' as a beta or alpha release.
+#' as a local directory, or a alternative release.
 #' @param bbox alias for `spatial_filter`. may be deprecated in the future.
 #'
 #' @return An dbplyr lazy dataframe, or an sf dataframe if as_sf is TRUE
