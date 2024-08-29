@@ -1,6 +1,6 @@
 Package: overtureR
 Title: Load 'Overture' Datasets as 'dbplyr' and 'sf'-Ready Data Frames
-Version: 0.2.2
+Version: 0.2.3
 Authors@R: 
     person("Arthur", "Gailes", , "agailes1@gmail.com", 
     role = c("aut", "cre", "cph"),
