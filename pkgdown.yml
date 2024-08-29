@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   articles/getting_started: getting_started.html
   overtureR: overtureR.html
-last_built: 2024-08-29T13:51Z
+last_built: 2024-08-29T17:47Z
 urls:
   reference: https://arthurgailes.github.io/overtureR/reference
   article: https://arthurgailes.github.io/overtureR/articles
