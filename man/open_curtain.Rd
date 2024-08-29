@@ -38,7 +38,7 @@ dataset into memory.}
 \href{https://duckdb.org/docs/data/parquet/overview.html#parameters}{DuckDB's read_parquet}}
 
 \item{base_url}{Allows user to download data from a different mirror, such
-as a beta or alpha release.}
+as a local directory, or a alternative release.}
 
 \item{bbox}{alias for \code{spatial_filter}. may be deprecated in the future.}
 }
