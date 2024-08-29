@@ -26,7 +26,6 @@ library(overtureR)
 library(ggplot2)
 library(dplyr)
 library(sf)
-sf_use_s2(FALSE)
 ```
 
 This vignette demonstrates how to use overtureR to access and visualize Overture Maps data, focusing on a practical example in Washington, DC: finding the theater.
@@ -114,7 +113,7 @@ In the code above, we've created a bounding box that encompasses both the airpor
 For the grand finale, we'll create a map that displays all the elements we've gathered:
 
 ```{r metro}
-# filter town to areas that are within 1 mile of our two points
+# filter town to areas that are within ~1 mile of our two points
 kennedy_reagan_bbox <- bind_rows(kennedy_center, reagan_airport) |>
   st_bbox() |>
   st_as_sfc() |>
