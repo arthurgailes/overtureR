@@ -1,6 +1,6 @@
-## Resubmission
+## Patch update 0.2.3
 
-Fixes previous testing errors
+Minor URL update
 
 ## R CMD check results
 
