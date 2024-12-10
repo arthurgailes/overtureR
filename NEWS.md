@@ -1,3 +1,9 @@
+# overtureR 0.2.3
+
+* Fix for bug in `duckdb` 1.1.3.
+* Update for post 1.1.0 native duckdb geometry reading
+* Update URL to November 2024 Overture release.
+
 # overtureR 0.2.0
 
 * Add support for downloading Overture Maps data via `record_overture` and 

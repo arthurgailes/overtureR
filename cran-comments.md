@@ -1,6 +1,6 @@
 ## Patch update 0.2.3
 
-Minor URL update
+Patch for bug in duckdb 1.1.3
 
 ## R CMD check results
 
