@@ -17,7 +17,7 @@
 #' @param read_opts A named list of key-value pairs passed to
 #' \href{https://duckdb.org/docs/data/parquet/overview.html#parameters}{DuckDB's read_parquet}
 #' @param base_url Allows user to download data from a different mirror, such
-#' as a beta or alpha release.
+#' as a local directory, or a alternative release.
 #' @param bbox alias for `spatial_filter`. may be deprecated in the future.
 #'
 #' @return An dbplyr lazy dataframe, or an sf dataframe if as_sf is TRUE
@@ -35,7 +35,7 @@ open_curtain <- function(
     mode = "view",
     tablename = NULL,
     read_opts = list(),
-    base_url = "s3://overturemaps-us-west-2/release/2024-07-22.0",
+    base_url = "s3://overturemaps-us-west-2/release/2024-11-13.0",
     bbox = NULL) {
   # use cached connection if no conn provided
   if (is.null(conn)) conn <- stage_conn()
@@ -58,8 +58,12 @@ open_curtain <- function(
 
   read_opts <- process_parquet_read_opts(read_opts)
 
+  # duckdb starts reading geometry natively at 1.1
+  duckdb_1_1 <- grep("^1.[^0]", utils::packageVersion("duckdb"))
+  geometry <- ifelse(duckdb_1_1, "", "REPLACE (ST_GeomFromWKB(geometry) as geometry)")
+
   interior_query <- glue::glue(
-    "SELECT * REPLACE (ST_GeomFromWKB(geometry) as geometry)
+    "SELECT * {geometry}
      FROM read_parquet('{url}', {read_opts})"
   )
 

@@ -2,6 +2,7 @@ broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
 
 test_that("downloading works by directory", {
   skip_if_offline()
+  skip_on_cran()
 
   con <- DBI::dbConnect(duckdb::duckdb())
   counties <- open_curtain("division_area", bbox = NULL, conn = con) |>

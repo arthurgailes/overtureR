@@ -22,3 +22,20 @@ test_that("stage_conn will pass CRAN", {
 
   expect_lte(timer[["user.self"]] / timer[["elapsed"]], 2.5)
 })
+
+
+test_that("sf_as_dbplyr will pass CRAN", {
+  skip()
+    con <- duckdb::dbConnect(duckdb::duckdb())
+    sf_obj <- sf::st_sf(a = 3, geometry = sf::st_sfc(sf::st_point(1:2)))
+  timer <- system.time({
+    sf_tbl <- sf_as_dbplyr(con, "test", sf_obj)
+  })
+
+    expect_s3_class(sf_tbl, "tbl_duckdb_connection")
+    expect_equal(dplyr::pull(sf_tbl, a), 3)
+
+    duckdb::dbDisconnect(con)
+
+  expect_lte(timer[["user.self"]] / timer[["elapsed"]], 2.5)
+})

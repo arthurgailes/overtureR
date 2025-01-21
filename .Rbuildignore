@@ -12,3 +12,6 @@
 ^\.dev$
 ^CRAN-SUBMISSION$
 lastMiKTeXException
+^tests/testthat/test-benchmark\.R$
+^tests/testthat/test-examples\.R$
+^vignettes/articles$

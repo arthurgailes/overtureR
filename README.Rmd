@@ -39,11 +39,11 @@ install.packages("overtureR")
 * Conduct analysis on massive dataset without loading into memory using  [dbplyr's](https://dbplyr.tidyverse.org/) lazy evaluation
 * Seamless `dplyr` and `sf` integration
 * Merge with your local `sf` data within `duckdb` or with `sf`
-* Local downloading for offline use and perforamnce
+* Local downloading for offline use and performance
 
 ## Usage
 
-Replicating `duckdb` examples fromm the [Overture docs](https://docs.overturemaps.org/getting-data/duckdb/)
+Replicating `duckdb` examples from the [Overture docs](https://docs.overturemaps.org/getting-data/duckdb/)
 
 ```{r ggtheme, include=FALSE}
 library(ggplot2)
