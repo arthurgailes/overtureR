@@ -82,4 +82,4 @@ schema_defs <- process_yaml_directory(yamls2)
 
 save_schemas(schema_defs, paste0(schema_dir, "/tidy"))
 
-str(schema_defs)
+usethis::use_data(schema_defs, internal = TRUE, overwrite = TRUE)

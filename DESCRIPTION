@@ -34,3 +34,5 @@ Imports:
     rlang,
     sf
 VignetteBuilder: knitr
+Depends: 
+    R (>= 3.5)
