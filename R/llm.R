@@ -7,12 +7,8 @@
 #'
 #' @param .data An overture_call object (the result of open_curtain or subsequent operations)
 #' @param message Character string containing the natural language query
-#' @param .provider A function or function call specifying the language model provider
-#'        (default: getOption("tidyllm_chat_default"))
-#' @param .model The model to use for query interpretation (provider-specific)
-#' @param .temperature Numeric between 0 and 1 controlling randomness in interpretation
-#'        (default: 0.1 for consistent parsing)
-#' @param ... Additional arguments passed to the provider
+#' @inheritParams tidyllm::chat
+#' @inheritDotParams tidyllm::chat
 #'
 #' @return An overture_call object with the natural language filters applied
 #'
@@ -36,8 +32,7 @@
 open_curtain_nl <- function(
     .data,
     message,
-    .provider = getOption("tidyllm_chat_default"),
-    .model = NULL,
+    .provider = getOption("tidyllm_chat_default", default = tidyllm::openai),
     .temperature = 0.1,
     ...) {
 
@@ -64,14 +59,14 @@ open_curtain_nl <- function(
 
   # Send to LLM for interpretation
   parsed <- tryCatch({
-    chat(prompt, .provider, .model = .model, .temperature = .temperature, ...)
+    tidyllm::chat(prompt, .provider =.provider, .temperature = .temperature, ...)
   }, error = function(e) {
     stop("Error in LLM query interpretation: ", e$message, call. = FALSE)
   })
 
   # Extract and validate filter conditions
   params <- tryCatch({
-    get_reply_data(parsed)
+    tidyllm::get_reply_data(parsed)
   }, error = function(e) {
     stop("Failed to parse LLM response: ", e$message, call. = FALSE)
   })
@@ -106,7 +101,7 @@ open_curtain_nl <- function(
 #' @param type The Overture Maps type
 #' @param theme The Overture Maps theme
 #'
-#' @return An LLMMessage object
+#' @return A tidyllm::LLMMessage object
 #'
 #' @noRd
 create_nl_prompt <- function(message, data, type, theme) {
@@ -143,8 +138,12 @@ create_nl_prompt <- function(message, data, type, theme) {
   schema_text <- paste(Filter(Negate(is.null), schema_info), collapse = "\n")
 
   # Build system prompt
-  system_prompt <- glue::glue("You are a specialized assistant that converts natural language queries
-into dplyr filter conditions for Overture Maps data.
+  sys_prompt <- "You are a specialized assistant that converts natural language queries
+into dplyr filter conditions for Overture Maps data."
+
+  # Build user message with context and query
+  msg <- glue::glue("
+Using the following context, convert my query into dplyr filter expressions.
 
 Data Context:
 - Type: {type}
@@ -172,7 +171,8 @@ Example responses:
     \"confidence > 0.8\"
   ]
 }}
-")
 
-  llm_message(message, system_prompt = system_prompt)
+Query: {message}")
+
+  tidyllm::llm_message(msg, .system_prompt = sys_prompt)
 }
