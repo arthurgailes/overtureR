@@ -55,7 +55,7 @@ process_yaml_directory <- function(yaml_files) {
   return(schema_definitions)
 }
 
-# Function to save schemas to files
+# Function to save schemas to json. May remove
 save_schemas <- function(schema_defs, output_dir) {
   dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
