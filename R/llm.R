@@ -35,7 +35,6 @@ open_curtain_nl <- function(
     .provider = getOption("tidyllm_chat_default", default = tidyllm::openai),
     .temperature = 0.1,
     ...) {
-
   # Validate input
   if (!inherits(.data, "overture_call")) {
     stop("Input must be an overture_call object. Use open_curtain() first.", call. = FALSE)
@@ -48,45 +47,55 @@ open_curtain_nl <- function(
   # Get type from data attributes
   playbill <- attr(.data, "overture_playbill")
   type <- playbill[["type"]]
-  theme <- playbill[["theme"]]
 
-  if (is.null(type) || is.null(theme)) {
-    stop("Could not determine Overture type/theme from data.", call. = FALSE)
+  if (is.null(type)) {
+    stop("Could not determine Overture type from data.", call. = FALSE)
   }
 
   # Create prompt
-  prompt <- create_nl_prompt(message, .data, type, theme)
+  prompt <- create_nl_prompt(message, .data, type)
 
   # Send to LLM for interpretation
-  parsed <- tryCatch({
-    tidyllm::chat(prompt, .provider =.provider, .temperature = .temperature, ...)
-  }, error = function(e) {
-    stop("Error in LLM query interpretation: ", e$message, call. = FALSE)
-  })
+  parsed <- tryCatch(
+    {
+      tidyllm::chat(
+        prompt,
+        .provider = .provider,
+        .temperature = .temperature,
+        .json_schema = create_json_schema(type),
+        ...
+      )
+    },
+    error = function(e) {
+      stop("Error in LLM query interpretation: ", e$message, call. = FALSE)
+    }
+  )
 
   # Extract and validate filter conditions
-  params <- tryCatch({
-    tidyllm::get_reply_data(parsed)
-  }, error = function(e) {
-    stop("Failed to parse LLM response: ", e$message, call. = FALSE)
-  })
+  params <- tryCatch(
+    {
+      tidyllm::get_reply_data(parsed)
+    },
+    error = function(e) {
+      stop("Failed to parse LLM response: ", e$message, call. = FALSE)
+    }
+  )
 
-  if (!is.list(params) || is.null(params$filters)) {
-    stop("Invalid LLM response format. Expected list with 'filters' field.", call. = FALSE)
-  }
 
   # Convert string expressions to quosures and apply filters
   filter_exprs <- lapply(params$filters, function(expr) {
-    tryCatch({
-      rlang::parse_expr(expr)
-    }, error = function(e) {
-      stop("Invalid filter expression: ", expr, "\nError: ", e$message, call. = FALSE)
-    })
+    tryCatch(
+      {
+        rlang::parse_expr(expr)
+      },
+      error = function(e) {
+        stop("Invalid filter expression: ", expr, "\nError: ", e$message, call. = FALSE)
+      }
+    )
   })
 
   # Apply filters
-  result <- .data |>
-    dplyr::filter(!!!filter_exprs)
+  result <- do.call(dplyr::filter, c(list(.data), filter_exprs))
 
   return(result)
 }
@@ -99,80 +108,41 @@ open_curtain_nl <- function(
 #' @param message The user's natural language query
 #' @param data The overture_call object
 #' @param type The Overture Maps type
-#' @param theme The Overture Maps theme
 #'
 #' @return A tidyllm::LLMMessage object
 #'
 #' @noRd
-create_nl_prompt <- function(message, data, type, theme) {
-  # Get available columns
-  cols <- colnames(data)
+create_nl_prompt <- function(message, data, type) {
+  bbox <- attr(data, "bbox")
 
-  # Get schema definition
-  schema_def <- schema_defs[[type]]
-  if (is.null(schema_def)) {
+  # Build system prompt
+  sys_prompt <- ("You are a specialized assistant that converts natural language
+    queries into dplyr filter conditions for Overture Maps data.
+  ")
+
+  if (!is.null(bbox)) {
+    sys_prompt <- paste0(
+      sys_prompt, "Return the same bounding box as the input: ", bbox, "."
+    )
+  } else {
+    sys_prompt <- paste0(sys_prompt, "Guess the bounding box from the query.")
+  }
+
+  # Build user message with context and query
+  msg <- glue::glue("message")
+
+  tidyllm::llm_message(msg, .system_prompt = sys_prompt)
+}
+
+create_json_schema <- function(type) {
+  schema <- tidyllm_schema_list[[type]]
+  schema[["name"]] <- paste0(type, "_schema")
+  # TODO: add bbox
+
+  if (is.null(schema)) {
     stop(sprintf("No schema definition found for type '%s'.", type), call. = FALSE)
   }
 
-  # Extract property definitions and constraints
-  properties <- schema_def$properties$properties$properties
-  schema_info <- lapply(names(properties), function(prop) {
-    prop_def <- properties[[prop]]
-    if (!is.null(prop_def$enum)) {
-      return(sprintf("%s: enum [%s]", prop, paste(prop_def$enum, collapse = ", ")))
-    }
-    if (!is.null(prop_def$type)) {
-      type_info <- if (is.list(prop_def$type)) {
-        paste(unlist(prop_def$type), collapse = "|")
-      } else {
-        prop_def$type
-      }
-      return(sprintf("%s: %s", prop, type_info))
-    }
-    if (!is.null(prop_def$description)) {
-      return(sprintf("%s: %s", prop, prop_def$description))
-    }
-    return(NULL)
-  })
-
-  schema_text <- paste(Filter(Negate(is.null), schema_info), collapse = "\n")
-
-  # Build system prompt
-  sys_prompt <- "You are a specialized assistant that converts natural language queries
-into dplyr filter conditions for Overture Maps data."
-
-  # Build user message with context and query
-  msg <- glue::glue("
-Using the following context, convert my query into dplyr filter expressions.
-
-Data Context:
-- Type: {type}
-- Theme: {theme}
-- Available columns: {paste(cols, collapse = ', ')}
-
-Schema constraints:
-{schema_text}
-
-Return a JSON object with a single field 'filters' containing an array of dplyr filter expressions.
-Each filter expression must:
-1. Use only available columns
-2. Respect schema constraints
-3. Be a valid dplyr expression
-4. Use proper R syntax
-
-Example responses:
-{{
-  \"filters\": [\"height > 100\"]
-}}
-
-{{
-  \"filters\": [
-    \"categories.primary == 'restaurant'\",
-    \"confidence > 0.8\"
-  ]
-}}
-
-Query: {message}")
-
-  tidyllm::llm_message(msg, .system_prompt = sys_prompt)
+  json_schema <- do.call(tidyllm::tidyllm_schema, schema)
+  return(json_schema)
 }

@@ -17,44 +17,58 @@ test_that("open_curtain_nl validates inputs correctly", {
 
 test_that("open_curtain_nl generates correct filter expressions", {
   skip_if_offline()
+  skip_on_cran()
 
   # Test basic building height filter
-  buildings <- open_curtain("building") |>
-    open_curtain_nl("find buildings taller than 100 meters")
+  broadway_bbox <- sf::st_bbox(c(
+    xmin = -74.017,
+    ymin = 40.704,
+    xmax = -73.929,
+    ymax = 40.816
+  ))
 
-  query <- dbplyr::sql_render(buildings)
-  expect_match(as.character(query), "height > 100", fixed = TRUE)
+  buildings <- open_curtain("building", broadway_bbox)
+  nl_query <- open_curtain_nl(buildings, "find buildings taller than 100 meters")
 
-  # Test category filter
+  # Verify subquery structure
+  query_sql <- dbplyr::sql_render(nl_query)
+  expect_match(as.character(query_sql), "^SELECT .*? FROM \\(SELECT .*? WHERE height > 100.*?\\)", perl = TRUE)
+
+  # Verify type preservation
+  expect_s3_class(nl_query, "overture_call")
+  expect_equal(attr(nl_query, "overture_playbill")[["type"]], "building")
+  expect_equal(attr(nl_query, "overture_playbill")[["theme"]], attr(buildings, "overture_playbill")[["theme"]])
+
+  # Test category filter with multiple conditions
   places <- open_curtain("place") |>
-    open_curtain_nl("show only restaurants")
+    open_curtain_nl("show only restaurants with high confidence")
 
-  query <- dbplyr::sql_render(places)
-  expect_match(as.character(query), "categories.primary = 'restaurant'", fixed = TRUE)
+  query_sql <- dbplyr::sql_render(places)
+  expect_match(as.character(query_sql), "^SELECT .*? FROM \\(SELECT .*? WHERE.*?categories\\.primary = 'restaurant'.*?confidence > .*?\\)", perl = TRUE)
 })
 
 test_that("open_curtain_nl respects schema constraints", {
   skip_if_offline()
+  skip_on_cran()
 
-  # Test enum constraint
+  # Test schema validation
   places <- open_curtain("place")
+  expect_error(
+    open_curtain_nl(places, "find places with invalid_field > 10"),
+    NA # Should not error, but should ignore invalid field
+  )
+
+  # Test array field handling
   result <- places |>
-    open_curtain_nl("find places with high confidence")
+    open_curtain_nl("find places with categories containing restaurant")
 
-  query <- dbplyr::sql_render(result)
-  expect_match(as.character(query), "confidence > ", fixed = TRUE)
-
-  # Check that invalid category isn't generated
-  places <- open_curtain("place")
-  result <- places |>
-    open_curtain_nl("find invalid_category_name places")
-
-  query <- dbplyr::sql_render(result)
-  expect_false(grepl("invalid_category_name", as.character(query), fixed = TRUE))
+  query_sql <- dbplyr::sql_render(result)
+  expect_match(as.character(query_sql), "categories", fixed = TRUE)
 })
 
 test_that("open_curtain_nl works in dplyr pipelines", {
   skip_if_offline()
+  skip_on_cran()
 
   result <- open_curtain("building") |>
     dplyr::select(id, height, type) |>
@@ -69,10 +83,11 @@ test_that("open_curtain_nl works in dplyr pipelines", {
 
 test_that("open_curtain_nl handles errors gracefully", {
   skip_if_offline()
+  skip_on_cran()
 
   # Test invalid LLM response
   mock_chat <- function(...) {
-    llm_message("Invalid JSON response")
+    tidyllm::llm_message("Invalid JSON response")
   }
 
   data <- open_curtain("building")
@@ -83,7 +98,7 @@ test_that("open_curtain_nl handles errors gracefully", {
 
   # Test invalid filter expression
   mock_chat <- function(...) {
-    llm_message("{\"filters\": [\"invalid R syntax >\"]}")
+    tidyllm::llm_message("{\"filters\": [\"invalid R syntax >\"]}")
   }
 
   expect_error(

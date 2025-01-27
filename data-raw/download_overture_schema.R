@@ -82,4 +82,92 @@ schema_defs <- process_yaml_directory(yamls2)
 
 save_schemas(schema_defs, paste0(schema_dir, "/tidy"))
 
-usethis::use_data(schema_defs, internal = TRUE, overwrite = TRUE)
+
+flatten_schema_properties <- function(schema) {
+  result <- list()
+
+  if ("properties" %in% names(schema)) {
+    # Core GeoJSON fields
+    if ("id" %in% names(schema$properties)) {
+      result[["id"]] <- "character"
+    }
+    if ("geometry" %in% names(schema$properties)) {
+      result[["geometry"]] <- "character"
+    }
+
+    # Get nested properties
+    if ("properties" %in% names(schema$properties)) {
+      props <- schema$properties$properties
+      if ("properties" %in% names(props)) {
+        props <- props$properties
+      }
+
+      for (field_name in names(props)) {
+        prop <- props[[field_name]]
+
+        # Special cases
+        if (field_name == "categories") {
+          result[["categories_primary"]] <- "character"
+          result[["categories_alternate"]] <- "character[]"
+          next
+        }
+
+        if (field_name == "depth") {
+          result[["depth"]] <- "numeric"
+          next
+        }
+
+        # Get type definition
+        if ("type" %in% names(prop)) {
+          type <- prop$type[1]
+
+          r_type <- switch(type,
+            "string" = "character",
+            "boolean" = "logical",
+            "number" = "numeric",
+            "integer" = "numeric",
+            "array" = {
+              # Defensive check for array items
+              if ("items" %in% names(prop) && "type" %in% names(prop$items)) {
+                item_type <- prop$items$type[1]
+                base_type <- switch(item_type,
+                  "string" = "character",
+                  "number" = "numeric",
+                  "integer" = "numeric",
+                  "boolean" = "logical",
+                  "character" # Default
+                )
+                paste0(base_type, "[]")
+              } else {
+                "character[]" # Default for arrays
+              }
+            },
+            "character" # Default
+          )
+
+          # Handle enums
+          if ("enum" %in% names(prop)) {
+            r_type <- sprintf("factor(%s)", paste(prop$enum, collapse = ", "))
+          }
+
+          result[[field_name]] <- r_type
+        }
+      }
+    }
+  }
+
+  return(result)
+}
+
+# Process schemas
+schemas <- schema_defs[!names(schema_defs) %in% c("defs")]
+tidyllm_schema_list <- lapply(schemas, flatten_schema_properties)
+
+# Add bbox to all elements
+tidyllm_schema_list <- lapply(tidyllm_schema_list, function(x) {
+  x[["bbox"]] <- "numeric[]"
+  return(x)
+})
+
+# Save result once
+usethis::use_data(tidyllm_schema_list, internal = TRUE, overwrite = TRUE)
