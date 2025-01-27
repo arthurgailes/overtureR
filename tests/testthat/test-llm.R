@@ -6,6 +6,8 @@ test_that("open_curtain_nl validates inputs correctly", {
   )
 
   # Test invalid message
+  skip_if_offline()
+  skip_on_cran()
   data <- open_curtain("building")
   expect_error(
     open_curtain_nl(data, c("query1", "query2")),
