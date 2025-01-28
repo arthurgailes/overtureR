@@ -1,7 +1,7 @@
-test_that("open_curtain_nl validates inputs correctly", {
+test_that("stage_prompt validates inputs correctly", {
   # Test non-overture_call input
   expect_error(
-    open_curtain_nl(mtcars, "find cars"),
+    stage_prompt(mtcars, "find cars"),
     "Input must be an overture_call object"
   )
 
@@ -10,12 +10,12 @@ test_that("open_curtain_nl validates inputs correctly", {
   skip_on_cran()
   data <- open_curtain("building")
   expect_error(
-    open_curtain_nl(data, c("query1", "query2")),
+    stage_prompt(data, c("query1", "query2")),
     "message must be a single character string"
   )
 })
 
-test_that("open_curtain_nl generates correct filter expressions", {
+test_that("stage_prompt generates correct filter expressions", {
   skip_if_offline()
   skip_on_cran()
 
@@ -28,7 +28,7 @@ test_that("open_curtain_nl generates correct filter expressions", {
   ))
 
   buildings <- open_curtain("building", broadway_bbox)
-  nl_query <- open_curtain_nl(buildings, "find buildings taller than 100 meters")
+  nl_query <- stage_prompt(buildings, "find buildings taller than 100 meters")
 
   # Verify subquery structure
   query_sql <- dbplyr::sql_render(nl_query)
@@ -41,38 +41,38 @@ test_that("open_curtain_nl generates correct filter expressions", {
 
   # Test category filter with multiple conditions
   places <- open_curtain("place") |>
-    open_curtain_nl("show only restaurants with high confidence")
+    stage_prompt("show only restaurants with high confidence")
 
   query_sql <- dbplyr::sql_render(places)
   expect_match(as.character(query_sql), "^SELECT .*? FROM \\(SELECT .*? WHERE.*?categories\\.primary = 'restaurant'.*?confidence > .*?\\)", perl = TRUE)
 })
 
-test_that("open_curtain_nl respects schema constraints", {
+test_that("stage_prompt respects schema constraints", {
   skip_if_offline()
   skip_on_cran()
 
   # Test schema validation
   places <- open_curtain("place")
   expect_error(
-    open_curtain_nl(places, "find places with invalid_field > 10"),
+    stage_prompt(places, "find places with invalid_field > 10"),
     NA # Should not error, but should ignore invalid field
   )
 
   # Test array field handling
   result <- places |>
-    open_curtain_nl("find places with categories containing restaurant")
+    stage_prompt("find places with categories containing restaurant")
 
   query_sql <- dbplyr::sql_render(result)
   expect_match(as.character(query_sql), "categories", fixed = TRUE)
 })
 
-test_that("open_curtain_nl works in dplyr pipelines", {
+test_that("stage_prompt works in dplyr pipelines", {
   skip_if_offline()
   skip_on_cran()
 
   result <- open_curtain("building") |>
     dplyr::select(id, height, type) |>
-    open_curtain_nl("buildings taller than 50 meters") |>
+    stage_prompt("buildings taller than 50 meters") |>
     dplyr::filter(dplyr::n() > 0) |>
     head(1) |>
     collect()
@@ -81,7 +81,7 @@ test_that("open_curtain_nl works in dplyr pipelines", {
   expect_true(all(result$height > 50))
 })
 
-test_that("open_curtain_nl handles errors gracefully", {
+test_that("stage_prompt handles errors gracefully", {
   skip_if_offline()
   skip_on_cran()
 
@@ -92,7 +92,7 @@ test_that("open_curtain_nl handles errors gracefully", {
 
   data <- open_curtain("building")
   expect_error(
-    open_curtain_nl(data, "test query", .provider = mock_chat),
+    stage_prompt(data, "test query", .provider = mock_chat),
     "Failed to parse LLM response"
   )
 
@@ -102,7 +102,7 @@ test_that("open_curtain_nl handles errors gracefully", {
   }
 
   expect_error(
-    open_curtain_nl(data, "test query", .provider = mock_chat),
+    stage_prompt(data, "test query", .provider = mock_chat),
     "Invalid filter expression"
   )
 })

@@ -16,12 +16,12 @@
 #' \dontrun{
 #' # Basic usage
 #' open_curtain("building") |>
-#'   open_curtain_nl("find buildings taller than 50 meters")
+#'   stage_prompt("find buildings taller than 50 meters")
 #'
 #' # Within a pipeline
 #' open_curtain("place", spatial_filter = nyc_bbox) |>
 #'   dplyr::select(id, names, categories) |>
-#'   open_curtain_nl("show only coffee shops") |>
+#'   stage_prompt("show only coffee shops") |>
 #'   dplyr::collect()
 #' }
 #'
@@ -29,7 +29,7 @@
 #' @importFrom glue glue
 #' @importFrom dplyr filter
 #' @export
-open_curtain_nl <- function(
+stage_prompt <- function(
     .data,
     message,
     .provider = getOption("tidyllm_chat_default", default = tidyllm::openai),
@@ -53,7 +53,7 @@ open_curtain_nl <- function(
   }
 
   # Create prompt
-  prompt <- create_nl_prompt(message, .data, type)
+  prompt <- create_nl_message(message, .data, type)
 
   # Send to LLM for interpretation
   parsed <- tryCatch(
@@ -112,7 +112,7 @@ open_curtain_nl <- function(
 #' @return A tidyllm::LLMMessage object
 #'
 #' @noRd
-create_nl_prompt <- function(message, data, type) {
+create_nl_message <- function(message, data, type) {
   bbox <- attr(data, "bbox")
 
   # Build system prompt
