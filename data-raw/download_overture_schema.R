@@ -91,66 +91,102 @@ flatten_schema_properties <- function(schema) {
     if ("id" %in% names(schema$properties)) {
       result[["id"]] <- "character"
     }
-    if ("geometry" %in% names(schema$properties)) {
-      result[["geometry"]] <- "character"
-    }
-
+    
     # Get nested properties
     if ("properties" %in% names(schema$properties)) {
       props <- schema$properties$properties
-      if ("properties" %in% names(props)) {
-        props <- props$properties
-      }
 
-      for (field_name in names(props)) {
-        prop <- props[[field_name]]
-
-        # Special cases
-        if (field_name == "categories") {
-          result[["categories_primary"]] <- "character"
-          result[["categories_alternate"]] <- "character[]"
-          next
-        }
-
-        if (field_name == "depth") {
-          result[["depth"]] <- "numeric"
-          next
-        }
-
-        # Get type definition
-        if ("type" %in% names(prop)) {
-          type <- prop$type[1]
-
-          r_type <- switch(type,
-            "string" = "character",
-            "boolean" = "logical",
-            "number" = "numeric",
-            "integer" = "numeric",
-            "array" = {
-              # Defensive check for array items
-              if ("items" %in% names(prop) && "type" %in% names(prop$items)) {
-                item_type <- prop$items$type[1]
-                base_type <- switch(item_type,
+      # Handle allOf references
+      if ("allOf" %in% names(props)) {
+        for (ref in props$allOf) {
+          # Handle levelContainer reference
+          if ("$ref" %in% names(ref) && grepl("levelContainer", ref[["$ref"]], fixed = TRUE)) {
+            result[["level"]] <- "numeric"
+            next
+          }
+          
+          # Handle shapeContainer reference (for height)
+          if ("$ref" %in% names(ref) && grepl("shapeContainer", ref[["$ref"]], fixed = TRUE)) {
+            result[["height"]] <- "numeric"
+            next
+          }
+          
+          # Direct property definitions in allOf
+          if ("properties" %in% names(ref)) {
+            for (field_name in names(ref$properties)) {
+              prop <- ref$properties[[field_name]]
+              
+              if ("$ref" %in% names(prop)) {
+                if (field_name == "class") {
+                  result[[field_name]] <- "character"
+                } else if (field_name == "level") {
+                  result[[field_name]] <- "numeric"
+                }
+              } else if ("type" %in% names(prop)) {
+                result[[field_name]] <- switch(prop$type[1],
                   "string" = "character",
                   "number" = "numeric",
-                  "integer" = "numeric",
                   "boolean" = "logical",
-                  "character" # Default
+                  "character"
                 )
-                paste0(base_type, "[]")
-              } else {
-                "character[]" # Default for arrays
               }
-            },
-            "character" # Default
-          )
+            }
+          }
+        }
+      }
 
-          # Handle enums
-          if ("enum" %in% names(prop)) {
-            r_type <- sprintf("factor(%s)", paste(prop$enum, collapse = ", "))
+      # Process direct properties
+      if ("properties" %in% names(props)) {
+        for (field_name in names(props$properties)) {
+          prop <- props$properties[[field_name]]
+
+          # Special cases
+          if (field_name == "categories") {
+            result[["categories_primary"]] <- "character"
+            result[["categories_alternate"]] <- "character[]"
+            next
+          }
+          
+          # Handle direct level property
+          if (field_name == "level") {
+            result[["level"]] <- "numeric"
+            next
           }
 
-          result[[field_name]] <- r_type
+          # Get type definition
+          if ("type" %in% names(prop)) {
+            type <- prop$type[1]
+
+            r_type <- switch(type,
+              "string" = "character",
+              "boolean" = "logical",
+              "number" = "numeric",
+              "integer" = "numeric",
+              "array" = {
+                if ("items" %in% names(prop) && "type" %in% names(prop$items)) {
+                  item_type <- prop$items$type[1]
+                  base_type <- switch(item_type,
+                    "string" = "character",
+                    "number" = "numeric",
+                    "integer" = "numeric",
+                    "boolean" = "logical",
+                    "character"
+                  )
+                  paste0(base_type, "[]")
+                } else {
+                  "character[]"
+                }
+              },
+              "character"
+            )
+
+            # Handle enums
+            if ("enum" %in% names(prop)) {
+              r_type <- sprintf("factor(%s)", paste(prop$enum, collapse = ", "))
+            }
+
+            result[[field_name]] <- r_type
+          }
         }
       }
     }
@@ -158,16 +194,69 @@ flatten_schema_properties <- function(schema) {
 
   return(result)
 }
-
 # Process schemas
 schemas <- schema_defs[!names(schema_defs) %in% c("defs")]
 tidyllm_schema_list <- lapply(schemas, flatten_schema_properties)
 
 # Add bbox to all elements
 tidyllm_schema_list <- lapply(tidyllm_schema_list, function(x) {
-  x[["bbox"]] <- "numeric[]"
+  x[["geometry"]] <- NULL
   return(x)
 })
 
+test_schema_properties <- function() {
+  # Test cases for different schemas and their expected properties
+  test_cases <- list(
+    building = c(
+      "id", "subtype", "class", "has_parts", "height"
+    ),
+    place = c(
+      "id", "categories_primary", "categories_alternate",
+      "confidence", "websites", "phones"
+    ),
+    water = c(
+      "id", "subtype", "is_salt", "is_intermittent"
+    ),
+    segment = c(
+      "id", "subtype", "connectors", "class", "level"
+    )
+  )
+
+  # Track all failures
+  failures <- character(0)
+  
+  # Test each schema
+  for (schema_name in names(test_cases)) {
+    expected_props <- test_cases[[schema_name]]
+    actual_props <- names(tidyllm_schema_list[[schema_name]])
+    missing_props <- setdiff(expected_props, actual_props)
+    
+    if (length(missing_props) > 0) {
+      failures <- c(
+        failures,
+        sprintf("Schema '%s' missing expected properties: %s",
+                schema_name,
+                paste(missing_props, collapse = ", "))
+      )
+    }
+  }
+
+  # Report all failures at once
+  if (length(failures) > 0) {
+    stop(paste(failures, collapse = "\n"))
+  }
+  
+  cat("All schema property tests passed!\n")
+}
+
+# Run the tests
+test_schema_properties()
+
+yyjsonr::write_json_file(
+  tidyllm_schema_list, paste0(schema_dir, "/tidy/overture_schema_types.json"), pretty = TRUE
+)
+
 # Save result once
 usethis::use_data(tidyllm_schema_list, internal = TRUE, overwrite = TRUE)
+
+devtools::install_deps()
