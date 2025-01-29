@@ -16,6 +16,7 @@ Suggests:
     httr,
     jsonlite,
     knitr,
+    mockr,
     rmarkdown,
     spelling,
     testthat (>= 3.0.0),
@@ -33,7 +34,8 @@ Imports:
     duckdb (>= 1.0.0),
     glue,
     rlang,
-    sf
+    sf,
+    yyjsonr
 VignetteBuilder: knitr
 Depends: 
     R (>= 3.5)
