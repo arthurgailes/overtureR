@@ -27,7 +27,12 @@
 #'
 #' exit_stage(conn)
 #' @export
-as_overture <- function(x, type, theme = get_theme_from_type(type)) {
+as_overture <- function(
+  x, 
+  type, 
+  theme = get_theme_from_type(type),
+  bbox = NULL
+) {
   if (!inherits(x, "tbl_sql")) stop("Input must be a tbl_sql object")
 
   if (!inherits(x, "overture_call")) {
@@ -35,7 +40,7 @@ as_overture <- function(x, type, theme = get_theme_from_type(type)) {
     config_extensions(conn)
 
     class(x) <- c("overture_call", class(x))
-    attr(x, "overture_playbill") <- c(type = type, theme = theme)
+    attr(x, "overture_playbill") <- c(type = type, theme = theme, bbox = bbox)
   }
 
   return(x)
