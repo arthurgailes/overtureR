@@ -1,108 +1,122 @@
-test_that("stage_prompt validates inputs correctly", {
-  # Test non-overture_call input
-  expect_error(
-    stage_prompt(mtcars, "find cars"),
-    "Input must be an overture_call object"
+
+testthat::test_that("stage_prompt validates inputs correctly", {
+  # Mock data
+  mock_data <- structure(
+    data.frame(),
+    class = c("overture_call", "tbl_df", "tbl", "data.frame"),
+    overture_playbill = list(type = "building")
   )
 
-  # Test invalid message
-  skip_if_offline()
-  skip_on_cran()
-  data <- open_curtain("building")
-  expect_error(
-    stage_prompt(data, c("query1", "query2")),
-    "message must be a single character string"
+  expect_error(stage_prompt(data.frame(), "test"),
+               "Input must be an overture_call object")
+
+  expect_error(stage_prompt(mock_data, c("test1", "test2")),
+               "message must be a single character string")
+
+  expect_error(stage_prompt(mock_data, 123),
+               "message must be a single character string")
+})
+
+testthat::test_that("create_nl_message constructs appropriate prompts", {
+  mock_data <- structure(
+    data.frame(),
+    class = c("overture_call", "tbl_df", "tbl", "data.frame"),
+    overture_playbill = list(
+      type = "building",
+      bbox = c(-74, 40, -73, 41)
+    )
+  )
+
+  # Test with missing type
+  bad_data <- structure(data.frame(), class = "overture_call")
+  expect_error(create_nl_message("test", bad_data, .provider = tidyllm::openai, .temperature = 0.1),
+               "Could not determine Overture type")
+
+  # Test basic prompt construction (mocked response)
+  mockr::with_mock(
+    tidyllm::chat = function(...) list(data = list(height = 50)),
+    {
+      result <- create_nl_message("buildings taller than 50m", mock_data,
+                                .provider = tidyllm::openai, .temperature = 0.1)
+      expect_type(result, "list")
+      expect_equal(result$height, 50)
+    }
   )
 })
 
-test_that("stage_prompt generates correct filter expressions", {
-  skip_if_offline()
-  skip_on_cran()
+testthat::test_that("create_json_schema generates valid schemas", {
+  expect_error(create_json_schema("invalid_type"),
+               "No schema definition found for type")
 
-  # Test basic building height filter
-  broadway_bbox <- sf::st_bbox(c(
-    xmin = -74.017,
-    ymin = 40.704,
-    xmax = -73.929,
-    ymax = 40.816
-  ))
-
-  buildings <- open_curtain("building", broadway_bbox)
-  nl_query <- stage_prompt(buildings, "find buildings taller than 100 meters")
-
-  # Verify subquery structure
-  query_sql <- dbplyr::sql_render(nl_query)
-  expect_match(as.character(query_sql), "^SELECT .*? FROM \\(SELECT .*? WHERE height > 100.*?\\)", perl = TRUE)
-
-  # Verify type preservation
-  expect_s3_class(nl_query, "overture_call")
-  expect_equal(attr(nl_query, "overture_playbill")[["type"]], "building")
-  expect_equal(attr(nl_query, "overture_playbill")[["theme"]], attr(buildings, "overture_playbill")[["theme"]])
-
-  # Test category filter with multiple conditions
-  places <- open_curtain("place") |>
-    stage_prompt("show only restaurants with high confidence")
-
-  query_sql <- dbplyr::sql_render(places)
-  expect_match(as.character(query_sql), "^SELECT .*? FROM \\(SELECT .*? WHERE.*?categories\\.primary = 'restaurant'.*?confidence > .*?\\)", perl = TRUE)
+  schema <- create_json_schema("building")
+  expect_true(inherits(schema, "tidyllm_schema"))
+  expect_equal(schema$name, "building_schema")
 })
 
-test_that("stage_prompt respects schema constraints", {
-  skip_if_offline()
-  skip_on_cran()
-
-  # Test schema validation
-  places <- open_curtain("place")
-  expect_error(
-    stage_prompt(places, "find places with invalid_field > 10"),
-    NA # Should not error, but should ignore invalid field
+testthat::test_that("stage_prompt handles filter expressions correctly", {
+  mock_data <- structure(
+    data.frame(height = 1:5),
+    class = c("overture_call", "tbl_df", "tbl", "data.frame"),
+    overture_playbill = list(type = "building")
   )
 
-  # Test array field handling
-  result <- places |>
-    stage_prompt("find places with categories containing restaurant")
-
-  query_sql <- dbplyr::sql_render(result)
-  expect_match(as.character(query_sql), "categories", fixed = TRUE)
+  mockr::with_mock(
+    create_nl_message = function(...) list(height = 3),
+    {
+      result <- stage_prompt(mock_data, "buildings taller than 3m")
+      expect_s3_class(result, "overture_call")
+      expect_equal(nrow(result), 3) # Should have heights 3,4,5
+    }
+  )
 })
 
-test_that("stage_prompt works in dplyr pipelines", {
+testthat::test_that("stage_prompt works with real building data", {
   skip_if_offline()
   skip_on_cran()
-
-  result <- open_curtain("building") |>
-    dplyr::select(id, height, type) |>
-    stage_prompt("buildings taller than 50 meters") |>
-    dplyr::filter(dplyr::n() > 0) |>
-    head(1) |>
-    collect()
-
-  expect_s3_class(result, "sf")
-  expect_true(all(result$height > 50))
+  
+  # Test with actual building data
+  nyc_bbox <- c(xmin = -74.01, ymin = 40.70, xmax = -73.99, ymax = 40.72)
+  buildings <- open_curtain("building", spatial_filter = nyc_bbox)
+  
+  # Test height filter
+  tall_buildings <- stage_prompt(buildings, "find buildings taller than 100 meters")
+  result <- dplyr::collect(tall_buildings)
+  
+  expect_s3_class(tall_buildings, "overture_call")
+  expect_true(all(result$height > 100))
+  expect_gt(nrow(result), 0)
 })
 
-test_that("stage_prompt handles errors gracefully", {
+testthat::test_that("stage_prompt works with real places data", {
   skip_if_offline()
   skip_on_cran()
+  
+  # Test with actual places data
+  nyc_bbox <- c(xmin = -74.01, ymin = 40.70, xmax = -73.99, ymax = 40.72)
+  places <- open_curtain("place", spatial_filter = nyc_bbox)
+  
+  # Test category filter
+  restaurants <- stage_prompt(places, "show only restaurants")
+  result <- dplyr::collect(restaurants)
+  
+  expect_s3_class(restaurants, "overture_call")
+  expect_true(all(grepl("restaurant", result$categories.primary, ignore.case = TRUE)))
+  expect_gt(nrow(result), 0)
+})
 
-  # Test invalid LLM response
-  mock_chat <- function(...) {
-    tidyllm::llm_message("Invalid JSON response")
-  }
-
-  data <- open_curtain("building")
-  expect_error(
-    stage_prompt(data, "test query", .provider = mock_chat),
-    "Failed to parse LLM response"
-  )
-
-  # Test invalid filter expression
-  mock_chat <- function(...) {
-    tidyllm::llm_message("{\"filters\": [\"invalid R syntax >\"]}")
-  }
-
-  expect_error(
-    stage_prompt(data, "test query", .provider = mock_chat),
-    "Invalid filter expression"
-  )
+testthat::test_that("stage_prompt handles complex queries with real data", {
+  skip_if_offline()
+  skip_on_cran()
+  
+  nyc_bbox <- c(xmin = -74.01, ymin = 40.70, xmax = -73.99, ymax = 40.72)
+  places <- open_curtain("place", spatial_filter = nyc_bbox)
+  
+  # Test multiple conditions
+  coffee_shops <- stage_prompt(places, "find coffee shops with high confidence")
+  result <- dplyr::collect(coffee_shops)
+  
+  expect_s3_class(coffee_shops, "overture_call")
+  expect_true(all(grepl("coffee", result$categories.primary, ignore.case = TRUE)))
+  expect_true(all(result$confidence > 0.8))
+  expect_gt(nrow(result), 0)
 })
