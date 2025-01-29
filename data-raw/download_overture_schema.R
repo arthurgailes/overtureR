@@ -257,6 +257,7 @@ yyjsonr::write_json_file(
 )
 
 # Save result once
-usethis::use_data(tidyllm_schema_list, internal = TRUE, overwrite = TRUE)
+usethis::use_data(tidyllm_schema_list, schema_defs, internal = TRUE, overwrite = TRUE)
 
-devtools::install_deps()
+
+
