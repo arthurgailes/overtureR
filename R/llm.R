@@ -12,6 +12,8 @@
 #'
 #' @return An overture_call object with the natural language filters applied
 #'
+#' @seealso tidyllm::chat
+#'
 #' @examples
 #' \dontrun{
 #' # Basic usage
@@ -33,7 +35,6 @@ stage_prompt <- function(
     .temperature = 0.1,
     print_response = FALSE,
     ...) {
-
   # Validate input
   if (!inherits(.data, "overture_call")) {
     stop("Input must be an overture_call object. Use open_curtain() first.", call. = FALSE)
@@ -45,22 +46,26 @@ stage_prompt <- function(
 
   # Get parsed response from LLM
   params <- create_nl_message(message, .data, .provider, .temperature, ...)
-  if(isTRUE(print_response)) print(params)
+  if (isTRUE(print_response)) print(params)
 
   # Convert parameter list into filter expressions
   filter_exprs <- lapply(names(params), function(param_name) {
     param_value <- params[[param_name]]
 
     # Create filter expression based on parameter value
-    filter_str <- sprintf("%s >= %s", param_name, param_value)
+    filter_str <- paste(param_name, param_value)
 
-    tryCatch({
-      rlang::parse_expr(filter_str)
-    },
-    error = function(e) {
-      stop("Invalid filter expression for parameter ", param_name,
-           " with value ", param_value, "\nError: ", e$message, call. = FALSE)
-    })
+    tryCatch(
+      {
+        rlang::parse_expr(filter_str)
+      },
+      error = function(e) {
+        stop("Invalid filter expression for parameter ", param_name,
+          " with value ", param_value, "\nError: ", e$message,
+          call. = FALSE
+        )
+      }
+    )
   })
 
   # Apply filters
@@ -97,18 +102,22 @@ create_nl_message <- function(message, data, .provider, .temperature, ...) {
 
   # Simplified system prompt without redundant schema
   sys_prompt <- glue::glue("
-    You are a specialized assistant that converts natural language queries into dplyr filter conditions for Overture Maps {type} data.
-    Your task is to generate ONLY relevant filter expressions based on the query.
+  You are a specialized assistant that converts natural language queries into
+  dplyr filter conditions for Overture Maps data.
+  Your task is to generate ONLY relevant filter expressions based on the query.
 
-    Rules:
-    1. Only return filter conditions that directly relate to the user's query
-    2. For numerical comparisons, use proper operators (>, <, >=, <=, ==)
-    3. For text matching, use appropriate string functions (grepl, %in%, etc.)
-    4. Never generate example or placeholder values
-    5. If a query cannot be translated to a filter, return an empty response
+  Rules:
+  1. Only return filter conditions that directly relate to the user's query.
+  2. For numerical comparisons, use proper operators (>, <, >=, <=, ==).
+  3. For text matching, use the equality operator (==) or appropriate string functions (grepl, %in%, etc.).
+  4. Never generate example or placeholder values.
+  5. If a query cannot be translated to a filter, return an empty response.
 
-    Here is the full schema with descriptions: {full_schema}
-  ")
+  Ensure that each filter condition is a complete and valid R expression suitable for use in dplyr::filter().
+")
+
+  #
+  # Here is the full {type} schema with descriptions: {full_schema}
 
   if (!is.null(bbox)) {
     sys_prompt <- paste0(sys_prompt, "\nBounding box context: ", bbox)
@@ -128,7 +137,7 @@ create_nl_message <- function(message, data, .provider, .temperature, ...) {
         llm_msg,
         .provider = .provider,
         .temperature = .temperature,
-        .json_schema = create_json_schema(type),
+        .json_schema = create_tidyllm_schema(type),
         ...
       )
     },
@@ -151,8 +160,14 @@ create_nl_message <- function(message, data, .provider, .temperature, ...) {
 }
 
 
-create_json_schema <- function(type) {
+create_tidyllm_schema <- function(type) {
   schema <- tidyllm_schema_list[[type]]
+
+  if (is.null(schema)) {
+    warning("No schema definition found for type")
+    return("")
+  }
+
   schema[["name"]] <- paste0(type, "_schema")
   # TODO: add bbox
 
@@ -160,6 +175,6 @@ create_json_schema <- function(type) {
     stop(sprintf("No schema definition found for type '%s'.", type), call. = FALSE)
   }
 
-  json_schema <- do.call(tidyllm::tidyllm_schema, schema)
-  return(json_schema)
+  tidyllm_schema <- do.call(tidyllm::tidyllm_schema, schema)
+  return(tidyllm_schema)
 }
