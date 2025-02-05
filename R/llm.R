@@ -44,29 +44,12 @@ stage_prompt <- function(
     stop("message must be a single character string", call. = FALSE)
   }
 
+
   # Get parsed response from LLM
   params <- create_nl_message(message, .data, .provider, .temperature, ...)
   if (isTRUE(print_response)) print(params)
 
-  # Convert parameter list into filter expressions
-  filter_exprs <- lapply(names(params), function(param_name) {
-    param_value <- params[[param_name]]
-
-    # Create filter expression based on parameter value
-    filter_str <- paste(param_name, param_value)
-
-    tryCatch(
-      {
-        rlang::parse_expr(filter_str)
-      },
-      error = function(e) {
-        stop("Invalid filter expression for parameter ", param_name,
-          " with value ", param_value, "\nError: ", e$message,
-          call. = FALSE
-        )
-      }
-    )
-  })
+  filter_exprs <- process_nl_params(params)
 
   # Apply filters
   result <- do.call(dplyr::filter, c(list(.data), filter_exprs))
@@ -110,7 +93,7 @@ create_nl_message <- function(message, data, .provider, .temperature, ...) {
   1. Only return filter conditions that directly relate to the user's query.
   2. For numerical comparisons, use proper operators (>, <, >=, <=, ==).
   3. For text matching, use the equality operator (==) or appropriate string functions (grepl, %in%, etc.).
-  4. Never generate example or placeholder values.
+  4. Never generate example or placeholder values ('', list()).
   5. If a query cannot be translated to a filter, return an empty response.
 
   Ensure that each filter condition is a complete and valid R expression suitable for use in dplyr::filter().
@@ -159,6 +142,43 @@ create_nl_message <- function(message, data, .provider, .temperature, ...) {
   return(params)
 }
 
+#' Post-processing of create_nl_message
+process_nl_params <- function(params) {
+  # drop empty expressions (list, "")
+  params[which(params %in% c("list()", '""'))] <- NULL
+
+  # Convert parameter list into filter expressions
+  filter_exprs <- lapply(names(params), function(param_name) {
+    param_value <- params[[param_name]]
+
+    # Create filter expression based on parameter value
+    if (!is.null(param_value) && is.character(param_value)) {
+      # If param_value doesn't start with an operator, prepend ==
+      if (!grepl("\"|'", param_value)) {
+        param_value <- paste0('"', param_value, '"')
+      }
+      if (!grepl("^[=><%\\(]", param_value)) {
+        param_value <- paste0("==", param_value)
+      }
+    }
+
+    filter_str <- paste(param_name, param_value)
+
+    tryCatch(
+      {
+        rlang::parse_expr(filter_str)
+      },
+      error = function(e) {
+        stop("Invalid filter expression for parameter ", param_name,
+          " with value ", param_value, "\nError: ", e$message,
+          call. = FALSE
+        )
+      }
+    )
+  })
+
+  return(filter_exprs)
+}
 
 create_tidyllm_schema <- function(type) {
   schema <- tidyllm_schema_list[[type]]

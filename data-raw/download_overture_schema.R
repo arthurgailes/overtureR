@@ -91,7 +91,7 @@ flatten_schema_properties <- function(schema) {
     if ("id" %in% names(schema$properties)) {
       result[["id"]] <- "character"
     }
-    
+
     # Get nested properties
     if ("properties" %in% names(schema$properties)) {
       props <- schema$properties$properties
@@ -104,18 +104,18 @@ flatten_schema_properties <- function(schema) {
             result[["level"]] <- "numeric"
             next
           }
-          
+
           # Handle shapeContainer reference (for height)
           if ("$ref" %in% names(ref) && grepl("shapeContainer", ref[["$ref"]], fixed = TRUE)) {
             result[["height"]] <- "numeric"
             next
           }
-          
+
           # Direct property definitions in allOf
           if ("properties" %in% names(ref)) {
             for (field_name in names(ref$properties)) {
               prop <- ref$properties[[field_name]]
-              
+
               if ("$ref" %in% names(prop)) {
                 if (field_name == "class") {
                   result[[field_name]] <- "character"
@@ -142,11 +142,11 @@ flatten_schema_properties <- function(schema) {
 
           # Special cases
           if (field_name == "categories") {
-            result[["categories_primary"]] <- "character"
-            result[["categories_alternate"]] <- "character[]"
+            result[["categories$primary"]] <- "character"
+            result[["categories$alternate"]] <- "character[]"
             next
           }
-          
+
           # Handle direct level property
           if (field_name == "level") {
             result[["level"]] <- "numeric"
@@ -211,7 +211,7 @@ test_schema_properties <- function() {
       "id", "subtype", "class", "has_parts", "height"
     ),
     place = c(
-      "id", "categories_primary", "categories_alternate",
+      "id", "categories$primary", "categories$alternate",
       "confidence", "websites", "phones"
     ),
     water = c(
@@ -224,19 +224,21 @@ test_schema_properties <- function() {
 
   # Track all failures
   failures <- character(0)
-  
+
   # Test each schema
   for (schema_name in names(test_cases)) {
     expected_props <- test_cases[[schema_name]]
     actual_props <- names(tidyllm_schema_list[[schema_name]])
     missing_props <- setdiff(expected_props, actual_props)
-    
+
     if (length(missing_props) > 0) {
       failures <- c(
         failures,
-        sprintf("Schema '%s' missing expected properties: %s",
-                schema_name,
-                paste(missing_props, collapse = ", "))
+        sprintf(
+          "Schema '%s' missing expected properties: %s",
+          schema_name,
+          paste(missing_props, collapse = ", ")
+        )
       )
     }
   }
@@ -245,7 +247,7 @@ test_schema_properties <- function() {
   if (length(failures) > 0) {
     stop(paste(failures, collapse = "\n"))
   }
-  
+
   cat("All schema property tests passed!\n")
 }
 
@@ -253,11 +255,9 @@ test_schema_properties <- function() {
 test_schema_properties()
 
 yyjsonr::write_json_file(
-  tidyllm_schema_list, paste0(schema_dir, "/tidy/overture_schema_types.json"), pretty = TRUE
+  tidyllm_schema_list, paste0(schema_dir, "/tidy/overture_schema_types.json"),
+  pretty = TRUE
 )
 
 # Save result once
 usethis::use_data(tidyllm_schema_list, schema_defs, internal = TRUE, overwrite = TRUE)
-
-
-
