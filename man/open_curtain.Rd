@@ -13,7 +13,7 @@ open_curtain(
   mode = "view",
   tablename = NULL,
   read_opts = list(),
-  base_url = "s3://overturemaps-us-west-2/release/2024-11-13.0",
+  base_url = "s3://overturemaps-us-west-2/release/2025-03-19.0",
   bbox = NULL
 )
 }
