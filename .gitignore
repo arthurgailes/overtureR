@@ -6,6 +6,8 @@
 .quarto
 docs
 inst/figures
+data-raw/overture_schema/schema
+data-raw/overture_schema/tidy
 
 /.quarto/
 inst/doc
