@@ -112,22 +112,25 @@ airport:</p>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; OGR: Unsupported geometry type</span></span>
+<span><span class="co">#&gt; OGR: Unsupported geometry type</span></span>
+<span><span class="co">#&gt; OGR: Unsupported geometry type</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">reagan_airport</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Simple feature collection with 2 features and 15 fields</span></span>
+<span><span class="co">#&gt; Simple feature collection with 3 features and 15 fields</span></span>
 <span><span class="co">#&gt; Geometry type: POINT</span></span>
 <span><span class="co">#&gt; Dimension:     XY</span></span>
-<span><span class="co">#&gt; Bounding box:  xmin: -77.04384 ymin: 38.84906 xmax: -77.04273 ymax: 38.85413</span></span>
+<span><span class="co">#&gt; Bounding box:  xmin: -77.04413 ymin: 38.85125 xmax: -76.95801 ymax: 38.92816</span></span>
 <span><span class="co">#&gt; Geodetic CRS:  WGS 84</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 16</span></span></span>
-<span><span class="co">#&gt;   id                       geometry bbox$xmin version sources      names$primary</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;POINT [°]&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 08f2aa87b1c… (-77.04384 38.84906)     -<span style="color: #BB0000;">77.0</span>       0 <span style="color: #949494;">&lt;df [1 × 5]&gt;</span> Ronald Reaga…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 08f2aa87b56… (-77.04273 38.85413)     -<span style="color: #BB0000;">77.0</span>       0 <span style="color: #949494;">&lt;df [2 × 5]&gt;</span> Ronald Reaga…</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 15 more variables: bbox$xmax &lt;dbl&gt;, $ymin &lt;dbl&gt;, $ymax &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 16</span></span></span>
+<span><span class="co">#&gt;   id                 geometry bbox$xmin type  version sources      names$primary</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;POINT [°]&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 08f2a… (-77.04023 38.85125)     -<span style="color: #BB0000;">77.0</span> place       0 <span style="color: #949494;">&lt;df [1 × 5]&gt;</span> Ronald Reaga…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 08f2a… (-77.04413 38.85759)     -<span style="color: #BB0000;">77.0</span> place       0 <span style="color: #949494;">&lt;df [1 × 5]&gt;</span> Ronald Reaga…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 08f2a… (-76.95801 38.92816)     -<span style="color: #BB0000;">77.0</span> place       0 <span style="color: #949494;">&lt;df [1 × 5]&gt;</span> Ronald Reaga…</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 14 more variables: bbox$xmax &lt;dbl&gt;, $ymin &lt;dbl&gt;, $ymax &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   names$common &lt;list&gt;, $rules &lt;list&gt;, categories &lt;df[,2]&gt;, confidence &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   websites &lt;list&gt;, socials &lt;list&gt;, emails &lt;list&gt;, phones &lt;list&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   brand &lt;df[,2]&gt;, addresses &lt;list&gt;, theme &lt;chr&gt;, type &lt;chr&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;">#   brand &lt;df[,2]&gt;, addresses &lt;list&gt;, theme &lt;chr&gt;</span></span></span></code></pre></div>
 <p>By default, <code>open_curtain</code> would search through every
 “place” (aka point of interest) in the world - an enormous dataset.
 Obviously, that’s too much to load into most computers’ memory, so
@@ -209,12 +212,12 @@ elements we’ve gathered:</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">dc_transit</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Simple feature collection with 22 features and 2 fields</span></span>
+<span><span class="co">#&gt; Simple feature collection with 28 features and 2 fields</span></span>
 <span><span class="co">#&gt; Geometry type: LINESTRING</span></span>
 <span><span class="co">#&gt; Dimension:     XY</span></span>
-<span><span class="co">#&gt; Bounding box:  xmin: -77.07099 ymin: 38.81561 xmax: -76.96203 ymax: 38.90138</span></span>
+<span><span class="co">#&gt; Bounding box:  xmin: -77.07099 ymin: 38.81561 xmax: -76.89703 ymax: 38.90138</span></span>
 <span><span class="co">#&gt; Geodetic CRS:  WGS 84</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 22 × 3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 28 × 3</span></span></span>
 <span><span class="co">#&gt;    id                               names$primary                       geometry</span></span>
 <span><span class="co">#&gt;  <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;LINESTRING [°]&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 0852aa87bfffffff043d7d4cb96bc842 Washington Metro … (-77.04351 38.8519, -77.…</span></span>
@@ -227,7 +230,7 @@ elements we’ve gathered:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 0872aa87b0ffffff043fff6322f465a8 Washington Metro … (-77.04461 38.85512, -77…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 0862aa87b7ffffff043ddbfe124c8a34 Washington Metro … (-77.05269 38.87024, -77…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 0862aa87b7ffffff043f5d0044cff8a1 Washington Metro … (-77.05904 38.86444, -77…</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 12 more rows</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 18 more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: names$common &lt;list&gt;, $rules &lt;list&gt;</span></span></span></code></pre></div>
 <p>This final step uses ggplot2 to create a map that displays the
 airport, the Kennedy Center, and the Metro Blue Line connecting them.
