@@ -1,5 +1,8 @@
 library(devtools)
 
+# Load the package
+load_all()
+
 # Document the package
 document()
 
