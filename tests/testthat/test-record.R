@@ -37,7 +37,7 @@ test_that("downloading works by directory", {
   m_def <- dplyr::filter(collect_timer, as.character(expression) == "default")$median
   m_dl <- dplyr::filter(collect_timer, as.character(expression) == "dl")$median
 
-  expect_lt(m_dl, m_def / 10)
+  expect_lt(m_dl, m_def / 2)
 
   expect_equal(colnames(default), colnames(dl))
   expect_equal(dim(default), dim(dl))

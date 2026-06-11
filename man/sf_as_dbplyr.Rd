@@ -43,7 +43,7 @@ the geometry stored as text via \code{sf::st_as_text}. It then creates the view
 type.
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 library(sf)
 
 con <- stage_conn()

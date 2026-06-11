@@ -36,7 +36,7 @@ the same partition structure as in S3. \code{snapshot_overture} defaults
 'output_dir' to \code{tempdir()} and overwrite to TRUE.
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
 buildings <- open_curtain("building", spatial_filter = bbox)
 local_buildings <- record_overture(buildings, tempdir(), overwrite = TRUE)
