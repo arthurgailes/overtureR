@@ -1,4 +1,4 @@
-# overtureR (development version)
+# overtureR 0.2.6
 
 * `open_curtain()`'s `base_url` no longer hardcodes a specific Overture
 release. It now defaults to the latest release, discovered dynamically via

@@ -10,6 +10,7 @@
 ^pkgdown$
 ^inst/figures$
 ^\.dev$
+^CLAUDE\.md$
 ^CRAN-SUBMISSION$
 lastMiKTeXException
 ^tests/testthat/test-benchmark\.R$
