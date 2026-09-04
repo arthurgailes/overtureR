@@ -1,3 +1,11 @@
+# overtureR (development version)
+
+* `open_curtain()`'s `base_url` no longer hardcodes a specific Overture
+release. It now defaults to the latest release, discovered dynamically via
+the new exported `latest_overture_release()` (queries Overture's STAC
+catalog and caches the result for the session), so the package doesn't need
+a release-bump update every time Overture cuts a new release.
+
 # overtureR 0.2.3
 
 * Fix for bug in `duckdb` 1.1.3.

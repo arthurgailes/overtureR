@@ -13,7 +13,8 @@ open_curtain(
   mode = "view",
   tablename = NULL,
   read_opts = list(),
-  base_url = "s3://overturemaps-us-west-2/release/2025-03-19.0",
+  base_url = paste0("s3://overturemaps-us-west-2/release/",
+    latest_overture_release(conn)),
   bbox = NULL
 )
 }
@@ -38,7 +39,8 @@ dataset into memory.}
 \href{https://duckdb.org/docs/data/parquet/overview.html#parameters}{DuckDB's read_parquet}}
 
 \item{base_url}{Allows user to download data from a different mirror, such
-as a local directory, or a alternative release.}
+as a local directory, or a alternative release. Defaults to the latest
+Overture release, discovered via \code{\link[=latest_overture_release]{latest_overture_release()}}.}
 
 \item{bbox}{alias for \code{spatial_filter}. may be deprecated in the future.}
 }

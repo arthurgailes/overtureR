@@ -17,7 +17,8 @@
 #' @param read_opts A named list of key-value pairs passed to
 #' \href{https://duckdb.org/docs/data/parquet/overview.html#parameters}{DuckDB's read_parquet}
 #' @param base_url Allows user to download data from a different mirror, such
-#' as a local directory, or a alternative release.
+#' as a local directory, or a alternative release. Defaults to the latest
+#' Overture release, discovered via [latest_overture_release()].
 #' @param bbox alias for `spatial_filter`. may be deprecated in the future.
 #'
 #' @return An dbplyr lazy dataframe, or an sf dataframe if as_sf is TRUE
@@ -35,7 +36,9 @@ open_curtain <- function(
     mode = "view",
     tablename = NULL,
     read_opts = list(),
-    base_url = "s3://overturemaps-us-west-2/release/2025-03-19.0",
+    base_url = paste0(
+      "s3://overturemaps-us-west-2/release/", latest_overture_release(conn)
+    ),
     bbox = NULL) {
   # use cached connection if no conn provided
   if (is.null(conn)) conn <- stage_conn()
