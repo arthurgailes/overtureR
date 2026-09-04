@@ -30,11 +30,11 @@ install.packages("overtureR")
   [dbplyr’s](https://dbplyr.tidyverse.org/) lazy evaluation
 - Seamless `dplyr` and `sf` integration
 - Merge with your local `sf` data within `duckdb` or with `sf`
-- Local downloading for offline use and perforamnce
+- Local downloading for offline use and performance
 
 ## Usage
 
-Replicating `duckdb` examples fromm the [Overture
+Replicating `duckdb` examples from the [Overture
 docs](https://docs.overturemaps.org/getting-data/duckdb/)
 
 ``` r
@@ -84,16 +84,16 @@ mountains <- open_curtain(type = "*", theme = "places") |>
   filter(main_category == "mountain" & confidence > .90)
 
 head(mountains)
-#> # Source:   SQL [6 x 8]
-#> # Database: DuckDB v1.0.0 [Arthur.Gailes@Windows 10 x64:R 4.2.1/:memory:]
-#>   id            primary_name     x     y main_category primary_source confidence
-#>   <chr>         <chr>        <dbl> <dbl> <chr>         <chr>               <dbl>
-#> 1 08f464e0e312… Kawaikini    -159.  22.1 mountain      meta                0.954
-#> 2 08f464e3b1a2… Kalepa       -159.  22.0 mountain      meta                0.938
-#> 3 08f464e05984… Sleeping Gi… -159.  22.1 mountain      meta                0.945
-#> 4 08f464e3a4d0… Nounou-East… -159.  22.1 mountain      meta                0.945
-#> 5 08f464e05514… Makaleha Mo… -159.  22.1 mountain      meta                0.965
-#> 6 08f464e03538… Makana       -160.  22.2 mountain      meta                0.938
+#> # Source:   SQL [?? x 8]
+#> # Database: DuckDB v1.2.2 [Arthur.Gailes@Windows 10 x64:R 4.5.0/:memory:]
+#>   id           primary_name     x      y main_category primary_source confidence
+#>   <chr>        <chr>        <dbl>  <dbl> <chr>         <chr>               <dbl>
+#> 1 08fb4c586e9… Te Rua Manga -160. -21.2  mountain      meta                0.928
+#> 2 08f89343a1a… Mont Marau   -150. -17.6  mountain      meta                0.928
+#> 3 08f893434b6… Col des 3 c… -150. -17.5  mountain      meta                0.923
+#> 4 08f8922733d… Mont Temeha… -151. -16.8  mountain      meta                0.936
+#> 5 08fa0d9315c… Tekao        -140.  -8.84 mountain      meta                0.928
+#> 6 08fa1193a06… Mont Mokoto  -135. -23.1  mountain      meta                0.936
 #> # ℹ 1 more variable: geometry <POINT [°]>
 ```
 
@@ -154,3 +154,4 @@ render_snapshot(clear=TRUE)
 - Add beta/alpha datasets
 - Add mapping vignette
 - Add performance vignette
+- Download overture files via open_curtain
