@@ -25,6 +25,12 @@ config_extensions <- function(conn) {
   if (queries != "") DBI::dbExecute(conn, queries)
 }
 
+# duckdb reads and writes GEOMETRY as its own native type starting at 1.1;
+# before that, geometry has to be manually cast to/from WKB
+duckdb_native_geometry <- function() {
+  length(grep("^1.[^0]", utils::packageVersion("duckdb"))) > 0
+}
+
 # follwing R Packages advice on unused imports:
 # https://r-pkgs.org/code.html#sec-code-r-landscape
 ignore_unused_imports <- function() {

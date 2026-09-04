@@ -6,6 +6,14 @@ the new exported `latest_overture_release()` (queries Overture's STAC
 catalog and caches the result for the session), so the package doesn't need
 a release-bump update every time Overture cuts a new release.
 
+* Fix `record_overture()` producing local Parquet files that couldn't be
+`collect()`-ed back on duckdb >= 1.1: geometry was being pre-cast to WKB
+before writing, which loses the GeoParquet metadata that tells DuckDB to
+read the column back as native `GEOMETRY`, so the later `ST_AsWKB()` call
+in `collect()` failed on what was now a plain `BLOB` column. The WKB cast
+is now skipped on duckdb >= 1.1, matching how `open_curtain()` already
+treats those versions.
+
 # overtureR 0.2.3
 
 * Fix for bug in `duckdb` 1.1.3.

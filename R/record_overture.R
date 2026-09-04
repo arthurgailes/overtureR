@@ -56,8 +56,10 @@ record_overture <- function(
     }
   }
 
-  # recast geometry to wkb
-  if ("geometry" %in% cols) {
+  # duckdb < 1.1 can't write GEOMETRY directly; cast to WKB first. From 1.1
+  # onward, DuckDB's parquet writer stores GEOMETRY natively (with the
+  # GeoParquet metadata open_curtain() relies on to read it back untouched).
+  if ("geometry" %in% cols && !duckdb_native_geometry()) {
     curtain_call <- dplyr::mutate(curtain_call, geometry = ST_AsWKB(.data$geometry))
   }
 

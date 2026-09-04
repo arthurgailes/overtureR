@@ -25,7 +25,7 @@ release, so callers don't have to track releases themselves or wait on a
 package update. The result is cached for the session.
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 latest_overture_release()
 \dontshow{\}) # examplesIf}
 }

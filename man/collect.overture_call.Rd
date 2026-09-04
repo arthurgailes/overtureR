@@ -12,7 +12,7 @@ collect_sf(...)
 \arguments{
 \item{x}{A lazy data frame backed by a database query.}
 
-\item{...}{Further arguments passed to \code{\link[dplyr:compute]{dplyr::collect()}}.}
+\item{...}{Further arguments passed to \code{\link[dplyr:collect]{dplyr::collect()}}.}
 
 \item{geom_col}{The name of the geometry column. Will auto-detect names
 matching 'geom'.}
@@ -28,7 +28,7 @@ Collects a lazy dbplyr view and materializes it as an
 in-memory \code{sf} table. \code{collect_sf} is a deprecated alias.
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 
 bbox <- c(xmin = -120.5, ymin = 35.5, xmax = -120.0, ymax = 36.0)
 lazy_tbl <- open_curtain("building", bbox)

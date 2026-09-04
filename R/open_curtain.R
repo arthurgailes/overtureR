@@ -61,9 +61,11 @@ open_curtain <- function(
 
   read_opts <- process_parquet_read_opts(read_opts)
 
-  # duckdb starts reading geometry natively at 1.1
-  duckdb_1_1 <- grep("^1.[^0]", utils::packageVersion("duckdb"))
-  geometry <- ifelse(duckdb_1_1, "", "REPLACE (ST_GeomFromWKB(geometry) as geometry)")
+  geometry <- if (duckdb_native_geometry()) {
+    ""
+  } else {
+    "REPLACE (ST_GeomFromWKB(geometry) as geometry)"
+  }
 
   interior_query <- glue::glue(
     "SELECT * {geometry}

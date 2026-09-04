@@ -27,7 +27,7 @@ used directly on tbl_sql #' objects representing Overture Maps data.
 The function adds the overture_call class as the first class of the object
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 # The open_curtain() function already uses as_overture() internally,
 # but you can also use it directly:
 conn <- stage_conn()

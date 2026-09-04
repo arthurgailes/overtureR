@@ -54,7 +54,7 @@ records within that area. The core code is copied from \code{duckdbfs}, which
 deserves all credit for the implementation
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 bbox <- c(xmin = -120.5, ymin = 35.5, xmax = -120.0, ymax = 36.0)
 open_curtain("building", bbox)
 \dontshow{\}) # examplesIf}
