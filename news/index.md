@@ -1,6 +1,6 @@
 # Changelog
 
-## overtureR (development version)
+## overtureR 0.2.6
 
 - [`open_curtain()`](https://arthurgailes.github.io/overtureR/reference/open_curtain.md)’s
   `base_url` no longer hardcodes a specific Overture release. It now
