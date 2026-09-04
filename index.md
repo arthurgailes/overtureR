@@ -1,0 +1,147 @@
+# overtureR
+
+## Installation
+
+``` r
+
+install.packages("overtureR")
+
+# devtools::install_github("arthurgailes/overtureR")
+```
+
+## Key Features
+
+- Query global [Overture Maps](https://overturemaps.org/) data directly
+  in R
+- Conduct analysis on massive dataset without loading into memory using
+  [dbplyr’s](https://dbplyr.tidyverse.org/) lazy evaluation
+- Seamless `dplyr` and `sf` integration
+- Merge with your local `sf` data within `duckdb` or with `sf`
+- Local downloading for offline use and performance
+
+## Usage
+
+Replicating `duckdb` examples from the [Overture
+docs](https://docs.overturemaps.org/getting-data/duckdb/)
+
+``` r
+
+library(overtureR)
+library(dplyr)
+library(ggplot2)
+
+counties <- open_curtain("division_area") |>
+  # in R, filtering on variables must come before removing them via select
+  filter(subtype == "county" & country == "US" & region == "US-PA") |>
+  transmute(
+    id,
+    division_id,
+    primary = names$primary,
+    geometry
+  ) |>
+  collect()
+
+# Plot the results
+ggplot(counties) +
+  geom_sf(aes(fill = as.numeric(sf::st_area(geometry))), color = "white", size = 0.2) +
+  viridis::scale_fill_viridis(option = "plasma", guide = FALSE) +
+  labs(
+    title = "Pennsylvania Counties by Area",
+    caption = "Data: Overture Maps"
+  ) 
+```
+
+![](reference/figures/README-counties-1.png)
+
+``` r
+
+library(overtureR)
+library(dplyr)
+
+# lazily load the full `mountains` dataset
+mountains <- open_curtain(type = "*", theme = "places") |>
+  transmute(
+    id,
+    primary_name = names$primary,
+    x = bbox$xmin,
+    y = bbox$ymin,
+    main_category = categories$primary,
+    primary_source = sources[[1]]$dataset,
+    confidence,
+    geometry # currently no duckdb spatial implementation
+  ) |>
+  filter(main_category == "mountain" & confidence > .90)
+
+head(mountains)
+#> # Source:   SQL [?? x 8]
+#> # Database: DuckDB v1.2.2 [Arthur.Gailes@Windows 10 x64:R 4.5.0/:memory:]
+#>   id           primary_name     x      y main_category primary_source confidence
+#>   <chr>        <chr>        <dbl>  <dbl> <chr>         <chr>               <dbl>
+#> 1 08fb4c586e9… Te Rua Manga -160. -21.2  mountain      meta                0.928
+#> 2 08f89343a1a… Mont Marau   -150. -17.6  mountain      meta                0.928
+#> 3 08f893434b6… Col des 3 c… -150. -17.5  mountain      meta                0.923
+#> 4 08f8922733d… Mont Temeha… -151. -16.8  mountain      meta                0.936
+#> 5 08fa0d9315c… Tekao        -140.  -8.84 mountain      meta                0.928
+#> 6 08fa1193a06… Mont Mokoto  -135. -23.1  mountain      meta                0.936
+#> # ℹ 1 more variable: geometry <POINT [°]>
+```
+
+## Downloading data locally
+
+The record_overture function allows you to download Overture Maps data
+to a local directory, maintaining the same partition structure as in S3.
+This is useful for offline analysis or when you need to work with the
+data repeatedly. Here’s an example:
+
+``` r
+
+library(overtureR)
+library(ggplot2)
+library(dplyr)
+library(rayshader)
+
+# Define a bounding box for New York City
+broadway <- c(xmin = -73.9901, ymin = 40.755488, xmax = -73.98, ymax = 40.76206)
+
+# Download building data for NYC to a local directory
+local_buildings <- open_curtain("building", broadway) |> 
+  record_overture(output_dir = tempdir(), overwrite = TRUE)
+
+# The downloaded data is returned as a `dbplyr` object, same as the original (but faster!)
+broadway_buildings <- local_buildings |> 
+  filter(!is.na(height)) |> 
+  mutate(height = round(height)) |> 
+  collect() 
+
+p <- ggplot(broadway_buildings) +
+  geom_sf(aes(fill = height)) +
+  scale_fill_distiller(palette = "Oranges", direction = 1) +
+  # guides(fill = FALSE) +
+  labs(title = "Buildings on Broadway", caption = "Data: Overture Maps", fill = "")
+
+# Convert to 3D and render
+plot_gg(
+  p,
+  multicore = TRUE,
+  width = 6, height = 5, scale = 250,
+  windowsize = c(1032, 860),
+  zoom = 0.55, 
+  phi = 40, theta = 0,
+  solid = FALSE,
+  offset_edges = TRUE,
+  sunangle = 75
+)
+
+render_snapshot(clear=TRUE)
+```
+
+![](reference/figures/README-record-1.png)
+
+## Roadmap
+
+- Read pmtiles
+- Add partition, chunking to record_overture
+- Add beta/alpha datasets
+- Add mapping vignette
+- Add performance vignette
+- Download overture files via open_curtain

@@ -1,5 +1,6 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://arthurgailes.github.io/overtureR/404.html</loc></url>
+<url><loc>https://arthurgailes.github.io/overtureR/CLAUDE.html</loc></url>
 <url><loc>https://arthurgailes.github.io/overtureR/CODE_OF_CONDUCT.html</loc></url>
 <url><loc>https://arthurgailes.github.io/overtureR/CONTRIBUTING.html</loc></url>
 <url><loc>https://arthurgailes.github.io/overtureR/LICENSE-text.html</loc></url>
@@ -15,6 +16,7 @@
 <url><loc>https://arthurgailes.github.io/overtureR/reference/collect.overture_call.html</loc></url>
 <url><loc>https://arthurgailes.github.io/overtureR/reference/config_extensions.html</loc></url>
 <url><loc>https://arthurgailes.github.io/overtureR/reference/index.html</loc></url>
+<url><loc>https://arthurgailes.github.io/overtureR/reference/latest_overture_release.html</loc></url>
 <url><loc>https://arthurgailes.github.io/overtureR/reference/open_curtain.html</loc></url>
 <url><loc>https://arthurgailes.github.io/overtureR/reference/record_overture.html</loc></url>
 <url><loc>https://arthurgailes.github.io/overtureR/reference/sf_as_dbplyr.html</loc></url>

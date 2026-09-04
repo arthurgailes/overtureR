@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Load Overture Datasets as dbplyr and sf-Ready Data Frames • overtureR</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Load Overture Datasets as dbplyr and sf-Ready Data Frames">
 <meta name="description" content="An integrated R interface to the Overture API (&lt;https://docs.overturemaps.org/&gt;). Allows R users to return Overture data as dbplyr data frames or materialized sf spatial data frames.">
@@ -79,13 +79,13 @@
 <li>Seamless <code>dplyr</code> and <code>sf</code> integration</li>
 <li>Merge with your local <code>sf</code> data within <code>duckdb</code> or with <code>sf</code>
 </li>
-<li>Local downloading for offline use and perforamnce</li>
+<li>Local downloading for offline use and performance</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>Replicating <code>duckdb</code> examples fromm the <a href="https://docs.overturemaps.org/getting-data/duckdb/" class="external-link">Overture docs</a></p>
+<p>Replicating <code>duckdb</code> examples from the <a href="https://docs.overturemaps.org/getting-data/duckdb/" class="external-link">Overture docs</a></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/arthurgailes/overtureR" class="external-link">overtureR</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
@@ -130,16 +130,16 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">main_category</span> <span class="op">==</span> <span class="st">"mountain"</span> <span class="op">&amp;</span> <span class="va">confidence</span> <span class="op">&gt;</span> <span class="fl">.90</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mountains</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # Source:   SQL [6 x 8]</span></span>
-<span><span class="co">#&gt; # Database: DuckDB v1.0.0 [Arthur.Gailes@Windows 10 x64:R 4.2.1/:memory:]</span></span>
-<span><span class="co">#&gt;   id            primary_name     x     y main_category primary_source confidence</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;         &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;         &lt;chr&gt;               &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 08f464e0e312… Kawaikini    -159.  22.1 mountain      meta                0.954</span></span>
-<span><span class="co">#&gt; 2 08f464e3b1a2… Kalepa       -159.  22.0 mountain      meta                0.938</span></span>
-<span><span class="co">#&gt; 3 08f464e05984… Sleeping Gi… -159.  22.1 mountain      meta                0.945</span></span>
-<span><span class="co">#&gt; 4 08f464e3a4d0… Nounou-East… -159.  22.1 mountain      meta                0.945</span></span>
-<span><span class="co">#&gt; 5 08f464e05514… Makaleha Mo… -159.  22.1 mountain      meta                0.965</span></span>
-<span><span class="co">#&gt; 6 08f464e03538… Makana       -160.  22.2 mountain      meta                0.938</span></span>
+<span><span class="co">#&gt; # Source:   SQL [?? x 8]</span></span>
+<span><span class="co">#&gt; # Database: DuckDB v1.2.2 [Arthur.Gailes@Windows 10 x64:R 4.5.0/:memory:]</span></span>
+<span><span class="co">#&gt;   id           primary_name     x      y main_category primary_source confidence</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;         &lt;chr&gt;               &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 08fb4c586e9… Te Rua Manga -160. -21.2  mountain      meta                0.928</span></span>
+<span><span class="co">#&gt; 2 08f89343a1a… Mont Marau   -150. -17.6  mountain      meta                0.928</span></span>
+<span><span class="co">#&gt; 3 08f893434b6… Col des 3 c… -150. -17.5  mountain      meta                0.923</span></span>
+<span><span class="co">#&gt; 4 08f8922733d… Mont Temeha… -151. -16.8  mountain      meta                0.936</span></span>
+<span><span class="co">#&gt; 5 08fa0d9315c… Tekao        -140.  -8.84 mountain      meta                0.928</span></span>
+<span><span class="co">#&gt; 6 08fa1193a06… Mont Mokoto  -135. -23.1  mountain      meta                0.936</span></span>
 <span><span class="co">#&gt; # ℹ 1 more variable: geometry &lt;POINT [°]&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -196,6 +196,7 @@
 <li>Add beta/alpha datasets</li>
 <li>Add mapping vignette</li>
 <li>Add performance vignette</li>
+<li>Download overture files via open_curtain</li>
 </ul>
 </div>
 </div>
@@ -235,7 +236,7 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Arthur Gailes <br><small class="roles"> Author, maintainer, copyright holder </small> <a href="https://orcid.org/0009-0006-8176-8653" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>Arthur Gailes <br><small class="roles"> Author, maintainer, copyright holder </small> <a href="https://orcid.org/0009-0006-8176-8653" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 </ul>
 </div>
 
@@ -258,7 +259,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

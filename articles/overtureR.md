@@ -1,0 +1,11 @@
+# overtureR
+
+Please see the overtureR website for full documentation:
+
+- <https://arthurgailes.github.io/overtureR/index.html>
+
+In addition to function-specific help, introductory articles are indexed
+here:
+
+- [Article
+  index](https://arthurgailes.github.io/overtureR/articles/index.html)
