@@ -2,6 +2,16 @@
 
 ## overtureR 0.2.6
 
+- Bundle an agent skill at `inst/skills/overturer/` teaching AI coding
+  agents the package’s API and idioms - chiefly accessing Overture’s
+  nested struct columns with `$` (`names$primary`),
+  lazy-then-[`collect()`](https://dplyr.tidyverse.org/reference/compute.html)
+  evaluation, and the `type`-\>`theme` mapping. Ships `SKILL.md` plus
+  `references/data-model.md` (schema and type/theme table) and
+  `references/overture-context.md` (Overture themes, GERS stable ids,
+  licensing/attribution, release cadence, and links). Discoverable by
+  tools following the `inst/skills/` convention (e.g. Posit’s `btw`).
+
 - [`open_curtain()`](https://arthurgailes.github.io/overtureR/reference/open_curtain.md)’s
   `base_url` no longer hardcodes a specific Overture release. It now
   defaults to the latest release, discovered dynamically via the new
