@@ -63,7 +63,7 @@ ggplot(counties) +
   ) 
 ```
 
-<img src="man/figures/README-counties-1.png" width="100%" />
+<img src="man/figures/README-counties-1.png" alt="" width="100%" />
 
 ``` r
 library(overtureR)
@@ -84,16 +84,17 @@ mountains <- open_curtain(type = "*", theme = "places") |>
   filter(main_category == "mountain" & confidence > .90)
 
 head(mountains)
+#> # Overture release 2026-08-19.0, theme places
 #> # Source:   SQL [?? x 8]
-#> # Database: DuckDB v1.2.2 [Arthur.Gailes@Windows 10 x64:R 4.5.0/:memory:]
-#>   id           primary_name     x      y main_category primary_source confidence
-#>   <chr>        <chr>        <dbl>  <dbl> <chr>         <chr>               <dbl>
-#> 1 08fb4c586e9… Te Rua Manga -160. -21.2  mountain      meta                0.928
-#> 2 08f89343a1a… Mont Marau   -150. -17.6  mountain      meta                0.928
-#> 3 08f893434b6… Col des 3 c… -150. -17.5  mountain      meta                0.923
-#> 4 08f8922733d… Mont Temeha… -151. -16.8  mountain      meta                0.936
-#> 5 08fa0d9315c… Tekao        -140.  -8.84 mountain      meta                0.928
-#> 6 08fa1193a06… Mont Mokoto  -135. -23.1  mountain      meta                0.936
+#> # Database: DuckDB 1.5.2 [Arthur.Gailes@Windows 10 x64:R 4.5.0/:memory:]
+#>   id            primary_name     x     y main_category primary_source confidence
+#>   <chr>         <chr>        <dbl> <dbl> <chr>         <chr>               <dbl>
+#> 1 0de5d733-2fc… Vallée De L… -149. -17.6 mountain      meta                0.931
+#> 2 a5a93127-85f… Mont Rotui   -150. -17.5 mountain      meta                0.912
+#> 3 d6ea3b50-3a9… Vallée De T… -150. -17.6 mountain      meta                0.969
+#> 4 c3ce4dc2-cef… Belvédère D… -150. -17.5 mountain      meta                0.962
+#> 5 34e195ed-66a… Mont Popoti  -152. -16.5 mountain      meta                0.917
+#> 6 2bfb43ed-753… Vaipao Vall… -151. -16.7 mountain      meta                0.912
 #> # ℹ 1 more variable: geometry <POINT [°]>
 ```
 
@@ -145,10 +146,10 @@ plot_gg(
 render_snapshot(clear=TRUE)
 ```
 
-<img src="man/figures/README-record-1.png" width="100%" />
+<img src="man/figures/README-record-1.png" alt="" width="100%" />
 
 ## Roadmap
 
 - Tile-by-tile downloads with a progress bar in `record_overture()`
-- Mapping vignette (including Overture's PMTiles through `mapgl`)
+- Mapping vignette (including Overture’s PMTiles through `mapgl`)
 - Performance vignette
