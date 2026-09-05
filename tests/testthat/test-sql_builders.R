@@ -142,6 +142,10 @@ test_that("process_parquet_read_opts merges user options over the defaults", {
     process_parquet_read_opts(list()),
     "filename=FALSE, hive_partitioning=TRUE, union_by_name=FALSE"
   )
+  expect_equal(
+    process_parquet_read_opts(list(), union_by_name = TRUE),
+    "filename=FALSE, hive_partitioning=TRUE, union_by_name=TRUE"
+  )
   custom <- list(hive_partitioning = FALSE, binary_as_string = TRUE)
   expect_equal(
     process_parquet_read_opts(custom),

@@ -90,6 +90,10 @@ test_that("type = '*' reads every type in the theme", {
   sql <- view_sql(conn, "star")
   expect_match(sql, "fixture-building.zstd", fixed = TRUE)
   expect_match(sql, "fixture-building_part.zstd", fixed = TRUE)
+  expect_match(sql, "union_by_name = CAST('t' AS BOOLEAN)", fixed = TRUE)
+  # the two types have different columns; printing reads all of them
+  expect_output(print(all_types), "theme buildings", fixed = TRUE)
+  expect_s3_class(collect(head(all_types, 3)), "sf")
 
   # NULL behaves like "*"
   null_type <- open_curtain(
@@ -232,7 +236,7 @@ test_that("print shows the release and type before the table", {
     print(buildings), "# Overture release 2024-01-01.0, type building",
     fixed = TRUE
   )
-  expect_output(print(buildings), "# Source:")
+  expect_output(print(buildings), "# Database:")
   capture.output(returned <- print(buildings))
   expect_identical(returned, buildings)
 

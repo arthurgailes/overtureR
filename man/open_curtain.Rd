@@ -43,7 +43,9 @@ dataset into memory.}
 \item{tablename}{The name of the table to create in the database.}
 
 \item{read_opts}{A named list of key-value pairs passed to
-\href{https://duckdb.org/docs/data/parquet/overview#parameters}{DuckDB's read_parquet}}
+\href{https://duckdb.org/docs/data/parquet/overview#parameters}{DuckDB's read_parquet}.
+\code{union_by_name} defaults to \code{TRUE} when \code{type} is \code{"*"}, because the types
+in a theme have different columns.}
 
 \item{predicate}{How a feature must relate to \code{spatial_filter} to be kept:
 \code{"intersects"} (default), \code{"within"} (the feature lies entirely inside the

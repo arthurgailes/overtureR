@@ -21,7 +21,9 @@
 #' dataset into memory.
 #' @param tablename The name of the table to create in the database.
 #' @param read_opts A named list of key-value pairs passed to
-#' \href{https://duckdb.org/docs/data/parquet/overview#parameters}{DuckDB's read_parquet}
+#' \href{https://duckdb.org/docs/data/parquet/overview#parameters}{DuckDB's read_parquet}.
+#' `union_by_name` defaults to `TRUE` when `type` is `"*"`, because the types
+#' in a theme have different columns.
 #' @param predicate How a feature must relate to `spatial_filter` to be kept:
 #' `"intersects"` (default), `"within"` (the feature lies entirely inside the
 #' filter) or `"contains"` (the feature contains the whole filter).
@@ -112,7 +114,10 @@ open_curtain <- function(
   )
   # TODO: improve select, handle geometry internally
 
-  read_opts <- process_parquet_read_opts(read_opts)
+  # the types in a theme have different columns
+  read_opts <- process_parquet_read_opts(
+    read_opts, union_by_name = identical(type, "*")
+  )
 
   interior_query <- glue::glue(
     "SELECT * FROM read_parquet({url}, {read_opts})"
@@ -211,11 +216,11 @@ spotlight_files <- function(
   sql_file_list(unlist(files))
 }
 
-process_parquet_read_opts <- function(opts) {
+process_parquet_read_opts <- function(opts, union_by_name = FALSE) {
   default_read_opts <- list(
     filename = FALSE,
     hive_partitioning = TRUE,
-    union_by_name = FALSE
+    union_by_name = union_by_name
   )
 
   parquet_opts <- utils::modifyList(default_read_opts, opts)
