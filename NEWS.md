@@ -74,6 +74,9 @@ copy.
 
 ## Fixes
 
+* overtureR installs and loads DuckDB's `json` extension, which the duckdb R
+package stopped bundling in 1.5.5, so reading Overture's catalog works there.
+
 * `sf`, `sfc` and `bbox` spatial filters in a coordinate reference system other
 than EPSG:4326 are transformed before filtering. Previously their raw
 coordinates were compared with Overture's longitude and latitude, which

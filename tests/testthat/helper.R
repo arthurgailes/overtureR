@@ -62,10 +62,18 @@ forget_stac_cache <- function() {
   rm(list = ls(envir = cache), envir = cache)
 }
 
-# A fresh duckdb connection, closed when the calling test ends.
+# A fresh duckdb connection, closed when the calling test ends. Skips the
+# test when DuckDB's extensions can't be installed, as on a machine without
+# network access.
 local_conn <- function(env = parent.frame()) {
   conn <- DBI::dbConnect(duckdb::duckdb())
   withr::defer(DBI::dbDisconnect(conn, shutdown = TRUE), envir = env)
+  tryCatch(
+    config_extensions(conn),
+    error = function(e) {
+      testthat::skip(paste("duckdb extensions unavailable:", e$message))
+    }
+  )
   conn
 }
 

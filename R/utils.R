@@ -5,7 +5,8 @@ config_extensions <- function(conn) {
     "SELECT extension_name, installed, loaded FROM duckdb_extensions()"
   ))
 
-  needed <- c("httpfs", "spatial")
+  # json stopped being bundled with the duckdb R package in 1.5.5
+  needed <- c("httpfs", "spatial", "json")
 
   queries <- lapply(needed, function(ext) {
     status <- extensions[which(extensions$extension_name == ext), ]
