@@ -1,11 +1,6 @@
 #' Check duckdb extension and config settings
 #' @inheritParams open_curtain
 config_extensions <- function(conn) {
-  # temp fix for duckdb package errors, see
-  # https://github.com/duckdb/duckdb-r/issues/600
-  fix_113 <- utils::packageVersion("duckdb") == "1.1.3"
-  inst_sep <- ifelse(fix_113, "core_nightly;", ";")
-
   extensions <- DBI::dbGetQuery(conn, (
     "SELECT extension_name, installed, loaded FROM duckdb_extensions()"
   ))
@@ -16,7 +11,7 @@ config_extensions <- function(conn) {
     status <- extensions[which(extensions$extension_name == ext), ]
 
     q <- ""
-    if (isFALSE(status$installed)) q <- paste(q, "INSTALL", ext, inst_sep)
+    if (isFALSE(status$installed)) q <- paste(q, "INSTALL", ext, ";")
 
     if (isFALSE(status$loaded)) q <- paste(q, "LOAD", ext, ";")
     q
@@ -42,10 +37,16 @@ config_settings <- function(conn) {
   invisible(conn)
 }
 
-# duckdb reads and writes GEOMETRY as its own native type starting at 1.1;
-# before that, geometry has to be manually cast to/from WKB
-duckdb_native_geometry <- function(version = utils::packageVersion("duckdb")) {
-  package_version(version) >= "1.1.0"
+sql_string <- function(x) {
+  paste0("'", gsub("'", "''", x, fixed = TRUE), "'")
+}
+
+sql_file_list <- function(files) {
+  paste0("[", paste(sql_string(files), collapse = ", "), "]")
+}
+
+partition_dir <- function(base_url, theme, type) {
+  file.path(base_url, paste0("theme=", theme), paste0("type=", type))
 }
 
 # Column types of a lazy query, as a named character vector, without running

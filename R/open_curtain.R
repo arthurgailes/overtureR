@@ -22,24 +22,41 @@
 #' @param tablename The name of the table to create in the database.
 #' @param read_opts A named list of key-value pairs passed to
 #' \href{https://duckdb.org/docs/data/parquet/overview#parameters}{DuckDB's read_parquet}
-#' @param base_url Allows user to download data from a different mirror, such
-#' as a local directory, or a alternative release. Defaults to the latest
-#' Overture release, discovered via [latest_overture_release()].
+#' @param predicate How a feature must relate to `spatial_filter` to be kept:
+#' `"intersects"` (default), `"within"` (the feature lies entirely inside the
+#' filter) or `"contains"` (the feature contains the whole filter).
+#' @param release An Overture release, such as `"2026-08-19.0"`. Defaults to
+#' `getOption("overturer_release")`, then to the latest release found by
+#' [latest_overture_release()]. See [overture_releases()] for the releases
+#' Overture still hosts. When `base_url` is set, `release` only labels the
+#' result.
+#' @param base_url Read from a different mirror, such as a local directory from
+#' [record_overture()]. Defaults to the S3 path of `release`.
 #' @param bbox alias for `spatial_filter`. may be deprecated in the future.
 #'
 #' @details
-#' When `spatial_filter` is set and `base_url` points at an Overture release,
-#' `open_curtain()` reads only the Parquet files whose bounding box touches
-#' the filter, using the file list in Overture's STAC catalog (see
+#' When `spatial_filter` is set and `base_url` points at an Overture release
+#' or at a directory written by [record_overture()], `open_curtain()` reads
+#' only the Parquet files whose bounding box touches the filter, using the
+#' file list in Overture's STAC catalog or the local copy's manifest (see
 #' [overture_types()] and [clear_overture_cache()]). This turns a cold query
 #' over hundreds of files into one over a handful. Set
 #' `options(overturer_prune = FALSE)` to always read the whole partition.
+#'
+#' To pin every query in a session to one release, set
+#' `options(overturer_release = "2026-08-19.0")`.
 #'
 #' @return An dbplyr lazy dataframe, or an sf dataframe if as_sf is TRUE
 #'
 #' @examplesIf interactive()
 #' bbox <- c(xmin = -120.5, ymin = 35.5, xmax = -120.0, ymax = 36.0)
 #' open_curtain("building", bbox)
+#'
+#' # pin a release so the script returns the same rows next month
+#' open_curtain("building", bbox, release = "2026-08-19.0")
+#'
+#' # only buildings entirely inside the box
+#' open_curtain("building", bbox, predicate = "within")
 #' @export
 open_curtain <- function(
     type,
@@ -50,9 +67,9 @@ open_curtain <- function(
     mode = "view",
     tablename = NULL,
     read_opts = list(),
-    base_url = paste0(
-      "s3://overturemaps-us-west-2/release/", latest_overture_release(conn)
-    ),
+    predicate = "intersects",
+    release = NULL,
+    base_url = NULL,
     bbox = NULL) {
   # use cached connection if no conn provided
   if (is.null(conn)) conn <- stage_conn()
@@ -66,6 +83,17 @@ open_curtain <- function(
     if (is.null(spatial_filter)) spatial_filter <- bbox
   }
   if (is.null(type)) type <- "*"
+  predicate <- match_predicate(predicate)
+
+  manifest <- NULL
+  if (is.null(base_url)) {
+    release <- release %||% getOption("overturer_release") %||%
+      latest_overture_release(conn)
+    base_url <- release_url(release)
+  } else {
+    manifest <- recording_manifest(conn, base_url, theme, type)
+    release <- release %||% manifest$release %||% release_from_url(base_url)
+  }
 
   # bring sf-style filters into Overture's coordinate system once, up front
   has_crs <- audition_data(spatial_filter) %in% c("sf", "bbox")
@@ -75,24 +103,19 @@ open_curtain <- function(
 
   filter_bbox <- stage_bbox(conn, spatial_filter)
   bbox <- set_stage_boundary(conn, spatial_filter, bbox = filter_bbox)
-  spatial_query <- focus_spotlight(conn, spatial_filter)
+  spatial_query <- focus_spotlight(conn, spatial_filter, predicate, filter_bbox)
 
   if (is.null(tablename)) tablename <- cast_extra(conn, theme, type)
 
-  url <- spotlight_files(conn, base_url, theme, type, filter_bbox)
+  url <- spotlight_files(
+    conn, base_url, theme, type, filter_bbox, release, manifest
+  )
   # TODO: improve select, handle geometry internally
 
   read_opts <- process_parquet_read_opts(read_opts)
 
-  geometry <- if (duckdb_native_geometry()) {
-    ""
-  } else {
-    "REPLACE (ST_GeomFromWKB(geometry) as geometry)"
-  }
-
   interior_query <- glue::glue(
-    "SELECT * {geometry}
-     FROM read_parquet({url}, {read_opts})"
+    "SELECT * FROM read_parquet({url}, {read_opts})"
   )
 
   query_suffix <- glue::glue("WHERE 1=1 {bbox} {spatial_query} ")
@@ -105,22 +128,65 @@ open_curtain <- function(
   DBI::dbExecute(conn, query)
 
   dataset <- dplyr::tbl(conn, tablename)
-  dataset <- as_overture(dataset, type = type, theme = theme)
+  dataset <- as_overture(dataset, type = type, theme = theme, release = release)
 
   if (isTRUE(as_sf)) dataset <- collect(dataset)
 
   dataset
 }
 
-# The read_parquet() source: a list of the files that touch the filter's bbox
-# when the catalog can tell us, else the wildcard path for the partition.
-spotlight_files <- function(conn, base_url, theme, type, filter_bbox) {
-  wildcard <- glue::glue("'{base_url}/theme={theme}/type={type}/*'")
+release_url <- function(release) {
+  paste0("s3://overturemaps-us-west-2/release/", release)
+}
 
-  release <- release_from_url(base_url)
-  prune <- isTRUE(getOption("overturer_prune", TRUE)) &&
-    !is.null(filter_bbox) && !is.null(release)
+predicates <- c(
+  intersects = "ST_Intersects",
+  within = "ST_Within",
+  contains = "ST_Contains"
+)
+
+match_predicate <- function(predicate) {
+  if (!is.character(predicate) || length(predicate) != 1) {
+    stop("`predicate` must be a single string", call. = FALSE)
+  }
+  predicate <- tolower(predicate)
+  if (!predicate %in% names(predicates)) {
+    stop(
+      "`predicate` must be one of ",
+      paste0('"', names(predicates), '"', collapse = ", "),
+      ", not \"", predicate, "\"",
+      call. = FALSE
+    )
+  }
+  predicate
+}
+
+# The read_parquet() source: the files that touch the filter's bbox when a
+# manifest can tell us, else the wildcard path for the partition.
+spotlight_files <- function(
+  conn,
+  base_url,
+  theme,
+  type,
+  filter_bbox,
+  release = release_from_url(base_url),
+  manifest = NULL
+) {
+  suffix <- if (is_remote_url(base_url)) "/*" else "/**/*.parquet"
+  wildcard <- sql_string(paste0(partition_dir(base_url, theme, type), suffix))
+
+  prune <- isTRUE(getOption("overturer_prune", TRUE)) && !is.null(filter_bbox)
   if (!prune) {
+    return(wildcard)
+  }
+
+  if (!is.null(manifest)) {
+    files <- prune_paths(manifest$files, filter_bbox)
+    if (!is.null(files)) {
+      return(sql_file_list(files))
+    }
+  }
+  if (is.null(release)) {
     return(wildcard)
   }
 
@@ -142,8 +208,7 @@ spotlight_files <- function(conn, base_url, theme, type, filter_bbox) {
     return(wildcard)
   }
 
-  files <- unlist(files)
-  paste0("[", paste0("'", files, "'", collapse = ", "), "]")
+  sql_file_list(unlist(files))
 }
 
 process_parquet_read_opts <- function(opts) {
@@ -161,17 +226,30 @@ process_parquet_read_opts <- function(opts) {
   )
 }
 
-focus_spotlight <- function(conn, spatial_filter) {
+# The geometry test against the filter, as a SQL fragment
+focus_spotlight <- function(
+  conn,
+  spatial_filter,
+  predicate = "intersects",
+  bbox = stage_bbox(conn, spatial_filter)
+) {
   if (is.null(spatial_filter)) {
     return("")
   }
 
-  # class test. Put in own function?
+  fun <- predicates[[match_predicate(predicate)]]
   spatial_class <- audition_data(spatial_filter)
 
   if (grepl("bbox", spatial_class)) {
-    return("")
-  } # processed as bbox directly
+    if (predicate == "intersects") {
+      return("")
+    }
+    envelope <- glue::glue(
+      "ST_MakeEnvelope({bbox[['xmin']]}, {bbox[['ymin']]}, ",
+      "{bbox[['xmax']]}, {bbox[['ymax']]})"
+    )
+    return(glue::glue("AND {fun}(master.geometry, {envelope})"))
+  }
 
   # for sf/sfc, upload the geometry to duckdb and keep only its union in a
   # small table, so the upload isn't held in R memory or re-aggregated on
@@ -191,7 +269,7 @@ focus_spotlight <- function(conn, spatial_filter) {
     duckdb::duckdb_unregister(conn, paste0(name, "_upload_init"))
 
     return(glue::glue(
-      "AND ST_Intersects(master.geometry, (SELECT geometry FROM {name}))"
+      "AND {fun}(master.geometry, (SELECT geometry FROM {name}))"
     ))
   }
 
@@ -218,7 +296,7 @@ focus_spotlight <- function(conn, spatial_filter) {
     "(SELECT ST_Union_Agg(geometry) AS geometry FROM {sql_init})"
   )
 
-  glue::glue("AND ST_Intersects(master.geometry, {agg_query})")
+  glue::glue("AND {fun}(master.geometry, {agg_query})")
 }
 
 # Overture data is in EPSG:4326. Bring an sf/sfc/bbox filter into the same

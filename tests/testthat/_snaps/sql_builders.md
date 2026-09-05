@@ -47,6 +47,34 @@
       AND ST_Intersects(master.geometry, (SELECT ST_Union_Agg(geometry) AS geometry FROM (SELECT *
       FROM pts)))
 
+# focus_spotlight switches the predicate function
+
+    Code
+      cat(focus_spotlight(conn, bbox_vector, "within"))
+    Output
+      AND ST_Within(master.geometry, ST_MakeEnvelope(-120.5, 35.5, -120, 36))
+
+---
+
+    Code
+      cat(focus_spotlight(conn, sf::st_bbox(sf_obj), "contains"))
+    Output
+      AND ST_Contains(master.geometry, ST_MakeEnvelope(0, 0, 1, 1))
+
+---
+
+    Code
+      cat(focus_spotlight(conn, sf_obj, "within"))
+    Output
+      AND ST_Within(master.geometry, (SELECT geometry FROM overtureR_spotlight))
+
+---
+
+    Code
+      cat(focus_spotlight(conn, sf_obj, "CONTAINS"))
+    Output
+      AND ST_Contains(master.geometry, (SELECT geometry FROM overtureR_spotlight1))
+
 # spotlight_files chooses between a file list and the wildcard
 
     Code
@@ -59,7 +87,7 @@
     Code
       files("C:/local/copy", "buildings", "building", fixture_bbox)
     Output
-      'C:/local/copy/theme=buildings/type=building/*'
+      'C:/local/copy/theme=buildings/type=building/**/*.parquet'
 
 ---
 

@@ -73,6 +73,22 @@ test_that("focus_spotlight renders the geometry clause for each filter kind", {
   expect_snapshot(cat(focus_spotlight(conn, dplyr::tbl(conn, "pts"))))
 })
 
+test_that("focus_spotlight switches the predicate function", {
+  conn <- local_conn()
+  points <- sf::st_sfc(sf::st_point(c(0, 0)), sf::st_point(c(1, 1)), crs = 4326)
+  sf_obj <- sf::st_sf(geometry = points)
+
+  # a bbox needs a geometry test for anything but intersects
+  expect_snapshot(cat(focus_spotlight(conn, bbox_vector, "within")))
+  expect_snapshot(cat(focus_spotlight(conn, sf::st_bbox(sf_obj), "contains")))
+  expect_snapshot(cat(focus_spotlight(conn, sf_obj, "within")))
+  expect_snapshot(cat(focus_spotlight(conn, sf_obj, "CONTAINS")))
+
+  expect_error(focus_spotlight(conn, sf_obj, "touches"), "must be one of")
+  expect_error(match_predicate(c("within", "contains")), "single string")
+  expect_error(match_predicate(1), "single string")
+})
+
 test_that("focus_spotlight rejects filters it can't use", {
   conn <- local_conn()
   duckdb::duckdb_register(conn, "no_geom", data.frame(x = 1, y = 2))
@@ -137,17 +153,36 @@ test_that("process_parquet_read_opts merges user options over the defaults", {
 })
 
 test_that("process_write_opts adds the partition and rejects overrides", {
-  expect_equal(process_write_opts(NULL, FALSE), "PARTITION_BY (theme, type)")
+  expect_equal(
+    process_write_opts(NULL, FALSE),
+    "PARTITION_BY (theme, type), FILENAME_PATTERN 'data_{uuid}'"
+  )
   expect_equal(
     process_write_opts(NULL, TRUE),
-    "PARTITION_BY (theme, type), OVERWRITE_OR_IGNORE"
+    paste0(
+      "PARTITION_BY (theme, type), FILENAME_PATTERN 'data_{uuid}', ",
+      "OVERWRITE_OR_IGNORE"
+    )
   )
   expect_equal(
     process_write_opts("ROW_GROUP_SIZE 100000", TRUE),
-    "ROW_GROUP_SIZE 100000, PARTITION_BY (theme, type), OVERWRITE_OR_IGNORE"
+    paste0(
+      "ROW_GROUP_SIZE 100000, PARTITION_BY (theme, type), ",
+      "FILENAME_PATTERN 'data_{uuid}', OVERWRITE_OR_IGNORE"
+    )
   )
-  expect_error(process_write_opts("OVERWRITE", TRUE), "use 'overwrite'")
-  expect_error(process_write_opts("partition_by (x)", TRUE), "custom partition")
+  expect_equal(
+    process_write_opts("FILENAME_PATTERN 'part_{i}'", FALSE),
+    "FILENAME_PATTERN 'part_{i}', PARTITION_BY (theme, type)"
+  )
+  expect_equal(
+    process_write_opts(NULL, FALSE, c("theme", "type", "x_cell")),
+    "PARTITION_BY (theme, type, x_cell), FILENAME_PATTERN 'data_{uuid}'"
+  )
+  expect_error(process_write_opts("OVERWRITE", TRUE), "`overwrite` argument")
+  expect_error(
+    process_write_opts("partition_by (x)", TRUE), "`partition_by` argument"
+  )
 })
 
 test_that("cast_extra numbers table names until one is free", {
@@ -159,15 +194,6 @@ test_that("cast_extra numbers table names until one is free", {
 
   duckdb::duckdb_register(conn, "overtureR_building", data.frame(x = 1))
   expect_equal(cast_extra(conn, "buildings", "building"), "overtureR_building1")
-})
-
-test_that("duckdb_native_geometry follows the duckdb version", {
-  expect_false(duckdb_native_geometry("1.0.0"))
-  expect_true(duckdb_native_geometry("1.1.0"))
-  expect_true(duckdb_native_geometry("1.5.2"))
-  expect_true(duckdb_native_geometry("2.0.0"))
-  expect_true(duckdb_native_geometry("10.0.0"))
-  expect_type(duckdb_native_geometry(), "logical")
 })
 
 test_that("sf_as_dbplyr registers geometry as WKB and casts it to GEOMETRY", {

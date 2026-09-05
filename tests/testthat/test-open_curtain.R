@@ -7,7 +7,7 @@ test_that("open_curtain returns a lazy overture_call over a local release", {
   expect_equal(class(buildings)[[1]], "overture_call")
   expect_equal(
     attr(buildings, "overture_playbill"),
-    c(type = "building", theme = "buildings")
+    list(type = "building", theme = "buildings", release = fixture_release)
   )
   expect_true(
     all(c("id", "geometry", "bbox", "theme", "type") %in% colnames(buildings))
@@ -184,6 +184,66 @@ test_that("an unnamed numeric bbox gives a clear error", {
   expect_error(stage_bbox(conn, list()), "invalid `spatial_filter` object")
 })
 
+test_that("release is taken from the argument, the option, or the catalog", {
+  conn <- local_conn()
+  local_fixture_stac()
+  # point the S3 path builder at the fixture tree
+  releases_dir <- dirname(fixture_base_url())
+  testthat::local_mocked_bindings(
+    release_url = function(release) file.path(releases_dir, release)
+  )
+
+  by_default <- open_curtain("building", fixture_bbox, conn = conn)
+  expect_equal(playbill(by_default)$release, fixture_release)
+  expect_gt(dplyr::pull(dplyr::count(by_default), n), 0)
+
+  by_arg <- open_curtain(
+    "building", fixture_bbox, conn = conn, release = fixture_release
+  )
+  expect_equal(playbill(by_arg)$release, fixture_release)
+
+  withr::local_options(overturer_release = fixture_release)
+  by_option <- open_curtain("building", fixture_bbox, conn = conn)
+  expect_equal(playbill(by_option)$release, fixture_release)
+
+  # the option loses to an explicit argument
+  expect_warning(
+    expect_error(
+      open_curtain(
+        "building", fixture_bbox, conn = conn, release = "1999-01-01.0"
+      )
+    ),
+    "Reading every file instead"
+  )
+})
+
+test_that("release_url builds Overture's S3 path", {
+  expect_equal(
+    release_url("2026-08-19.0"),
+    "s3://overturemaps-us-west-2/release/2026-08-19.0"
+  )
+})
+
+test_that("print shows the release and type before the table", {
+  conn <- local_conn()
+  buildings <- local_fixture_curtain("building", conn = conn)
+
+  expect_output(
+    print(buildings), "# Overture release 2024-01-01.0, type building",
+    fixed = TRUE
+  )
+  expect_output(print(buildings), "# Source:")
+  capture.output(returned <- print(buildings))
+  expect_identical(returned, buildings)
+
+  all_types <- local_fixture_curtain("*", conn = conn, theme = "buildings")
+  expect_output(print(all_types), "theme buildings", fixed = TRUE)
+
+  plain <- dplyr::tbl(conn, dbplyr::remote_name(buildings))
+  unknown <- as_overture(plain, "building")
+  expect_output(print(unknown), "release unknown", fixed = TRUE)
+})
+
 # ---- spatial filters ---------------------------------------------------------
 
 times_square <- function(crs = 4326) {
@@ -285,6 +345,54 @@ test_that("a table name or a dbplyr table can be the spatial filter", {
   places <- local_fixture_curtain("place", shape, conn = conn)
   near_places <- local_fixture_curtain("building", places, conn = conn)
   expect_gt(dplyr::pull(dplyr::count(near_places), n), 0)
+})
+
+test_that("predicate = 'within' keeps only features inside the filter", {
+  conn <- local_conn()
+  shape <- times_square()
+  intersecting <- fixture_buildings(shape, conn)
+  within <- collect(
+    local_fixture_curtain("building", shape, conn = conn, predicate = "within")
+  )
+
+  expect_gt(nrow(within), 0)
+  expect_lt(nrow(within), nrow(intersecting))
+  expect_true(all(within$id %in% intersecting$id))
+  expect_true(all(lengths(sf::st_within(within, shape)) > 0))
+
+  # a bbox filter gets the same treatment
+  box <- sf::st_bbox(shape)
+  within_box <- collect(
+    local_fixture_curtain("building", box, conn = conn, predicate = "within")
+  )
+  expect_equal(sort(within_box$id), sort(within$id))
+  local_fixture_curtain(
+    "building", fixture_bbox, conn = conn, predicate = "within",
+    tablename = "within_vec"
+  )
+  expect_match(view_sql(conn, "within_vec"), "st_within", ignore.case = TRUE)
+  expect_match(
+    view_sql(conn, "within_vec"), "st_makeenvelope", ignore.case = TRUE
+  )
+})
+
+test_that("predicate = 'contains' finds the feature around a point", {
+  conn <- local_conn()
+  buildings <- collect(local_fixture_curtain("building", conn = conn))
+  target <- buildings[which.max(sf::st_area(buildings)), ]
+  point <- suppressWarnings(sf::st_point_on_surface(sf::st_geometry(target)))
+
+  around <- collect(local_fixture_curtain(
+    "building", point, conn = conn, predicate = "contains"
+  ))
+  expect_true(target$id %in% around$id)
+  expect_true(all(lengths(sf::st_contains(around, point)) > 0))
+  expect_lt(nrow(around), nrow(buildings))
+
+  expect_error(
+    local_fixture_curtain("building", point, conn = conn, predicate = "near"),
+    "`predicate` must be one of"
+  )
 })
 
 # ---- collect -----------------------------------------------------------------

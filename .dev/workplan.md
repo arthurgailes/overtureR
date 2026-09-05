@@ -5,22 +5,16 @@ sf 1.1.0, and Overture release 2026-08-19.0.
 
 ## Summary
 
-1. ~~Read only the files that touch the filter area, using Overture's STAC catalog. Cold query 87 s to 2 s.~~ Done, branch `0.3`.
-2. ~~Upload `sf` filters as binary (14 s to 0.05 s) and transform them to EPSG:4326.~~ Done.
-3. ~~Fix the known bugs.~~ Done.
-4. Let users pin a release.
-5. ~~Let the type list update itself; export `overture_types()`.~~ Done.
-6. ~~Cut the 5.6 s fixed cost of `open_curtain()`.~~ Done.
-7. ~~Rebuild the test suite: offline fixtures, SQL builder tests, a regression test per bug.~~ Done.
-8. Improve `record_overture()`: custom partitions, one-call download, local manifest.
-9. Write the performance and mapping articles; refresh docs and the skill.
-10. Add a `predicate` argument.
-11. Raise the minimum duckdb version to 1.1.0.
-12. ~~Drop PMTiles and alpha or beta datasets from the roadmap.~~ Done.
-13. Feature ideas to consider: boundary lookup, category taxonomy, in-database simplify, spatial join, transparent cache, GDAL export, attribution helper.
+Items 1 to 8 and 10 to 12 of the original plan shipped on 2026-09-05: STAC file pruning,
+binary `sf` uploads, bug fixes, release pinning, a self-updating type list, the lower fixed
+cost of `open_curtain()`, the offline test suite, the `record_overture()` improvements, the
+`predicate` argument, duckdb 1.1.0 as the floor, and the trimmed roadmap. All of it ships as version 0.3.0.
 
-Items 1, 2, 3, 5, 6, 7, and 12 shipped together on branch `0.3` (2026-09-05) as version 0.3.0,
-rather than as a 0.2.7 patch plus 0.3.0. Next: 4, then 8, 9, 10, 11.
+What remains:
+
+1. Write the performance and mapping articles; refresh docs and the skill.
+2. Feature ideas to consider, including duckspatial interoperability.
+3. Small ideas to copy from duckspatial.
 
 ## Terms used in this plan
 
@@ -57,103 +51,20 @@ Overture already publishes. Everything else is smaller.
 
 ## What should you build, in order?
 
-### 1. Read only the files that touch the filter area (done)
-
-Done 2026-09-05 in `R/stac.R` and `open_curtain()`; cold building query 87 s to 6.5 s end to end.
-
-### 2. Upload `sf` filters as binary, and fix the coordinate system (done)
-
-Done 2026-09-05; a filter with no CRS warns and assumes EPSG:4326 rather than erroring.
-
-### 3. Fix the known bugs (done)
-
-Done 2026-09-05; every bug fixed with a regression test, pull request 3 closed.
-
-### 4. Let users pin a release
-
-**What to do.** Add a `release` argument to `open_curtain()`, defaulting to
-`latest_overture_release()`, and build `base_url` from it. Add an option
-`overturer_release` to set it once per session. Export `overture_releases()` to list the
-releases Overture still hosts.
-
-**Why.** Version 0.2.6 made "latest" the default. That keeps data fresh, but the same script
-now returns different rows from month to month, and nothing records which release produced a
-result. Reproducible work needs a way to pin one. The STAC root already lists every live
-release, so listing them is one JSON read.
-
-**How.** Store `release` in the `overture_playbill` attribute so `record_overture()` and
-printed output can report it. Add a `print.overture_call()` method that starts with a line
-such as "Overture release 2026-08-19.0, type building".
-
-**Effort.** Small to medium, about one day. Needs the STAC code from item 1.
-
-### 5. Let the type list update itself (done)
-
-Done 2026-09-05; `overture_types()` exported, unknown types list the valid ones.
-
-### 6. Cut the fixed cost of `open_curtain()` (done)
-
-Done 2026-09-05; cache settings on, and `vars =` was unneeded once pruning landed (`tbl()` 0.02 s).
-
-### 7. Rebuild the test suite (done)
-
-Done 2026-09-05; 7 files, 292 expectations, 3 live tests on a weekly schedule, fixtures 381 KB.
-
-### 8. Improve `record_overture()`
-
-- **Custom partitions.** Accept `partition_by =` in addition to the fixed `(theme, type)`.
-  Offer a grid option, such as partitioning on `floor(bbox.xmin)` and `floor(bbox.ymin)`, so
-  large local copies also skip files by location. Remove the `PARTITION_BY` rejection in
-  `process_write_opts()`.
-- **Download in one call.** Accept `record_overture(type, spatial_filter, output_dir)` so
-  users need not call `open_curtain()` first.
-- **Write a local manifest** next to the Parquet files, in the same shape as item 1, so the
-  returned `overture_call` can skip files locally too.
-- **Quote the path** in `COPY ... TO '<dir>'`. A `'` in `output_dir` breaks the statement.
-- **Record the source release** in a small `_overture.json` file so users know where the
-  data came from.
-
-**Effort.** Medium. Needs items 1 and 4.
-
-### 9. Write the articles and refresh the docs
+### 1. Write the articles and refresh the docs
 
 - A **performance article** built from the appendix numbers. Cover: filter before you
   collect, why `spatial_filter` matters, warm versus cold queries, when to use
   `record_overture()`, and how to pin a release.
 - A **mapping article** using `mapgl` or `ggplot2` on a saved local copy, so it knits offline.
-- Update the README roadmap, the getting-started article, and `inst/skills/overturer/` to
-  cover `release =`, `overture_types()`, `overture_releases()`, and file skipping.
+- Update the getting-started article to cover `release =`, `predicate =`,
+  `overture_types()`, `overture_releases()`, file skipping, and the `record_overture()`
+  manifest and `grid`. The README roadmap and the skill were updated on 2026-09-05.
 - Add `bathymetry` to `references/data-model.md`.
 
-**Effort.** Small to medium. Do it after items 1 to 5 so the docs describe the new API.
+**Effort.** Small to medium. The API it documents is now in place.
 
-### 10. Add a `predicate` argument
-
-**What to do.** Add `open_curtain(..., predicate = c("intersects", "within", "contains"))`.
-
-**Why.** Intersects is the only option today. Many users mean "within" when they filter by a
-polygon, such as buildings fully inside a boundary. This is a switch on the `ST_*` function
-name.
-
-**Do not** rewrite the filter as an `EXISTS` semi-join or an inner spatial join. With 6
-polygons the semi-join saved only 0.3 s and the inner join was slower. The work is bound by
-network reads, not by the geometry test. Revisit only if a user reports a slow filter with
-many polygons.
-
-**Effort.** Small.
-
-### 11. Raise the minimum duckdb version
-
-Set `duckdb (>= 1.1.0)` in DESCRIPTION. Delete the pre-1.1 WKB conversion branches and the
-duckdb 1.1.3 `core_nightly` workaround in `config_extensions()`. Fewer code paths means fewer
-tests. Do this with the next minor release, after you confirm CRAN has duckdb binaries for
-every platform.
-
-### 12. Drop or defer these roadmap items (done)
-
-Done 2026-09-05; README roadmap rewritten.
-
-### 13. Feature ideas to consider
+### 2. Feature ideas to consider
 
 These stay within the package's job: get Overture data into R through DuckDB as lazy tables
 or `sf`. None is measured or scoped. The starred ones look most useful relative to effort.
@@ -180,18 +91,22 @@ or `sf`. None is measured or scoped. The starred ones look most useful relative 
 
 **Doing more in the database before download**
 
-- * `collect(x, simplify = 0.0001)` runs `ST_Simplify` in DuckDB, and `collect(x, crs = )`
-  runs `ST_Transform` there. Land, water, and division polygons are large; simplifying before
-  transfer could cut download time several-fold. Measure first.
-- `collect(x, geometry = "centroid")` or `"bbox"` returns points instead of full geometry.
-  Faster for plotting places or counting buildings.
-- * `spotlight_join(x, y, predicate = "intersects")` does a lazy spatial join between two
-  lazy tables, such as buildings to places or segments to divisions, inside DuckDB. Today
-  users must write the `ST_Intersects` SQL themselves.
-- Document which `sf` verbs pass through to DuckDB inside `mutate()` (`ST_Area_Spheroid`,
-  `ST_Length_Spheroid`, `ST_Centroid`), and add a small translation table so
-  `sf::st_area()` inside `mutate()` becomes the DuckDB call.
+- * **Interoperate with duckspatial** (GitHub `Cidree/duckspatial`, 1.2.1 on 2026-09-05).
+  Its `as_duckspatial_df()` accepts any lazy dbplyr table, detects a `geometry` column, and
+  reads the CRS from DuckDB 1.5's typed `GEOMETRY`. An `open_curtain()` result should convert
+  in one call and gain its lazy verbs: simplify, transform, centroid, buffer, spatial join,
+  predicate matrices, areal-weighted interpolation, GDAL export, MBTiles output. Add it to
+  Suggests and write a short article, such as buildings per tract with
+  `ddbs_interpolate_aw()`. Verify the round trip first; it needs duckdb >= 1.5.4.2. Warn in
+  the article that converting a table with no remote name, such as after `filter()`, runs
+  `CREATE TEMP TABLE` on the query, so convert after the spatial filter, never on a whole
+  theme. Do not import it: it pulls in arrow, geoarrow, nanoarrow, wk, units, uuid, cli,
+  lifecycle, and tibble.
 - Warn, or ask, before a `collect()` with no spatial filter and no row limit.
+
+*Pruned 2026-09-05, because duckspatial already does them on a lazy table:* simplify and
+transform inside `collect()`, centroid or bbox geometry output, `spotlight_join()`, and the
+`sf`-verb-to-`ST_*` translation table.
 
 **Caching and local copies**
 
@@ -207,11 +122,12 @@ or `sf`. None is measured or scoped. The starred ones look most useful relative 
 
 **Getting data out**
 
-- * `export_overture(x, "out.gpkg")` writes GeoPackage, FlatGeobuf, or GeoJSON straight
-  from DuckDB with `COPY ... TO (FORMAT GDAL)`. No R memory, no `sf` round trip.
 - `collect(x, as = "tibble")` skips the `sf` conversion for users who only want attributes.
-- Return `arrow` or `duckplyr` frames for users staying in the DuckDB ecosystem, and accept
-  `duckplyr` frames as `spatial_filter`.
+- Accept `duckplyr` frames as `spatial_filter`.
+
+*Pruned 2026-09-05, because duckspatial already does them:* `export_overture()` (its
+`ddbs_write_vector()` runs `COPY ... TO (FORMAT GDAL)`) and arrow or geoarrow output (its
+`collect(as = "geoarrow")`).
 
 **Places, addresses, and transportation**
 
@@ -236,13 +152,30 @@ or `sf`. None is measured or scoped. The starred ones look most useful relative 
 - `print.overture_call()` shows release, type, filter bbox, and an estimated row count.
 - `plot()` or `mapview()` method that samples a few hundred rows for a quick look.
 
+### 3. Copy small ideas from duckspatial
+
+Each is a few lines, adds no dependency, and makes the lazy object behave more like `sf`.
+Source: duckspatial 1.2.1, `R/duckspatial_df_sf_methods.R` and
+`R/duckspatial_df_dplyr_methods.R`.
+
+- **`st_bbox.overture_call()`** runs `ST_Extent(ST_Collect(LIST(geometry)))` in DuckDB and
+  returns an `sf` bbox in the table's CRS, so users get an extent without a `collect()`.
+- **`st_crs.overture_call()`** reads the CRS from the typed `GEOMETRY('OGC:CRS84')` column
+  on duckdb >= 1.5, and falls back to EPSG:4326 on older versions, so `sf` generics work on
+  the lazy object.
+- **Cache the geometry column type** in the `overture_playbill` attribute when
+  `open_curtain()` builds the table. `collect()` runs a `DESCRIBE` round trip on every call
+  today to learn whether to inject `ST_AsWKB()`.
+- **Measure `wk` for WKB parsing.** duckspatial converts WKB with `wk::new_wk_wkb()` before
+  `sf::st_as_sfc()`. wk is already in sf's dependency tree through s2, so the cost is nil.
+  Switch only if a benchmark on a large `collect()` shows a real gain.
+
+**Effort.** Small.
+
 ## In what order should you ship?
 
-1. **Version 0.2.7, a patch, one to two days.** Items 3 and 2, plus the saved test data
-   from item 7. All are small and low risk, and several fix silent wrong answers.
-2. **Version 0.3.0, a minor release, one to two weeks.** Items 1, 4, 5, and 6 on one branch,
-   because they share the same catalog reads and cache. Then item 8, then item 9, then items
-   10 and 11.
+Submit 0.3.0 to CRAN. Then item 1, the articles, which need no code. Items 2 and 3 are
+unscheduled.
 
 ## Appendix: how the tests were run
 
