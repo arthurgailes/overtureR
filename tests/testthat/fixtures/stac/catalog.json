@@ -1,0 +1,25 @@
+{
+  "type": "Catalog",
+  "id": "Overture Releases",
+  "stac_version": "1.1.0",
+  "links": [
+    {
+      "rel": "root",
+      "href": "https://stac.overturemaps.org/catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/catalog.json",
+      "latest": true
+    },
+    {
+      "rel": "child",
+      "href": "https://stac.overturemaps.org/2023-12-01.0/catalog.json"
+    },
+    {
+      "rel": "self",
+      "href": "https://stac.overturemaps.org/catalog.json"
+    }
+  ],
+  "latest": "2024-01-01.0"
+}

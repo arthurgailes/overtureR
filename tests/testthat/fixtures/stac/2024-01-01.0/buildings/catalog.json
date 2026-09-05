@@ -1,0 +1,25 @@
+{
+  "type": "Catalog",
+  "id": "buildings",
+  "stac_version": "1.1.0",
+  "links": [
+    {
+      "rel": "root",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/catalog.json"
+    },
+    {
+      "rel": "pmtiles",
+      "href": "https://tiles.overturemaps.org/2024-01-01.0/buildings.pmtiles"
+    },
+    {
+      "rel": "child",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/buildings/building/collection.json",
+      "title": "building"
+    },
+    {
+      "rel": "child",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/buildings/building_part/collection.json",
+      "title": "building_part"
+    }
+  ]
+}

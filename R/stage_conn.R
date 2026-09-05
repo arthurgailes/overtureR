@@ -10,7 +10,9 @@
 #' this function both creates a duckdb connection and places
 #' that connection into a cache (`overturer_conn` option).
 #' On subsequent calls, this function returns the cached connection,
-#' rather than recreating a fresh connection.
+#' rather than recreating a fresh connection. The `dbdir`, `read_only`,
+#' `bigint`, and `config` arguments only take effect when a connection is
+#' created.
 #'
 #' This frees the user from the responsibility of managing a
 #' connection object, because functions needing access to the
@@ -50,28 +52,48 @@ stage_conn <- function(
     if (getOption("overturer_debug", FALSE)) {
       message("Making a duckdb connection!")
     }
-    conn <- DBI::dbConnect(duckdb::duckdb(), ...)
+    conn <- DBI::dbConnect(
+      duckdb::duckdb(
+        dbdir = dbdir, read_only = read_only, bigint = bigint, config = config
+      ),
+      ...
+    )
     options(overturer_conn = conn)
   }
+
   ## create finalizer to avoid duckdb complaining that connection
-  ## was not shut down before gc
-  e <- globalenv()
-  reg.finalizer(e, function(e) strike_stage(), TRUE)
+  ## was not shut down before gc. One finalizer is enough.
+  if (!isTRUE(.stage_state$finalizer_set)) {
+    register_stage_finalizer()
+    .stage_state$finalizer_set <- TRUE
+  }
 
   conn
 }
 
+.stage_state <- new.env(parent = emptyenv())
+
+register_stage_finalizer <- function() {
+  reg.finalizer(globalenv(), function(e) strike_stage(), onexit = TRUE)
+}
+
 #' close connection
-#' @inheritParams open_curtain
+#' @param conn A duckdb connection. Defaults to the cached session connection,
+#' if there is one.
 #' @rdname stage_conn
 #' @export
-strike_stage <- function(conn = stage_conn()) {
-  if (DBI::dbIsValid(conn)) {
+strike_stage <- function(conn = getOption("overturer_conn", NULL)) {
+  if (inherits(conn, "duckdb_connection") && DBI::dbIsValid(conn)) {
     DBI::dbDisconnect(conn, shutdown = TRUE)
   }
 
   ## clear cached reference to the now-closed connection
-  .Options$overturer_conn <- NULL
+  cached <- getOption("overturer_conn", NULL)
+  if (!is.null(cached)) {
+    if (identical(conn, cached) || !DBI::dbIsValid(cached)) {
+      options(overturer_conn = NULL)
+    }
+  }
 
-  rm(conn)
+  invisible(NULL)
 }

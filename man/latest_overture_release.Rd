@@ -24,6 +24,13 @@ one quickly goes stale. This queries Overture's STAC catalog
 release, so callers don't have to track releases themselves or wait on a
 package update. The result is cached for the session.
 }
+\details{
+If the catalog can't be reached, the newest release in the package's local
+catalog cache is used with a warning (Overture removes releases after a few
+months, so it may itself be gone). With no cache, the call fails with an
+error; pass \code{base_url} to \code{open_curtain()} to work offline or from a local
+copy.
+}
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 latest_overture_release()

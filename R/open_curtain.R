@@ -1,14 +1,20 @@
 #' Retrieve (Spatially Filtered) Overture Datasets
 #'
 #' Fetches overture data from AWS.
-#' If a bounding box is provided, it applies spatial filtering to only include
-#' records within that area. The core code is copied from `duckdbfs`, which
-#' deserves all credit for the implementation
+#' If a spatial filter is provided, it applies spatial filtering to only
+#' include records within that area. The core code is copied from `duckdbfs`,
+#' which deserves all credit for the implementation
 #'
 #' @param type A string specifying the type of overture dataset to read.
-#' Setting to "*" or `NULL` will read all types for a given theme.
-#' @param spatial_filter An object to spatially filter the result.
-#' @param theme Inferred from type by default. Must be set if type is "*" or NULL
+#' Setting to "*" or `NULL` will read all types for a given theme. See
+#' [overture_types()] for the valid values.
+#' @param spatial_filter An object to spatially filter the result: a named
+#' numeric vector or `sf::st_bbox()` bounding box, an `sf` or `sfc` object, the
+#' name of a table in `conn`, or another `dbplyr` lazy table with a `geometry`
+#' column. `sf` filters in another coordinate reference system are transformed
+#' to EPSG:4326 (Overture's) before filtering.
+#' @param theme Inferred from type by default. Must be set if type is "*" or
+#' `NULL`.
 #' @param conn A connection to a duckdb database.
 #' @param as_sf If TRUE, return an sf dataframe
 #' @param mode Either "view" (default) or "table". If "table", will download the
@@ -20,6 +26,14 @@
 #' as a local directory, or a alternative release. Defaults to the latest
 #' Overture release, discovered via [latest_overture_release()].
 #' @param bbox alias for `spatial_filter`. may be deprecated in the future.
+#'
+#' @details
+#' When `spatial_filter` is set and `base_url` points at an Overture release,
+#' `open_curtain()` reads only the Parquet files whose bounding box touches
+#' the filter, using the file list in Overture's STAC catalog (see
+#' [overture_types()] and [clear_overture_cache()]). This turns a cold query
+#' over hundreds of files into one over a handful. Set
+#' `options(overturer_prune = FALSE)` to always read the whole partition.
 #'
 #' @return An dbplyr lazy dataframe, or an sf dataframe if as_sf is TRUE
 #'
@@ -51,12 +65,21 @@ open_curtain <- function(
     warning("param `bbox` is deprecated. Use `spatial_filter`")
     if (is.null(spatial_filter)) spatial_filter <- bbox
   }
-  bbox <- set_stage_boundary(conn, spatial_filter)
+  if (is.null(type)) type <- "*"
+
+  # bring sf-style filters into Overture's coordinate system once, up front
+  has_crs <- audition_data(spatial_filter) %in% c("sf", "bbox")
+  if (!is.null(spatial_filter) && has_crs) {
+    spatial_filter <- stage_crs(spatial_filter)
+  }
+
+  filter_bbox <- stage_bbox(conn, spatial_filter)
+  bbox <- set_stage_boundary(conn, spatial_filter, bbox = filter_bbox)
   spatial_query <- focus_spotlight(conn, spatial_filter)
 
   if (is.null(tablename)) tablename <- cast_extra(conn, theme, type)
 
-  url <- glue::glue("{base_url}/theme={theme}/type={type}/*")
+  url <- spotlight_files(conn, base_url, theme, type, filter_bbox)
   # TODO: improve select, handle geometry internally
 
   read_opts <- process_parquet_read_opts(read_opts)
@@ -69,7 +92,7 @@ open_curtain <- function(
 
   interior_query <- glue::glue(
     "SELECT * {geometry}
-     FROM read_parquet('{url}', {read_opts})"
+     FROM read_parquet({url}, {read_opts})"
   )
 
   query_suffix <- glue::glue("WHERE 1=1 {bbox} {spatial_query} ")
@@ -86,7 +109,41 @@ open_curtain <- function(
 
   if (isTRUE(as_sf)) dataset <- collect(dataset)
 
-  return(dataset)
+  dataset
+}
+
+# The read_parquet() source: a list of the files that touch the filter's bbox
+# when the catalog can tell us, else the wildcard path for the partition.
+spotlight_files <- function(conn, base_url, theme, type, filter_bbox) {
+  wildcard <- glue::glue("'{base_url}/theme={theme}/type={type}/*'")
+
+  release <- release_from_url(base_url)
+  prune <- isTRUE(getOption("overturer_prune", TRUE)) &&
+    !is.null(filter_bbox) && !is.null(release)
+  if (!prune) {
+    return(wildcard)
+  }
+
+  types <- if (identical(type, "*")) {
+    all_types <- overture_types(release, conn = conn)
+    all_types$type[all_types$theme == theme]
+  } else {
+    type
+  }
+  if (length(types) == 0) {
+    return(wildcard)
+  }
+
+  files <- lapply(types, function(ty) {
+    prune_files(conn, base_url, release, theme, ty, filter_bbox)
+  })
+  # any type we can't prune means we can't build a complete list
+  if (any(vapply(files, is.null, logical(1)))) {
+    return(wildcard)
+  }
+
+  files <- unlist(files)
+  paste0("[", paste0("'", files, "'", collapse = ", "), "]")
 }
 
 process_parquet_read_opts <- function(opts) {
@@ -98,12 +155,10 @@ process_parquet_read_opts <- function(opts) {
 
   parquet_opts <- utils::modifyList(default_read_opts, opts)
 
-  parquet_opts_str <- paste(
+  paste(
     names(parquet_opts), parquet_opts,
     sep = "=", collapse = ", "
   )
-
-  return(parquet_opts_str)
 }
 
 focus_spotlight <- function(conn, spatial_filter) {
@@ -118,50 +173,99 @@ focus_spotlight <- function(conn, spatial_filter) {
     return("")
   } # processed as bbox directly
 
-  # for sf/sfc, upload geom only to duckdb
+  # for sf/sfc, upload the geometry to duckdb and keep only its union in a
+  # small table, so the upload isn't held in R memory or re-aggregated on
+  # every query
   if (spatial_class == "sf") {
-    # give view a random suffix to prevent overwriting
-    rnum <- round(abs(stats::runif(1, max = 1e5)))
-    sf_dbplyr <- sf_as_dbplyr(
-      conn, paste0("overtureR_spatial_filter_", rnum),
+    spatial_filter <- stage_crs(spatial_filter)
+    name <- cast_extra(conn, "spotlight", "spotlight")
+    sf_as_dbplyr(
+      conn, paste0(name, "_upload"),
       sf_obj = spatial_filter, overwrite = TRUE, geom_only = TRUE
     )
+    DBI::dbExecute(conn, glue::glue(
+      "CREATE TEMP TABLE {name} AS
+       (SELECT ST_Union_Agg(geometry) AS geometry FROM {name}_upload)"
+    ))
+    DBI::dbExecute(conn, glue::glue("DROP VIEW {name}_upload"))
+    duckdb::duckdb_unregister(conn, paste0(name, "_upload_init"))
 
-    sql_init <- paste0("(", dbplyr::sql_render(sf_dbplyr), ")")
+    return(glue::glue(
+      "AND ST_Intersects(master.geometry, (SELECT geometry FROM {name}))"
+    ))
   }
 
   # if char, convert to dbplyr
   if (spatial_class == "tablename") {
     is_valid <- length(spatial_filter) == 1
-    existing <- duckdb::dbExistsTable(conn, spatial_filter)
-    if (!is_valid | !existing) stop("if a string, `spatial_filter` must be a table in the connection")
+    existing <- is_valid && duckdb::dbExistsTable(conn, spatial_filter)
+    if (!is_valid || !existing) {
+      stop("if a string, `spatial_filter` must be a table in the connection")
+    }
 
     sql_init <- spatial_filter
   }
   # if dbplyr, use sql subquery directly
   if (spatial_class == "dbplyr") {
-    if (!"geometry" %in% colnames(spatial_filter)) stop("`spatial_filter` must have a column 'geometry' of class GEOMETRY")
+    if (!"geometry" %in% colnames(spatial_filter)) {
+      stop("`spatial_filter` must have a column 'geometry' of class GEOMETRY")
+    }
 
     sql_init <- paste0("(", dbplyr::sql_render(spatial_filter), ")")
   }
 
-  agg_query <- glue::glue("(SELECT ST_Union_Agg(geometry) AS geometry FROM {sql_init})")
+  agg_query <- glue::glue(
+    "(SELECT ST_Union_Agg(geometry) AS geometry FROM {sql_init})"
+  )
 
-  where_clause <- glue::glue("AND ST_Intersects(master.geometry, {agg_query})")
-  return(where_clause)
+  glue::glue("AND ST_Intersects(master.geometry, {agg_query})")
 }
 
+# Overture data is in EPSG:4326. Bring an sf/sfc/bbox filter into the same
+# system so the bbox and geometry tests compare like with like.
+stage_crs <- function(x) {
+  crs <- sf::st_crs(x)
+  if (is.na(crs)) {
+    warning(
+      "`spatial_filter` has no coordinate reference system; ",
+      "assuming EPSG:4326 (longitude, latitude)",
+      call. = FALSE
+    )
+    return(sf::st_set_crs(x, 4326))
+  }
+  if (crs == sf::st_crs(4326)) {
+    return(x)
+  }
+  if (inherits(x, "bbox")) {
+    return(sf::st_bbox(sf::st_transform(sf::st_as_sfc(x), 4326)))
+  }
+  sf::st_transform(x, 4326)
+}
 
-# translate bounding box to SQL syntax
-set_stage_boundary <- function(conn, spatial_filter) {
+# The filter's bounding box as a named numeric vector in EPSG:4326, or NULL
+# when there is no filter.
+stage_bbox <- function(conn, spatial_filter) {
   if (is.null(spatial_filter)) {
-    return("")
+    return(NULL)
   }
 
   spatial_class <- audition_data(spatial_filter)
+  corners <- c("xmin", "ymin", "xmax", "ymax")
 
-  if (spatial_class == "bbox") bbox <- spatial_filter
-  if (spatial_class %in% c("sf", "bbox_vector")) bbox <- sf::st_bbox(spatial_filter)
+  if (spatial_class == "bbox_vector") {
+    named <- all(corners %in% names(spatial_filter))
+    if (length(spatial_filter) != 4 || !named) {
+      stop(
+        "a numeric `spatial_filter` must be a bounding box with names ",
+        "xmin, ymin, xmax, ymax, e.g. c(xmin = -120.5, ymin = 35.5, ",
+        "xmax = -120.0, ymax = 36.0)"
+      )
+    }
+    bbox <- spatial_filter[corners]
+  }
+  if (spatial_class %in% c("bbox", "sf")) {
+    bbox <- sf::st_bbox(stage_crs(spatial_filter))
+  }
 
   # dbplyr
   if (spatial_class %in% c("tablename", "dbplyr")) {
@@ -175,44 +279,52 @@ set_stage_boundary <- function(conn, spatial_filter) {
     bbox <- sf::st_bbox(sf::st_as_sfc(bbox_raw$geometry))
   }
 
-  # bbox or list objects
-  xmin <- round(bbox[["xmin"]], 10)
-  ymin <- round(bbox[["ymin"]], 10)
-  xmax <- round(bbox[["xmax"]], 10)
-  ymax <- round(bbox[["ymax"]], 10)
+  bbox <- round(as.numeric(bbox[corners]), 10)
+  names(bbox) <- corners
 
-  if (any(is.null(c(xmin, ymin, xmax, ymax)))) stop("invalid `spatial_filter` object")
+  if (anyNA(bbox)) stop("invalid `spatial_filter` object")
 
-  bbox <- glue::glue(
-    "AND bbox.xmax >= {xmin}
-    AND bbox.xmin <= {xmax}
-    AND bbox.ymax >= {ymin}
-    AND bbox.ymin <= {ymax}"
+  bbox
+}
+
+# translate bounding box to SQL syntax
+set_stage_boundary <- function(
+  conn,
+  spatial_filter,
+  bbox = stage_bbox(conn, spatial_filter)
+) {
+  if (is.null(bbox)) {
+    return("")
+  }
+
+  glue::glue(
+    "AND bbox.xmax >= {bbox[['xmin']]}
+    AND bbox.xmin <= {bbox[['xmax']]}
+    AND bbox.ymax >= {bbox[['ymin']]}
+    AND bbox.ymin <= {bbox[['ymax']]}"
   )
-
-  return(bbox)
 }
 
 audition_data <- function(spatial_filter) {
   if (is.null(spatial_filter)) {
-    return(NULL)
-  } else if (is.numeric(spatial_filter)) {
-    return("bbox_vector")
-  } else if ("bbox" %in% class(spatial_filter)) {
-    return("bbox")
+    NULL
+  } else if (inherits(spatial_filter, "bbox")) {
+    "bbox"
   } else if (any(grepl("^sf[cg]?$", class(spatial_filter)))) {
-    return("sf")
+    "sf"
+  } else if (is.numeric(spatial_filter)) {
+    "bbox_vector"
   } else if (is.character(spatial_filter)) {
-    return("tablename")
-  } else if ("tbl_sql" %in% class(spatial_filter)) {
-    return("dbplyr")
+    "tablename"
+  } else if (inherits(spatial_filter, "tbl_sql")) {
+    "dbplyr"
   } else {
     stop("invalid `spatial_filter` object")
   }
 }
 
 cast_extra <- function(conn, theme, type) {
-  use_theme <- is.null(type) | type == "*"
+  use_theme <- is.null(type) || type == "*"
   tablename <- paste0("overtureR_", ifelse(use_theme, theme, type))
 
   view_exists <- duckdb::dbExistsTable(conn, tablename)
@@ -220,10 +332,15 @@ cast_extra <- function(conn, theme, type) {
   i <- 0
   while (isTRUE(view_exists)) {
     i <- i + 1
-    if (i > 1e3) stop("Over 1,000 iterations of this table in duckdb. If this is intentional please supply `tablename` to continue")
+    if (i > 1e3) {
+      stop(
+        "Over 1,000 iterations of this table in duckdb. ",
+        "If this is intentional please supply `tablename` to continue"
+      )
+    }
 
     tablename <- paste0("overtureR_", ifelse(use_theme, theme, type), i)
     view_exists <- duckdb::dbExistsTable(conn, tablename)
   }
-  return(tablename)
+  tablename
 }

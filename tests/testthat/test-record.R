@@ -1,86 +1,85 @@
-broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
+test_that("record_overture writes a local copy that reads back the same", {
+  conn <- local_conn()
+  places <- local_fixture_curtain("place", conn = conn)
+  dir <- withr::local_tempdir()
 
-test_that("downloading works by directory", {
-  skip_if_offline()
-  skip_on_cran()
+  local <- record_overture(places, dir, overwrite = TRUE)
 
-  con <- DBI::dbConnect(duckdb::duckdb())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  expect_s3_class(local, "overture_call")
+  expect_equal(
+    attr(local, "overture_playbill"), c(type = "place", theme = "places")
+  )
+  expect_true(dir.exists(file.path(dir, "theme=places", "type=place")))
+  sql <- view_sql(conn, dbplyr::remote_name(local))
+  expect_match(sql, basename(dir), fixed = TRUE)
+  expect_match(sql, "theme=places/type=place/*", fixed = TRUE)
 
-  counties <- open_curtain("division_area", bbox = NULL, conn = con) |>
-    dplyr::filter(subtype == "county" & country == "US")
-
-  # use a fresh dir that doesn't exist
-  dir <- file.path(tempdir(), "overtureR_record_dir")
-  unlink(dir, recursive = TRUE)
-  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
-
-  counties_dl <- record_overture(counties, dir, overwrite = TRUE)
-
-  default <- dplyr::collect(counties)
-  dl <- dplyr::collect(counties_dl)
-
-  # the local round-trip returns the same data as the remote query
-  expect_equal(colnames(default), colnames(dl))
-  expect_equal(dim(default), dim(dl))
-  expect_equal(class(default), class(dl))
-  expect_equal(sum(sf::st_area(default)), sum(sf::st_area(dl)))
+  remote <- collect(places)
+  copied <- collect(local)
+  expect_equal(colnames(remote), colnames(copied))
+  expect_equal(dim(remote), dim(copied))
+  expect_equal(class(remote), class(copied))
+  expect_equal(sort(remote$id), sort(copied$id))
+  expect_equal(sf::st_crs(copied), sf::st_crs(4326))
 })
 
+test_that("record_overture keeps a filtered query, not the whole partition", {
+  conn <- local_conn()
+  buildings <- local_fixture_curtain("building", conn = conn)
+  tall <- dplyr::filter(buildings, !is.na(height), height > 100)
+  dir <- withr::local_tempdir()
 
-test_that("record_overture respects overwrite parameter", {
-  skip_if_offline()
-  skip_on_cran()
-
-  # a fresh, dedicated dir (not tempdir() itself, which is rarely empty)
-  dir <- file.path(tempdir(), "overtureR_overwrite_test")
-  unlink(dir, recursive = TRUE)
-  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
-
-  place <- open_curtain("place", broadway)
-
-  # First write into the empty dir
-  record_overture(place, dir)
-
-  # Second write without overwrite errors because the dir is not empty
-  expect_error(record_overture(place, dir))
-
-  # Second write with overwrite succeeds
-  expect_no_error(record_overture(place, dir, overwrite = TRUE))
+  local <- record_overture(tall, dir, overwrite = TRUE)
+  expect_equal(
+    dplyr::pull(dplyr::count(local), n),
+    dplyr::pull(dplyr::count(tall), n)
+  )
+  expect_true(all(collect(local)$height > 100))
 })
 
-test_that("record_overture handles custom write_opts", {
-  skip_if_offline()
-  skip_on_cran()
+test_that("record_overture respects overwrite", {
+  conn <- local_conn()
+  places <- local_fixture_curtain("place", conn = conn)
+  dir <- file.path(withr::local_tempdir(), "fresh")
 
-  dir <- file.path(tempdir(), "overtureR_writeopts_test")
-  unlink(dir, recursive = TRUE)
-  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+  # creates a missing directory
+  expect_no_error(record_overture(places, dir))
+  # refuses to write into a non-empty one
+  expect_error(record_overture(places, dir), "'overwrite' must be set to TRUE")
+  expect_no_error(record_overture(places, dir, overwrite = TRUE))
+})
 
-  place <- open_curtain("place", broadway)
+test_that("record_overture passes write_opts through and rejects overrides", {
+  conn <- local_conn()
+  places <- local_fixture_curtain("place", conn = conn)
+  dir <- withr::local_tempdir()
 
-  expect_error(record_overture(place, dir, write_opts = "OVERWRITE", overwrite = TRUE))
-  expect_error(record_overture(place, dir, write_opts = "PARTITION_BY(thing)", overwrite = TRUE))
+  expect_error(
+    record_overture(places, dir, write_opts = "OVERWRITE", overwrite = TRUE)
+  )
+  expect_error(
+    record_overture(
+      places, dir, write_opts = "PARTITION_BY(thing)", overwrite = TRUE
+    )
+  )
+  expect_error(record_overture(mtcars, dir), "must be a overture_call")
 
-  custom_opts <- c("ROW_GROUP_SIZE 100000")
-  result <- record_overture(place, dir, write_opts = custom_opts, overwrite = TRUE)
-
+  result <- record_overture(
+    places, dir, write_opts = "ROW_GROUP_SIZE 100000", overwrite = TRUE
+  )
   expect_s3_class(result, "overture_call")
-
-  # Check if custom partitioning was applied (this might require inspecting the file structure)
-  expect_true(dir.exists(file.path(dir, "theme=places")))
 })
 
-test_that("snapshot_overture works correctly", {
-  skip_if_offline()
-  skip_on_cran()
+test_that("snapshot_overture defaults to a temporary directory", {
+  conn <- local_conn()
+  places <- local_fixture_curtain("place", conn = conn)
 
-  dir <- file.path(tempdir(), "overtureR_snapshot_test")
-  unlink(dir, recursive = TRUE)
-  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
-
-  result <- snapshot_overture(open_curtain("place", spatial_filter = broadway), output_dir = dir)
-
-  expect_s3_class(result, "overture_call")
-  expect_true(dir.exists(file.path(dir, "theme=places")))
+  snapshot <- snapshot_overture(places)
+  expect_s3_class(snapshot, "overture_call")
+  sql <- view_sql(conn, dbplyr::remote_name(snapshot))
+  expect_match(sql, basename(tempdir()), fixed = TRUE)
+  expect_equal(
+    dplyr::pull(dplyr::count(snapshot), n),
+    dplyr::pull(dplyr::count(places), n)
+  )
 })

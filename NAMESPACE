@@ -2,8 +2,10 @@
 
 S3method(collect,overture_call)
 export(as_overture)
+export(clear_overture_cache)
 export(latest_overture_release)
 export(open_curtain)
+export(overture_types)
 export(record_overture)
 export(sf_as_dbplyr)
 export(snapshot_overture)

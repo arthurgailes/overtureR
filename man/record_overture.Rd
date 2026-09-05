@@ -37,8 +37,8 @@ the same partition structure as in S3. \code{snapshot_overture} defaults
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
-broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
-buildings <- open_curtain("building", spatial_filter = bbox)
+broadway <- c(xmin = -73.99, ymin = 40.755, xmax = -73.98, ymax = 40.762)
+buildings <- open_curtain("building", spatial_filter = broadway)
 local_buildings <- record_overture(buildings, tempdir(), overwrite = TRUE)
 \dontshow{\}) # examplesIf}
 }

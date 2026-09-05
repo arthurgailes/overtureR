@@ -13,7 +13,7 @@ stage_conn(
   ...
 )
 
-strike_stage(conn = stage_conn())
+strike_stage(conn = getOption("overturer_conn", NULL))
 }
 \arguments{
 \item{dbdir}{Location for database files. Should be a path to an existing
@@ -36,7 +36,8 @@ Subsequent connections will silently ignore these flags.}
 
 \item{...}{Further arguments passed to \link[DBI:dbConnect]{DBI::dbConnect}}
 
-\item{conn}{A \code{duckdb_connection} object}
+\item{conn}{A duckdb connection. Defaults to the cached session connection,
+if there is one.}
 }
 \value{
 a \code{\link[duckdb:duckdb]{duckdb::duckdb()}}connection object
@@ -53,7 +54,9 @@ When first called (by a user or internal function),
 this function both creates a duckdb connection and places
 that connection into a cache (\code{overturer_conn} option).
 On subsequent calls, this function returns the cached connection,
-rather than recreating a fresh connection.
+rather than recreating a fresh connection. The \code{dbdir}, \code{read_only},
+\code{bigint}, and \code{config} arguments only take effect when a connection is
+created.
 
 This frees the user from the responsibility of managing a
 connection object, because functions needing access to the

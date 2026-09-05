@@ -2,7 +2,7 @@
 % Please edit documentation in R/sf_as_dbplyr.R
 \name{sf_as_dbplyr}
 \alias{sf_as_dbplyr}
-\title{Registeran sf object as a DuckDB virtual table}
+\title{Register an sf object as a DuckDB virtual table}
 \usage{
 sf_as_dbplyr(
   conn,
@@ -21,7 +21,7 @@ sf_as_dbplyr(
 \item{sf_obj}{sf object to be registered to duckdb}
 
 \item{geom_only}{if TRUE, only the geometry column is registered. Always
-FALSE for sfc or sfg objects}
+TRUE for sfc or sfg objects}
 
 \item{overwrite}{Should an existing registration be overwritten?}
 
@@ -32,15 +32,16 @@ a \code{dbplyr} lazy table
 }
 \description{
 A thin wrapper around \code{duckdb::duckdb_register()} that creates a virtual
-table, then selects the geometry column to DuckDB.'s GEOMETRY type in the
+table, then casts the geometry column to DuckDB's GEOMETRY type in the
 returned \code{dbplyr} representation. Mostly useful for join and spatial
 operations within DuckDB. No data is copied.
 }
 \details{
 Behind the scenes, this function creates an initial view (\code{name}_init) with
-the geometry stored as text via \code{sf::st_as_text}. It then creates the view
-\code{name} which replaces the geometry column with DuckDB's internal geometry
-type.
+the geometry stored as well-known binary via \code{sf::st_as_binary}. It then
+creates the view \code{name} which replaces the geometry column with DuckDB's
+internal geometry type. DuckDB geometries carry no coordinate reference
+system; the geometry is registered in whatever system \code{sf_obj} uses.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}

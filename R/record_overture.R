@@ -14,8 +14,8 @@
 #' @importFrom rlang := .data
 #'
 #' @examplesIf interactive()
-#' broadway <- c(xmin = -73.99, ymin = 40.76, xmax = -73.98, ymax = 40.76)
-#' buildings <- open_curtain("building", spatial_filter = bbox)
+#' broadway <- c(xmin = -73.99, ymin = 40.755, xmax = -73.98, ymax = 40.762)
+#' buildings <- open_curtain("building", spatial_filter = broadway)
 #' local_buildings <- record_overture(buildings, tempdir(), overwrite = TRUE)
 #'
 #' @returns Another tbl_lazy. Use [dplyr::show_query()] to see the generated query, and
@@ -29,18 +29,18 @@ record_overture <- function(
     overwrite = FALSE,
     write_opts = NULL) {
 
+  if (!inherits(curtain_call, "overture_call")) {
+    stop("Input must be a overture_call object.")
+  }
+
   conn <- dbplyr::remote_con(curtain_call)
 
-  if(!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
-  if (isFALSE(overwrite) & length(list.files(output_dir, include.dirs = TRUE))) {
-      stop("'output_dir' is not empty; 'overwrite' must be set to TRUE")
+  if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+  if (isFALSE(overwrite) && length(list.files(output_dir, include.dirs = TRUE))) {
+    stop("'output_dir' is not empty; 'overwrite' must be set to TRUE")
   }
 
   config_extensions(conn)
-
-  if (!inherits(curtain_call, "overture_call")) {
-    stop("Input must be a overture_call object or NULL.")
-  }
 
   # get theme/type from attributes if necessary
   playbill <- attr(curtain_call, "overture_playbill")

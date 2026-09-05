@@ -27,6 +27,13 @@ An 'sf' object with the dataset converted to spatial features.
 Collects a lazy dbplyr view and materializes it as an
 in-memory \code{sf} table. \code{collect_sf} is a deprecated alias.
 }
+\details{
+The geometry column is read back as well-known binary and converted with
+\code{sf::st_as_sfc()}. If the column is already binary (for example, after a
+\code{mutate(geometry = ST_AsWKB(geometry))}), it is used as is. If it is
+neither DuckDB \code{GEOMETRY} nor binary, the result is returned as a plain
+data frame.
+}
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 

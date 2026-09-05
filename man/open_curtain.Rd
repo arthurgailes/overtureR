@@ -20,9 +20,14 @@ open_curtain(
 }
 \arguments{
 \item{type}{A string specifying the type of overture dataset to read.
-Setting to "*" or \code{NULL} will read all types for a given theme.}
+Setting to "*" or \code{NULL} will read all types for a given theme. See
+\code{\link[=overture_types]{overture_types()}} for the valid values.}
 
-\item{spatial_filter}{An object to spatially filter the result.}
+\item{spatial_filter}{An object to spatially filter the result: a named
+numeric vector or \code{sf::st_bbox()} bounding box, an \code{sf} or \code{sfc} object, the
+name of a table in \code{conn}, or another \code{dbplyr} lazy table with a \code{geometry}
+column. \code{sf} filters in another coordinate reference system are transformed
+to EPSG:4326 (Overture's) before filtering.}
 
 \item{theme}{Inferred from type by default. Must be set if type is "*" or NULL}
 
@@ -49,9 +54,17 @@ An dbplyr lazy dataframe, or an sf dataframe if as_sf is TRUE
 }
 \description{
 Fetches overture data from AWS.
-If a bounding box is provided, it applies spatial filtering to only include
-records within that area. The core code is copied from \code{duckdbfs}, which
-deserves all credit for the implementation
+If a spatial filter is provided, it applies spatial filtering to only
+include records within that area. The core code is copied from \code{duckdbfs},
+which deserves all credit for the implementation
+}
+\details{
+When \code{spatial_filter} is set and \code{base_url} points at an Overture release,
+\code{open_curtain()} reads only the Parquet files whose bounding box touches
+the filter, using the file list in Overture's STAC catalog (see
+\code{\link[=overture_types]{overture_types()}} and \code{\link[=clear_overture_cache]{clear_overture_cache()}}). This turns a cold query
+over hundreds of files into one over a handful. Set
+\code{options(overturer_prune = FALSE)} to always read the whole partition.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}

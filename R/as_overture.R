@@ -25,7 +25,7 @@
 #' division2 <- tbl(conn, "test")
 #' division2 <- as_overture(division2)
 #'
-#' exit_stage(conn)
+#' strike_stage(conn)
 #' @export
 as_overture <- function(x, type, theme = get_theme_from_type(type)) {
   if (!inherits(x, "tbl_sql")) stop("Input must be a tbl_sql object")
