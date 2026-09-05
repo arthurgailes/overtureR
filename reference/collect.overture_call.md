@@ -37,6 +37,15 @@ collect_sf(...)
 
 An 'sf' object with the dataset converted to spatial features.
 
+## Details
+
+The geometry column is read back as well-known binary and converted with
+[`sf::st_as_sfc()`](https://r-spatial.github.io/sf/reference/st_as_sfc.html).
+If the column is already binary (for example, after a
+`mutate(geometry = ST_AsWKB(geometry))`), it is used as is. If it is
+neither DuckDB `GEOMETRY` nor binary, the result is returned as a plain
+data frame.
+
 ## Examples
 
 ``` r

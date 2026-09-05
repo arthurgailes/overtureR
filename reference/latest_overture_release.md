@@ -28,6 +28,15 @@ latest_overture_release(conn = NULL, refresh = FALSE)
 
 A string identifying the latest release, e.g. `"2026-08-19.0"`.
 
+## Details
+
+If the catalog can't be reached, the newest release in the package's
+local catalog cache is used with a warning (Overture removes releases
+after a few months, so it may itself be gone). With no cache, the call
+fails with an error; pass `base_url` to
+[`open_curtain()`](https://arthurgailes.github.io/overtureR/reference/open_curtain.md)
+to work offline or from a local copy.
+
 ## Examples
 
 ``` r

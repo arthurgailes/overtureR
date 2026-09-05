@@ -1,10 +1,10 @@
-# Registeran sf object as a DuckDB virtual table
+# Register an sf object as a DuckDB virtual table
 
 A thin wrapper around
 [`duckdb::duckdb_register()`](https://r.duckdb.org/reference/duckdb_register.html)
-that creates a virtual table, then selects the geometry column to
-DuckDB.'s GEOMETRY type in the returned `dbplyr` representation. Mostly
-useful for join and spatial operations within DuckDB. No data is copied.
+that creates a virtual table, then casts the geometry column to DuckDB's
+GEOMETRY type in the returned `dbplyr` representation. Mostly useful for
+join and spatial operations within DuckDB. No data is copied.
 
 ## Usage
 
@@ -35,7 +35,7 @@ sf_as_dbplyr(
 
 - geom_only:
 
-  if TRUE, only the geometry column is registered. Always FALSE for sfc
+  if TRUE, only the geometry column is registered. Always TRUE for sfc
   or sfg objects
 
 - overwrite:
@@ -53,10 +53,12 @@ a `dbplyr` lazy table
 ## Details
 
 Behind the scenes, this function creates an initial view (`name`\_init)
-with the geometry stored as text via
-[`sf::st_as_text`](https://r-spatial.github.io/sf/reference/st_as_text.html).
+with the geometry stored as well-known binary via
+[`sf::st_as_binary`](https://r-spatial.github.io/sf/reference/st_as_binary.html).
 It then creates the view `name` which replaces the geometry column with
-DuckDB's internal geometry type.
+DuckDB's internal geometry type. DuckDB geometries carry no coordinate
+reference system; the geometry is registered in whatever system `sf_obj`
+uses.
 
 ## Examples
 

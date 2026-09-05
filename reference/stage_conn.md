@@ -1,4 +1,4 @@
-# create a cachable duckdb connection. In dev
+# Create or reuse a cached DuckDB connection
 
 `stage_conn` is primarily intended for internal use by other `overtureR`
 functions. However, it can be called directly by the user whenever it is
@@ -17,7 +17,7 @@ stage_conn(
   ...
 )
 
-strike_stage(conn = stage_conn())
+strike_stage(conn = getOption("overturer_conn", NULL))
 ```
 
 ## Arguments
@@ -57,7 +57,8 @@ strike_stage(conn = stage_conn())
 
 - conn:
 
-  A `duckdb_connection` object
+  A duckdb connection. Defaults to the cached session connection, if
+  there is one.
 
 ## Value
 
@@ -70,7 +71,9 @@ object
 When first called (by a user or internal function), this function both
 creates a duckdb connection and places that connection into a cache
 (`overturer_conn` option). On subsequent calls, this function returns
-the cached connection, rather than recreating a fresh connection.
+the cached connection, rather than recreating a fresh connection. The
+`dbdir`, `read_only`, `bigint`, and `config` arguments only take effect
+when a connection is created.
 
 This frees the user from the responsibility of managing a connection
 object, because functions needing access to the connection can use this
@@ -86,7 +89,7 @@ connection before removing the cache.
 
 con <- stage_conn()
 #> duckdb keeps downloaded extensions and secrets in a temporary directory:
-#> ℹ /tmp/RtmpgLYsi3/duckdb
+#> ℹ /tmp/RtmpLueSXg/duckdb
 #> This is removed when the R session ends.
 #> • Extensions are re-downloaded each session.
 #> • Secrets are lost.

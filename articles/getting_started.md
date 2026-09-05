@@ -56,7 +56,6 @@ reagan_airport <- open_curtain("place", spatial_filter = dc_catchment) |>
     categories$primary == "airport"
   ) |>
   collect()
-#> OGR: Unsupported geometry type
 
 print(reagan_airport)
 #> Simple feature collection with 1 feature and 18 fields
@@ -66,7 +65,7 @@ print(reagan_airport)
 #> Geodetic CRS:  WGS 84
 #> # A tibble: 1 × 19
 #>   id                 geometry categories$primary confidence websites emails
-#> * <chr>           <POINT [°]> <chr>                   <dbl> <list>   <list>
+#>   <chr>           <POINT [°]> <chr>                   <dbl> <list>   <list>
 #> 1 61187… (-76.95801 38.92816) airport                 0.972 <NULL>   <NULL>
 #> # ℹ 14 more variables: categories$alternate <list>, socials <list>,
 #> #   phones <list>, brand <df[,2]>, addresses <list>, names <df[,3]>,
@@ -77,7 +76,7 @@ print(reagan_airport)
 By default, `open_curtain` would search through every “place” (aka point
 of interest) in the world - an enormous dataset. Obviously, that’s too
 much to load into most computers’ memory, so `open_curtain` does this
-lazily. Only after calling `collect_sf` does it load data onto your
+lazily. Only after calling `collect` does it load data onto your
 computer. So we filter the data first, spatially and by name, like so:
 
 1.  fetch the boundary of Washington, DC from the “division_area”
@@ -88,7 +87,7 @@ computer. So we filter the data first, spatially and by name, like so:
 4.  locate Ronald Reagan National Airport using the “place” dataset,
     filtering by name and category.
 
-Afterwards, `collect_sf` brings the only the data need into memory. For
+Afterwards, `collect` brings only the data you need into memory. For
 more on lazy programming, see the [dbplyr
 documentation](https://dbplyr.tidyverse.org/).
 
@@ -177,7 +176,7 @@ print(dc_transit)
 #> Geodetic CRS:  WGS 84
 #> # A tibble: 16 × 3
 #>    id                                   names$primary                   geometry
-#>  * <chr>                                <chr>                   <LINESTRING [°]>
+#>    <chr>                                <chr>                   <LINESTRING [°]>
 #>  1 19851ca0-83f2-4e75-9bfd-62b2db763176 Washington Me… (-77.05259 38.87016, -77…
 #>  2 29d8560d-34fe-47f5-8b2c-c5c276158888 Washington Me… (-77.06368 38.88548, -77…
 #>  3 f3be69a6-4842-4960-876d-974f53fd1b0a Washington Me… (-77.07089 38.89466, -77…

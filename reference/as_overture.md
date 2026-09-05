@@ -1,13 +1,18 @@
-# Convert a tbl_sql object to a overture_call object
+# Convert a tbl_sql object to an overture_call object
 
-This function adds the overture_call class to a tbl_sql object. It is
-primarily used internally#' by the open_curtain() function but can also
-be used directly on tbl_sql \#' objects representing Overture Maps data.
+Adds the `overture_call` class to a `tbl_sql` object.
+[`open_curtain()`](https://arthurgailes.github.io/overtureR/reference/open_curtain.md)
+does this for you; call it directly on a lazy table of Overture data you
+built yourself, so that
+[`collect()`](https://dplyr.tidyverse.org/reference/compute.html)
+returns `sf` and
+[`record_overture()`](https://arthurgailes.github.io/overtureR/reference/record_overture.md)
+knows the type and theme of the data.
 
 ## Usage
 
 ``` r
-as_overture(x, type, theme = get_theme_from_type(type))
+as_overture(x, type, theme = get_theme_from_type(type), release = NULL)
 ```
 
 ## Arguments
@@ -19,21 +24,24 @@ as_overture(x, type, theme = get_theme_from_type(type))
 - type:
 
   A string specifying the type of overture dataset to read. Setting to
-  "\*" or `NULL` will read all types for a given theme.
+  "\*" or `NULL` will read all types for a given theme. See
+  [`overture_types()`](https://arthurgailes.github.io/overtureR/reference/overture_types.md)
+  for the valid values.
 
 - theme:
 
-  Inferred from type by default. Must be set if type is "\*" or NULL
+  Inferred from type by default. Must be set if type is "\*" or `NULL`.
+
+- release:
+
+  The Overture release the data came from, such as `"2026-08-19.0"`, or
+  `NULL` if unknown.
 
 ## Value
 
-A tbl_sql object with the additional class overture_call and attributes
-overture_type and overture_theme.
-
-## Details
-
-The function adds the overture_call class as the first class of the
-object
+A tbl_sql object with the additional class `overture_call` and an
+`overture_playbill` attribute: a list with `type`, `theme` and
+`release`.
 
 ## Examples
 
@@ -48,8 +56,8 @@ class(division)
 
 # views
 division2 <- tbl(conn, "test")
-division2 <- as_overture(division2)
+division2 <- as_overture(division2, "division")
 
-exit_stage(conn)
+strike_stage(conn)
 }
 ```

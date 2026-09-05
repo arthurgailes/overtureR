@@ -73,16 +73,17 @@ mountains <- open_curtain(type = "*", theme = "places") |>
   filter(main_category == "mountain" & confidence > .90)
 
 head(mountains)
+#> # Overture release 2026-08-19.0, theme places
 #> # Source:   SQL [?? x 8]
-#> # Database: DuckDB v1.2.2 [Arthur.Gailes@Windows 10 x64:R 4.5.0/:memory:]
-#>   id           primary_name     x      y main_category primary_source confidence
-#>   <chr>        <chr>        <dbl>  <dbl> <chr>         <chr>               <dbl>
-#> 1 08fb4c586e9… Te Rua Manga -160. -21.2  mountain      meta                0.928
-#> 2 08f89343a1a… Mont Marau   -150. -17.6  mountain      meta                0.928
-#> 3 08f893434b6… Col des 3 c… -150. -17.5  mountain      meta                0.923
-#> 4 08f8922733d… Mont Temeha… -151. -16.8  mountain      meta                0.936
-#> 5 08fa0d9315c… Tekao        -140.  -8.84 mountain      meta                0.928
-#> 6 08fa1193a06… Mont Mokoto  -135. -23.1  mountain      meta                0.936
+#> # Database: DuckDB 1.5.2 [Arthur.Gailes@Windows 10 x64:R 4.5.0/:memory:]
+#>   id            primary_name     x     y main_category primary_source confidence
+#>   <chr>         <chr>        <dbl> <dbl> <chr>         <chr>               <dbl>
+#> 1 0de5d733-2fc… Vallée De L… -149. -17.6 mountain      meta                0.931
+#> 2 a5a93127-85f… Mont Rotui   -150. -17.5 mountain      meta                0.912
+#> 3 d6ea3b50-3a9… Vallée De T… -150. -17.6 mountain      meta                0.969
+#> 4 c3ce4dc2-cef… Belvédère D… -150. -17.5 mountain      meta                0.962
+#> 5 34e195ed-66a… Mont Popoti  -152. -16.5 mountain      meta                0.917
+#> 6 2bfb43ed-753… Vaipao Vall… -151. -16.7 mountain      meta                0.912
 #> # ℹ 1 more variable: geometry <POINT [°]>
 ```
 
@@ -139,19 +140,19 @@ render_snapshot(clear=TRUE)
 
 ## Roadmap
 
-- Read pmtiles
-- Add partition, chunking to record_overture
-- Add beta/alpha datasets
-- Add mapping vignette
-- Add performance vignette
-- Download overture files via open_curtain
+- Tile-by-tile downloads with a progress bar in
+  [`record_overture()`](https://arthurgailes.github.io/overtureR/reference/record_overture.md)
+- Mapping vignette (including Overture’s PMTiles through `mapgl`)
+- Performance vignette
 
 # Package index
 
 ## All functions
 
 - [`as_overture()`](https://arthurgailes.github.io/overtureR/reference/as_overture.md)
-  : Convert a tbl_sql object to a overture_call object
+  : Convert a tbl_sql object to an overture_call object
+- [`clear_overture_cache()`](https://arthurgailes.github.io/overtureR/reference/clear_overture_cache.md)
+  : Clear overtureR's catalog cache
 - [`collect(`*`<overture_call>`*`)`](https://arthurgailes.github.io/overtureR/reference/collect.overture_call.md)
   [`collect_sf()`](https://arthurgailes.github.io/overtureR/reference/collect.overture_call.md)
   : Convert dbplyr table to sf Object
@@ -161,14 +162,18 @@ render_snapshot(clear=TRUE)
   : Discover the latest available Overture Maps release
 - [`open_curtain()`](https://arthurgailes.github.io/overtureR/reference/open_curtain.md)
   : Retrieve (Spatially Filtered) Overture Datasets
+- [`overture_releases()`](https://arthurgailes.github.io/overtureR/reference/overture_releases.md)
+  : List the Overture releases still online
+- [`overture_types()`](https://arthurgailes.github.io/overtureR/reference/overture_types.md)
+  : List the dataset types in an Overture release
 - [`record_overture()`](https://arthurgailes.github.io/overtureR/reference/record_overture.md)
   [`snapshot_overture()`](https://arthurgailes.github.io/overtureR/reference/record_overture.md)
-  : Download Overture Maps Data to Local Directory
+  : Download Overture Maps data to a local directory
 - [`sf_as_dbplyr()`](https://arthurgailes.github.io/overtureR/reference/sf_as_dbplyr.md)
-  : Registeran sf object as a DuckDB virtual table
+  : Register an sf object as a DuckDB virtual table
 - [`stage_conn()`](https://arthurgailes.github.io/overtureR/reference/stage_conn.md)
   [`strike_stage()`](https://arthurgailes.github.io/overtureR/reference/stage_conn.md)
-  : create a cachable duckdb connection. In dev
+  : Create or reuse a cached DuckDB connection
 
 # Articles
 
