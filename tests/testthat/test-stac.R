@@ -7,6 +7,16 @@ test_that("stac_releases lists releases newest first", {
   expect_equal(stac_releases(conn), c("2024-01-01.0", "2023-12-01.0"))
 })
 
+test_that("overture_releases lists the releases the catalog hosts", {
+  local_fixture_stac()
+  conn <- local_conn()
+
+  expect_equal(overture_releases(conn), c("2024-01-01.0", "2023-12-01.0"))
+
+  withr::local_options(overturer_stac_url = no_such_catalog())
+  expect_error(overture_releases(conn), "Could not reach Overture's release")
+})
+
 test_that("latest_overture_release reads and caches the catalog's latest", {
   local_fixture_stac()
   conn <- local_conn()

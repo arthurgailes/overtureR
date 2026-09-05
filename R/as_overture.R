@@ -1,17 +1,17 @@
-#' Convert a tbl_sql object to a overture_call object
+#' Convert a tbl_sql object to an overture_call object
 #'
-#' This function adds the overture_call class to a tbl_sql object.  It is
-#' primarily used internally#' by the open_curtain() function but can also be
-#' used directly on tbl_sql #' objects representing Overture Maps data.
+#' Adds the `overture_call` class to a `tbl_sql` object. [open_curtain()]
+#' does this for you; call it directly on a lazy table of Overture data you
+#' built yourself, so that [collect()] returns `sf` and [record_overture()]
+#' knows the type and theme of the data.
 #'
 #' @param x A tbl_sql object representing an Overture Maps dataset.
+#' @param release The Overture release the data came from, such as
+#' `"2026-08-19.0"`, or `NULL` if unknown.
 #' @inheritParams open_curtain
 #'
-#' @return A tbl_sql object with the additional class overture_call and
-#'         attributes overture_type and overture_theme.
-#'
-#' @details
-#' The function adds the overture_call class as the first class of the object
+#' @return A tbl_sql object with the additional class `overture_call` and an
+#'   `overture_playbill` attribute: a list with `type`, `theme` and `release`.
 #'
 #' @examplesIf interactive()
 #' # The open_curtain() function already uses as_overture() internally,
@@ -23,11 +23,16 @@
 #'
 #' # views
 #' division2 <- tbl(conn, "test")
-#' division2 <- as_overture(division2)
+#' division2 <- as_overture(division2, "division")
 #'
 #' strike_stage(conn)
 #' @export
-as_overture <- function(x, type, theme = get_theme_from_type(type)) {
+as_overture <- function(
+  x,
+  type,
+  theme = get_theme_from_type(type),
+  release = NULL
+) {
   if (!inherits(x, "tbl_sql")) stop("Input must be a tbl_sql object")
 
   if (!inherits(x, "overture_call")) {
@@ -35,8 +40,32 @@ as_overture <- function(x, type, theme = get_theme_from_type(type)) {
     config_extensions(conn)
 
     class(x) <- c("overture_call", class(x))
-    attr(x, "overture_playbill") <- c(type = type, theme = theme)
+    attr(x, "overture_playbill") <- list(
+      type = type, theme = theme, release = release
+    )
   }
 
-  return(x)
+  x
+}
+
+playbill <- function(x) {
+  as.list(attr(x, "overture_playbill"))
+}
+
+#' @export
+print.overture_call <- function(x, ...) {
+  bill <- playbill(x)
+  what <- if (identical(bill$type, "*")) {
+    paste("theme", bill$theme)
+  } else {
+    paste("type", bill$type)
+  }
+  release <- if (is.null(bill$release)) {
+    "release unknown"
+  } else {
+    paste("release", bill$release)
+  }
+  cat("# Overture ", release, ", ", what, "\n", sep = "")
+  NextMethod()
+  invisible(x)
 }

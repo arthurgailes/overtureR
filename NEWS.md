@@ -11,8 +11,7 @@ and cached on disk under `tools::R_user_dir("overtureR", "cache")` (releases
 never change, so the cache never goes stale). Turn pruning off with
 `options(overturer_prune = FALSE)`, move or disable the cache with
 `options(overturer_cache_dir = )` and `options(overturer_cache = FALSE)`, or
-clear it with the new `clear_overture_cache()`. Local copies from
-`record_overture()` are not pruned.
+clear it with the new `clear_overture_cache()`.
 
 * `sf_as_dbplyr()` (and so `sf` and `sfc` spatial filters) sends geometry to
 DuckDB as well-known binary instead of well-known text. Uploading 5,000
@@ -29,12 +28,49 @@ repeated queries against the same files skip re-reading their footers.
 
 ## New
 
+* `open_curtain()` gains a `release` argument to pin a query to one Overture
+release, such as `"2026-08-19.0"`, instead of whichever release is latest when
+the script runs. Set `options(overturer_release = )` to pin a whole session. The
+release is recorded on the result, and the new `print()` method for
+`overture_call` objects shows it. `base_url` now defaults to `NULL` and is built
+from `release`.
+
+* `open_curtain()` gains a `predicate` argument: `"intersects"` (the default),
+`"within"` or `"contains"`, so a polygon filter can keep only the features fully
+inside it, or a point can find the feature around it.
+
+* `overture_releases()` lists the releases Overture currently hosts.
+
 * `overture_types()` lists the `type` and `theme` pairs in a release, read from
 Overture's catalog, so new types appear without a package update. The built-in
-table (now including `bathymetry`) is the offline fallback, and
-`open_curtain()` names the valid types when given one it doesn't know.
+table (now including `bathymetry`) is the offline fallback, and `open_curtain()`
+names the valid types when given one it doesn't know.
 
 * `clear_overture_cache()` removes the catalog cache.
+
+## Local copies
+
+* `record_overture()` writes an `_overture.json` manifest into each `type=`
+directory it creates, recording the source release and the bounding box of every
+file. `open_curtain()` on such a copy reads only the files that touch
+`spatial_filter`, and labels the result with the release it came from.
+
+* `record_overture()` gains `partition_by`, for extra partition columns below
+`theme` and `type`, and `grid`, which partitions the copy into cells of a given
+size in degrees so large local copies also skip files by location.
+
+* `record_overture()` can download in one call: pass a type name and a
+`spatial_filter` (plus any other `open_curtain()` arguments) instead of an
+`overture_call`.
+
+* `record_overture()` with `overwrite = TRUE` replaces the `theme=/type=`
+directories it is about to write instead of writing new files next to the old
+ones, so a re-recorded copy holds only the new rows. Other files in `output_dir`
+are untouched. Written files get unique names (`data_<uuid>.parquet`), so
+DuckDB's Parquet metadata cache never serves a stale footer for a rewritten
+copy.
+
+* `record_overture()` quotes `output_dir`, so a path containing `'` works.
 
 ## Fixes
 
@@ -66,9 +102,6 @@ few months and the hardcoded one would itself fail. It now uses the newest
 release in the local catalog cache with a warning, or fails with an error
 that points to `base_url`.
 
-* `duckdb_native_geometry()` compares versions numerically, so a future duckdb
-2.0 will not be treated as pre-1.1.
-
 * An unnamed numeric `spatial_filter` gives a clear error instead of
 `subscript out of bounds`. Passing a single `sfg` point works.
 
@@ -77,6 +110,11 @@ that points to `base_url`.
 * Fixed examples that called a non-existent `exit_stage()` and passed an
 undefined `bbox`, and the getting-started article's references to
 `collect_sf`.
+
+## Dependencies
+
+* overtureR now requires duckdb 1.1.0 or later, and drops the code paths for
+older versions (manual WKB casts and the duckdb 1.1.3 extension workaround).
 
 ## Tests
 

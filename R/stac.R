@@ -30,10 +30,9 @@ stac_rewrite <- function(href) {
 
 # Read the `links` array of one or more STAC documents and keep one relation.
 stac_links <- function(conn, urls, rel) {
-  urls <- paste0("'", urls, "'", collapse = ", ")
   query <- glue::glue(
     "SELECT l.href AS href
-     FROM (SELECT unnest(links) AS l FROM read_json([{urls}]))
+     FROM (SELECT unnest(links) AS l FROM read_json({sql_file_list(urls)}))
      WHERE l.rel = '{rel}'"
   )
   DBI::dbGetQuery(conn, query)$href
@@ -139,6 +138,36 @@ stac_releases <- function(conn) {
   sort(releases[grepl(release_pattern, releases)], decreasing = TRUE)
 }
 
+#' List the Overture releases still online
+#'
+#' Overture publishes a release about once a month and removes old ones after
+#' a few months. This reads the releases its STAC catalog currently lists, so
+#' you can pick one for `open_curtain(release = )` or check that a pinned
+#' release is still available.
+#'
+#' @inheritParams overture_types
+#'
+#' @return A character vector of releases, newest first, such as
+#'   `c("2026-08-19.0", "2026-07-22.0")`.
+#' @examplesIf interactive()
+#' overture_releases()
+#' @export
+overture_releases <- function(conn = NULL) {
+  if (is.null(conn)) conn <- stage_conn()
+  config_extensions(conn)
+
+  tryCatch(
+    stac_releases(conn),
+    error = function(e) {
+      stop(
+        "Could not reach Overture's release catalog (", conditionMessage(e),
+        "). Check your connection.",
+        call. = FALSE
+      )
+    }
+  )
+}
+
 #' List the dataset types in an Overture release
 #'
 #' Reads the type-to-theme table for a release from Overture's STAC catalog,
@@ -232,12 +261,11 @@ stac_manifest <- function(release, theme, type, conn = NULL) {
       items <- stac_rewrite(stac_links(conn, collection, "item"))
       if (length(items) == 0) stop("collection lists no files")
 
-      urls <- paste0("'", items, "'", collapse = ", ")
       files <- DBI::dbGetQuery(conn, glue::glue(
         "SELECT assets.aws.href AS href,
                 bbox[1] AS xmin, bbox[2] AS ymin,
                 bbox[3] AS xmax, bbox[4] AS ymax
-         FROM read_json([{urls}])"
+         FROM read_json({sql_file_list(items)})"
       ))
       data.frame(
         file = basename(files$href),
@@ -291,25 +319,30 @@ is_remote_url <- function(base_url) {
   grepl("^[a-z][a-z0-9+.-]*://", base_url)
 }
 
-# The full paths open_curtain() should read for one (theme, type) and bbox,
-# or NULL to use the wildcard path. When no file touches the bbox, returns a
-# single file: the bbox filter then yields zero rows at the cost of one
-# footer read, instead of reading every footer to learn the same thing.
 prune_files <- function(conn, base_url, release, theme, type, bbox) {
   manifest <- stac_manifest(release, theme, type, conn = conn)
   if (is.null(manifest)) {
+    return(NULL)
+  }
+  dir <- partition_dir(base_url, theme, type)
+  manifest$file <- file.path(dir, manifest$file)
+  prune_paths(manifest, bbox)
+}
+
+# NULL when the manifest can't be trusted (a bbox missing, a local file
+# gone). When nothing touches the bbox, one file is kept: reading its
+# footer costs less than reading every footer to learn the same thing.
+prune_paths <- function(manifest, bbox) {
+  corners <- c("xmin", "ymin", "xmax", "ymax")
+  if (nrow(manifest) == 0 || anyNA(manifest[corners])) {
     return(NULL)
   }
 
   files <- prune_manifest(manifest, bbox)
   if (length(files) == 0) files <- manifest$file[1]
 
-  paths <- glue::glue("{base_url}/theme={theme}/type={type}/{files}")
-
-  # a local directory that happens to look like a release must hold the files
-  if (!is_remote_url(base_url) && !all(file.exists(paths))) {
+  if (!all(is_remote_url(files) | file.exists(files))) {
     return(NULL)
   }
-
-  as.character(paths)
+  as.character(files)
 }

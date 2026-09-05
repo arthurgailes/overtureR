@@ -33,13 +33,14 @@ Common struct fields: `names$primary`, `bbox$xmin`/`$ymin`/`$xmax`/`$ymax`, `cat
 
 | Function | Purpose |
 |----------|---------|
-| `open_curtain(type, spatial_filter, ...)` | Entry point. Returns a lazy `overture_call` (or sf if `as_sf = TRUE`). |
+| `open_curtain(type, spatial_filter, ...)` | Entry point. Returns a lazy `overture_call` (or sf if `as_sf = TRUE`). `release =` pins a release; `predicate =` is `"intersects"` (default), `"within"` or `"contains"`. |
 | `collect(x)` | Execute the query; returns an **sf** object (geometry auto-detected, CRS 4326). |
-| `record_overture(x, output_dir, overwrite)` | Download the current query to a local Parquet mirror; returns a new `overture_call` pointed at it. |
+| `record_overture(x, output_dir, overwrite)` | Download the current query to a local Parquet mirror; returns a new `overture_call` pointed at it. `x` may be a type name plus `spatial_filter =`. `grid =` (degrees) or `partition_by =` add partitions. |
 | `snapshot_overture(x)` | `record_overture()` into `tempdir()` with `overwrite = TRUE`. |
 | `stage_conn()` / `strike_stage()` | Get / close the cached session DuckDB connection. |
 | `sf_as_dbplyr(conn, name, sf_obj)` | Register a local `sf` object as a DuckDB view (for in-DB joins) without copying. |
 | `latest_overture_release()` | The release string `open_curtain()` defaults to. |
+| `overture_releases()` | The releases Overture still hosts, newest first. |
 
 ## Core workflow
 
@@ -69,7 +70,7 @@ Valid types: `building`, `building_part`, `place`, `segment`, `connector`, `divi
 
 ## `spatial_filter` accepts several types
 
-A named numeric bbox vector `c(xmin=, ymin=, xmax=, ymax=)`, an `sf`/`sfc` object, an `st_bbox` object, a table name in the connection (string), or another dbplyr `tbl`. An `sf` filter is uploaded to DuckDB (not pulled into R) and applied as `ST_Intersects`. The bbox layer additionally prunes partitions cheaply, so **always pass a spatial_filter** for anything short of a global query.
+A named numeric bbox vector `c(xmin=, ymin=, xmax=, ymax=)`, an `sf`/`sfc` object, an `st_bbox` object, a table name in the connection (string), or another dbplyr `tbl`. An `sf` filter is uploaded to DuckDB (not pulled into R) and applied as `ST_Intersects`, or as `ST_Within` / `ST_Contains` with `predicate = "within"` / `"contains"`. The bbox layer additionally prunes partitions cheaply, so **always pass a spatial_filter** for anything short of a global query.
 
 ## Local caching for repeat/offline use
 
@@ -99,8 +100,9 @@ fixed schema. A few facts change how you query it:
 - **GERS `id`.** Every feature has a stable id. Use it to join your own data to Overture and
   to track a feature across releases.
 - **Releases expire.** Overture keeps only about 60 days of releases online, so an old
-  release URL stops working. `open_curtain()` defaults to the latest via
-  `latest_overture_release()`; download a local copy with `record_overture()` to keep data.
+  release stops working. `open_curtain()` defaults to the latest via
+  `latest_overture_release()`; pin one with `release =` or `options(overturer_release = )`
+  for reproducible scripts, and download a local copy with `record_overture()` to keep data.
 - **Attribution.** The data is open but the license differs by theme (many are ODbL and
   require crediting "OpenStreetMap contributors"). Attribute Overture in any published product.
 

@@ -13,8 +13,9 @@ open_curtain(
   mode = "view",
   tablename = NULL,
   read_opts = list(),
-  base_url = paste0("s3://overturemaps-us-west-2/release/",
-    latest_overture_release(conn)),
+  predicate = "intersects",
+  release = NULL,
+  base_url = NULL,
   bbox = NULL
 )
 }
@@ -44,9 +45,18 @@ dataset into memory.}
 \item{read_opts}{A named list of key-value pairs passed to
 \href{https://duckdb.org/docs/data/parquet/overview#parameters}{DuckDB's read_parquet}}
 
-\item{base_url}{Allows user to download data from a different mirror, such
-as a local directory, or a alternative release. Defaults to the latest
-Overture release, discovered via \code{\link[=latest_overture_release]{latest_overture_release()}}.}
+\item{predicate}{How a feature must relate to \code{spatial_filter} to be kept:
+\code{"intersects"} (default), \code{"within"} (the feature lies entirely inside the
+filter) or \code{"contains"} (the feature contains the whole filter).}
+
+\item{release}{An Overture release, such as \code{"2026-08-19.0"}. Defaults to
+\code{getOption("overturer_release")}, then to the latest release found by
+\code{\link[=latest_overture_release]{latest_overture_release()}}. See \code{\link[=overture_releases]{overture_releases()}} for the releases
+Overture still hosts. When \code{base_url} is set, \code{release} only labels the
+result.}
+
+\item{base_url}{Read from a different mirror, such as a local directory from
+\code{\link[=record_overture]{record_overture()}}. Defaults to the S3 path of \code{release}.}
 
 \item{bbox}{alias for \code{spatial_filter}. may be deprecated in the future.}
 }
@@ -60,16 +70,26 @@ include records within that area. The core code is copied from \code{duckdbfs},
 which deserves all credit for the implementation
 }
 \details{
-When \code{spatial_filter} is set and \code{base_url} points at an Overture release,
-\code{open_curtain()} reads only the Parquet files whose bounding box touches
-the filter, using the file list in Overture's STAC catalog (see
+When \code{spatial_filter} is set and \code{base_url} points at an Overture release
+or at a directory written by \code{\link[=record_overture]{record_overture()}}, \code{open_curtain()} reads
+only the Parquet files whose bounding box touches the filter, using the
+file list in Overture's STAC catalog or the local copy's manifest (see
 \code{\link[=overture_types]{overture_types()}} and \code{\link[=clear_overture_cache]{clear_overture_cache()}}). This turns a cold query
 over hundreds of files into one over a handful. Set
 \code{options(overturer_prune = FALSE)} to always read the whole partition.
+
+To pin every query in a session to one release, set
+\code{options(overturer_release = "2026-08-19.0")}.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 bbox <- c(xmin = -120.5, ymin = 35.5, xmax = -120.0, ymax = 36.0)
 open_curtain("building", bbox)
+
+# pin a release so the script returns the same rows next month
+open_curtain("building", bbox, release = "2026-08-19.0")
+
+# only buildings entirely inside the box
+open_curtain("building", bbox, predicate = "within")
 \dontshow{\}) # examplesIf}
 }

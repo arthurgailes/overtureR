@@ -164,11 +164,6 @@ render_snapshot(clear=TRUE)
 
 ## Roadmap
 
-- Pin a release with `open_curtain(release = )`, and list the releases Overture
-  still hosts
-- Custom partitions and tile-by-tile downloads in `record_overture()`
-- Download in one call, without `open_curtain()` first
-- A `predicate` argument (`"within"`, `"contains"`) alongside the current
-  intersects filter
+- Tile-by-tile downloads with a progress bar in `record_overture()`
 - Mapping vignette (including Overture's PMTiles through `mapgl`)
 - Performance vignette

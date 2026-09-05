@@ -31,7 +31,7 @@ Imports:
     DBI,
     dbplyr,
     dplyr (>= 1.0.0),
-    duckdb (>= 1.0.0),
+    duckdb (>= 1.1.0),
     glue,
     rlang,
     sf

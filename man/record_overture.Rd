@@ -3,43 +3,79 @@
 \name{record_overture}
 \alias{record_overture}
 \alias{snapshot_overture}
-\title{Download Overture Maps Data to Local Directory}
+\title{Download Overture Maps data to a local directory}
 \usage{
-record_overture(curtain_call, output_dir, overwrite = FALSE, write_opts = NULL)
+record_overture(
+  curtain_call,
+  output_dir,
+  overwrite = FALSE,
+  write_opts = NULL,
+  partition_by = NULL,
+  grid = NULL,
+  spatial_filter = NULL,
+  ...
+)
 
 snapshot_overture(
   curtain_call,
   output_dir = tempdir(),
   overwrite = TRUE,
-  write_opts = NULL
+  write_opts = NULL,
+  partition_by = NULL,
+  grid = NULL,
+  spatial_filter = NULL,
+  ...
 )
 }
 \arguments{
-\item{curtain_call}{A overture_call object.}
+\item{curtain_call}{An \code{overture_call} object, or the name of an Overture
+type (such as \code{"building"}) to open with \code{\link[=open_curtain]{open_curtain()}} first.}
 
 \item{output_dir}{The directory where the data will be saved.}
 
-\item{overwrite}{Logical, if FALSE (default), existing directories will not be
-overwritten.}
+\item{overwrite}{If \code{FALSE} (default), \code{output_dir} must be empty. If
+\code{TRUE}, the \verb{theme=/type=} directories being written are replaced; other
+files in \code{output_dir} are left alone.}
 
-\item{write_opts}{a character vector passed to DuckDB's COPY command.}
+\item{write_opts}{A character vector of extra options for DuckDB's \code{COPY}
+command, such as \code{"ROW_GROUP_SIZE 100000"}. Use \code{partition_by}, not
+\code{PARTITION_BY}, to change the layout.}
+
+\item{partition_by}{Names of columns to partition by, below \code{theme} and
+\code{type}. Add columns with \code{\link[dplyr:mutate]{dplyr::mutate()}} first if needed.}
+
+\item{grid}{Cell size in degrees. If set, the copy is further partitioned
+into a grid of that size (columns \code{x_cell} and \code{y_cell}, the cell's
+south-west corner), so each file covers a compact area and a later
+\code{spatial_filter} skips most of them.}
+
+\item{spatial_filter, ...}{Passed to \code{\link[=open_curtain]{open_curtain()}} when \code{curtain_call} is
+a type name.}
 }
 \value{
-Another tbl_lazy. Use \code{\link[dplyr:show_query]{dplyr::show_query()}} to see the generated query, and
-use \code{\link[dplyr:collect]{dplyr::collect()}} to execute the query and return data to R.
-
-An 'overture_call' for the downloaded data
+An \code{overture_call} reading from the downloaded data. Use
+\code{\link[dplyr:show_query]{dplyr::show_query()}} to see its query and \code{\link[dplyr:collect]{dplyr::collect()}} to bring
+the rows into R.
 }
 \description{
-This function downloads Overture Maps data to a local directory, maintaining
-the same partition structure as in S3. \code{snapshot_overture} defaults
-'output_dir' to \code{tempdir()} and overwrite to TRUE.
+Writes the rows of an \code{overture_call} to Parquet files under \code{output_dir},
+in Overture's own \verb{theme=<theme>/type=<type>/} layout, and returns a new
+\code{overture_call} that reads from the copy. Each \verb{type=} directory also gets
+an \verb{_overture.json} manifest recording the source release and the bounding
+box of every file, so \code{\link[=open_curtain]{open_curtain()}} on the copy skips files by location
+just as it does on S3. \code{snapshot_overture()} defaults \code{output_dir} to
+\code{tempdir()} and \code{overwrite} to \code{TRUE}.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 broadway <- c(xmin = -73.99, ymin = 40.755, xmax = -73.98, ymax = 40.762)
 buildings <- open_curtain("building", spatial_filter = broadway)
 local_buildings <- record_overture(buildings, tempdir(), overwrite = TRUE)
+
+# or in one call
+local_buildings <- record_overture(
+  "building", tempdir(), overwrite = TRUE, spatial_filter = broadway
+)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

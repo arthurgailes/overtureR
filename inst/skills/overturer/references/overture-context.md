@@ -51,7 +51,9 @@ matched.
 ## Releases: cadence and the 60-day window
 
 - **overtureR picks the release for you.** `open_curtain()` defaults to the latest release,
-  found at call time by `latest_overture_release()`. You rarely set it yourself.
+  found at call time by `latest_overture_release()`. Pin one with
+  `open_curtain(release = "2026-08-19.0")` or `options(overturer_release = )` when a script
+  must return the same rows next month; `overture_releases()` lists what is still online.
 - **Overture publishes monthly.** Major schema changes land only in March, June, September,
   and December.
 - **Old releases disappear after about 60 days.** Overture keeps only the two most recent
