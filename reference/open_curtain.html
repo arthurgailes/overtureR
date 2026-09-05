@@ -110,7 +110,9 @@ dataset into memory.</p></dd>
 
 <dt id="arg-read-opts">read_opts<a class="anchor" aria-label="anchor" href="#arg-read-opts"></a></dt>
 <dd><p>A named list of key-value pairs passed to
-<a href="https://duckdb.org/docs/data/parquet/overview#parameters" class="external-link">DuckDB's read_parquet</a></p></dd>
+<a href="https://duckdb.org/docs/data/parquet/overview#parameters" class="external-link">DuckDB's read_parquet</a>.
+<code>union_by_name</code> defaults to <code>TRUE</code> when <code>type</code> is <code>"*"</code>, because the types
+in a theme have different columns.</p></dd>
 
 
 <dt id="arg-predicate">predicate<a class="anchor" aria-label="anchor" href="#arg-predicate"></a></dt>

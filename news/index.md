@@ -98,6 +98,10 @@
 
 ### Fixes
 
+- [`open_curtain()`](https://arthurgailes.github.io/overtureR/reference/open_curtain.md)
+  with `type = "*"` sets `union_by_name = TRUE`, so the different
+  columns of the types in a theme read together.
+
 - overtureR installs and loads DuckDB’s `json` extension, which the
   duckdb R package stopped bundling in 1.5.5, so reading Overture’s
   catalog works there.

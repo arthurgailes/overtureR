@@ -66,7 +66,9 @@ open_curtain(
 - read_opts:
 
   A named list of key-value pairs passed to [DuckDB's
-  read_parquet](https://duckdb.org/docs/data/parquet/overview#parameters)
+  read_parquet](https://duckdb.org/docs/data/parquet/overview#parameters).
+  `union_by_name` defaults to `TRUE` when `type` is `"*"`, because the
+  types in a theme have different columns.
 
 - predicate:
 

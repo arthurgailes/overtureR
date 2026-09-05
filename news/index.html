@@ -63,7 +63,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="fixes-0-3-0">Fixes<a class="anchor" aria-label="anchor" href="#fixes-0-3-0"></a></h3>
-<ul><li><p>overtureR installs and loads DuckDB’s <code>json</code> extension, which the duckdb R package stopped bundling in 1.5.5, so reading Overture’s catalog works there.</p></li>
+<ul><li><p><code><a href="../reference/open_curtain.html">open_curtain()</a></code> with <code>type = "*"</code> sets <code>union_by_name = TRUE</code>, so the different columns of the types in a theme read together.</p></li>
+<li><p>overtureR installs and loads DuckDB’s <code>json</code> extension, which the duckdb R package stopped bundling in 1.5.5, so reading Overture’s catalog works there.</p></li>
 <li><p><code>sf</code>, <code>sfc</code> and <code>bbox</code> spatial filters in a coordinate reference system other than EPSG:4326 are transformed before filtering. Previously their raw coordinates were compared with Overture’s longitude and latitude, which silently returned no rows or the wrong rows. A filter with no coordinate reference system is assumed to be EPSG:4326, with a warning.</p></li>
 <li><p><code><a href="../reference/stage_conn.html">stage_conn()</a></code> now passes <code>dbdir</code>, <code>read_only</code>, <code>bigint</code> and <code>config</code> on to duckdb. Before, only <code>...</code> reached <code><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">DBI::dbConnect()</a></code>, so <code>stage_conn(dbdir = "x.duckdb")</code> silently opened an in-memory database.</p></li>
 <li><p><code><a href="../reference/stage_conn.html">stage_conn()</a></code> registers its shutdown finalizer once rather than on every call, and <code><a href="../reference/stage_conn.html">strike_stage()</a></code> no longer opens a new connection just to close it when none is cached.</p></li>
