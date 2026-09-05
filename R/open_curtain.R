@@ -21,7 +21,7 @@
 #' dataset into memory.
 #' @param tablename The name of the table to create in the database.
 #' @param read_opts A named list of key-value pairs passed to
-#' \href{https://duckdb.org/docs/data/parquet/overview.html#parameters}{DuckDB's read_parquet}
+#' \href{https://duckdb.org/docs/data/parquet/overview#parameters}{DuckDB's read_parquet}
 #' @param base_url Allows user to download data from a different mirror, such
 #' as a local directory, or a alternative release. Defaults to the latest
 #' Overture release, discovered via [latest_overture_release()].

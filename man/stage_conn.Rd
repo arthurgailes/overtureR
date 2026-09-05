@@ -3,7 +3,7 @@
 \name{stage_conn}
 \alias{stage_conn}
 \alias{strike_stage}
-\title{create a cachable duckdb connection. In dev}
+\title{Create or reuse a cached DuckDB connection}
 \usage{
 stage_conn(
   dbdir = ":memory:",

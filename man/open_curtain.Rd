@@ -29,7 +29,8 @@ name of a table in \code{conn}, or another \code{dbplyr} lazy table with a \code
 column. \code{sf} filters in another coordinate reference system are transformed
 to EPSG:4326 (Overture's) before filtering.}
 
-\item{theme}{Inferred from type by default. Must be set if type is "*" or NULL}
+\item{theme}{Inferred from type by default. Must be set if type is "*" or
+\code{NULL}.}
 
 \item{conn}{A connection to a duckdb database.}
 
@@ -41,7 +42,7 @@ dataset into memory.}
 \item{tablename}{The name of the table to create in the database.}
 
 \item{read_opts}{A named list of key-value pairs passed to
-\href{https://duckdb.org/docs/data/parquet/overview.html#parameters}{DuckDB's read_parquet}}
+\href{https://duckdb.org/docs/data/parquet/overview#parameters}{DuckDB's read_parquet}}
 
 \item{base_url}{Allows user to download data from a different mirror, such
 as a local directory, or a alternative release. Defaults to the latest

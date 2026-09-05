@@ -13,7 +13,8 @@ as_overture(x, type, theme = get_theme_from_type(type))
 Setting to "*" or \code{NULL} will read all types for a given theme. See
 \code{\link[=overture_types]{overture_types()}} for the valid values.}
 
-\item{theme}{Inferred from type by default. Must be set if type is "*" or NULL}
+\item{theme}{Inferred from type by default. Must be set if type is "*" or
+\code{NULL}.}
 }
 \value{
 A tbl_sql object with the additional class overture_call and

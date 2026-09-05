@@ -23,6 +23,7 @@ Suggests:
     withr
 Config/testthat/edition: 3
 Encoding: UTF-8
+Language: en-US
 Roxygen: list(markdown = TRUE)
 URL: https://github.com/arthurgailes/overtureR, https://arthurgailes.github.io/overtureR/
 BugReports: https://github.com/arthurgailes/overtureR/issues

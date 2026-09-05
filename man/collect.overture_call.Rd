@@ -17,8 +17,8 @@ collect_sf(...)
 \item{geom_col}{The name of the geometry column. Will auto-detect names
 matching 'geom'.}
 
-\item{crs}{The coordinate reference system to use for the geometries, specified
-by its EPSG code. The default is 4326 (WGS 84).}
+\item{crs}{The coordinate reference system to use for the geometries,
+specified by its EPSG code. The default is 4326 (WGS 84).}
 }
 \value{
 An 'sf' object with the dataset converted to spatial features.

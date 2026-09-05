@@ -1,4 +1,4 @@
-#' create a cachable duckdb connection. In dev
+#' Create or reuse a cached DuckDB connection
 #'
 #' `stage_conn` is primarily intended for internal use by other
 #' `overtureR` functions.  However, it can be called directly by
