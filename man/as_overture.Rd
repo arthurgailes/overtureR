@@ -10,7 +10,8 @@ as_overture(x, type, theme = get_theme_from_type(type))
 \item{x}{A tbl_sql object representing an Overture Maps dataset.}
 
 \item{type}{A string specifying the type of overture dataset to read.
-Setting to "*" or \code{NULL} will read all types for a given theme.}
+Setting to "*" or \code{NULL} will read all types for a given theme. See
+\code{\link[=overture_types]{overture_types()}} for the valid values.}
 
 \item{theme}{Inferred from type by default. Must be set if type is "*" or NULL}
 }
@@ -39,6 +40,6 @@ class(division)
 division2 <- tbl(conn, "test")
 division2 <- as_overture(division2)
 
-exit_stage(conn)
+strike_stage(conn)
 \dontshow{\}) # examplesIf}
 }

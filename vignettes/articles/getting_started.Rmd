@@ -62,14 +62,14 @@ reagan_airport <- open_curtain("place", spatial_filter = dc_catchment) |>
 print(reagan_airport)
 ```
 
-By default, `open_curtain` would search through every "place" (aka point of interest) in the world - an enormous dataset. Obviously, that's too much to load into most computers' memory, so `open_curtain` does this lazily. Only after calling `collect_sf` does it load data onto your computer. So we filter the data first, spatially and by name, like so:
+By default, `open_curtain` would search through every "place" (aka point of interest) in the world - an enormous dataset. Obviously, that's too much to load into most computers' memory, so `open_curtain` does this lazily. Only after calling `collect` does it load data onto your computer. So we filter the data first, spatially and by name, like so:
 
 1. fetch the boundary of Washington, DC from the "division_area" dataset;
 2. filter for the specific region we wanted;
 3. create a spatial buffer around DC to define our area of interest for subsequent queries; and
 4. locate Ronald Reagan National Airport using the "place" dataset, filtering by name and category.
 
-Afterwards, `collect_sf` brings the only the data need into memory. For more on lazy programming, see the [dbplyr documentation](https://dbplyr.tidyverse.org/).
+Afterwards, `collect` brings only the data you need into memory. For more on lazy programming, see the [dbplyr documentation](https://dbplyr.tidyverse.org/).
 
 Now that we've set the stage with our starting point, let's spotlight our destination. In the next code block, we'll locate the Kennedy Center:
 

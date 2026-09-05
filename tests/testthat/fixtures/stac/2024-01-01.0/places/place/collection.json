@@ -1,0 +1,26 @@
+{
+  "type": "Collection",
+  "id": "place",
+  "stac_version": "1.1.0",
+  "links": [
+    {
+      "rel": "root",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/catalog.json"
+    },
+    {
+      "rel": "item",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/places/place/00000/00000.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/places/place/00001/00001.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "parent",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/places/catalog.json"
+    }
+  ],
+  "license": "ODbL-1.0"
+}

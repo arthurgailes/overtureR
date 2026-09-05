@@ -1,6 +1,3 @@
-# last-resort value if the STAC catalog can't be reached (e.g. offline)
-overture_fallback_release <- "2026-08-19.0"
-
 #' Discover the latest available Overture Maps release
 #'
 #' `open_curtain()` needs a release date/version to build its S3 path (e.g.
@@ -9,6 +6,12 @@ overture_fallback_release <- "2026-08-19.0"
 #' (<https://stac.overturemaps.org/catalog.json>) for its current `latest`
 #' release, so callers don't have to track releases themselves or wait on a
 #' package update. The result is cached for the session.
+#'
+#' If the catalog can't be reached, the newest release in the package's local
+#' catalog cache is used with a warning (Overture removes releases after a few
+#' months, so it may itself be gone). With no cache, the call fails with an
+#' error; pass `base_url` to `open_curtain()` to work offline or from a local
+#' copy.
 #'
 #' @param conn A duckdb connection. Uses the cached session connection by
 #' default.
@@ -29,7 +32,7 @@ latest_overture_release <- function(conn = NULL, refresh = FALSE) {
   if (is.null(conn)) conn <- stage_conn()
   config_extensions(conn)
 
-  stac_url <- "https://stac.overturemaps.org/catalog.json"
+  stac_url <- paste0(stac_root(), "/catalog.json")
 
   release <- tryCatch(
     {
@@ -40,13 +43,23 @@ latest_overture_release <- function(conn = NULL, refresh = FALSE) {
       catalog$latest
     },
     error = function(e) {
+      known <- stac_cached_releases()
+      if (length(known) == 0) {
+        stop(
+          "Could not reach Overture's release catalog (", conditionMessage(e),
+          ") and no release is cached locally. Check your connection, or ",
+          "pass `base_url` to open_curtain() to use a specific release ",
+          "or a local copy.",
+          call. = FALSE
+        )
+      }
       warning(
         "Could not reach Overture's release catalog (", conditionMessage(e),
-        "). Falling back to the last known release, ",
-        overture_fallback_release, ".",
+        "). Using the newest cached release, ", known[[1]], ", which ",
+        "Overture may no longer host.",
         call. = FALSE
       )
-      overture_fallback_release
+      known[[1]]
     }
   )
 

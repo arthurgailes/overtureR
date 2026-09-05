@@ -1,0 +1,22 @@
+{
+  "type": "Catalog",
+  "id": "2024-01-01.0",
+  "stac_version": "1.1.0",
+  "links": [
+    {
+      "rel": "root",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/buildings/catalog.json",
+      "title": "buildings"
+    },
+    {
+      "rel": "child",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/places/catalog.json",
+      "title": "places"
+    }
+  ],
+  "latest": true
+}

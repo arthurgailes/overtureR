@@ -1,0 +1,20 @@
+{
+  "type": "Catalog",
+  "id": "places",
+  "stac_version": "1.1.0",
+  "links": [
+    {
+      "rel": "root",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/catalog.json"
+    },
+    {
+      "rel": "pmtiles",
+      "href": "https://tiles.overturemaps.org/2024-01-01.0/places.pmtiles"
+    },
+    {
+      "rel": "child",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/places/place/collection.json",
+      "title": "place"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "type": "Collection",
+  "id": "building_part",
+  "stac_version": "1.1.0",
+  "links": [
+    {
+      "rel": "root",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/catalog.json"
+    },
+    {
+      "rel": "item",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/buildings/building_part/00000/00000.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "parent",
+      "href": "https://stac.overturemaps.org/2024-01-01.0/buildings/catalog.json"
+    }
+  ],
+  "license": "ODbL-1.0"
+}

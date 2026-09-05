@@ -164,9 +164,11 @@ render_snapshot(clear=TRUE)
 
 ## Roadmap
 
-- Read pmtiles
-- Add partition, chunking to record_overture
-- Add beta/alpha datasets
-- Add mapping vignette
-- Add performance vignette
-- Download overture files via open_curtain
+- Pin a release with `open_curtain(release = )`, and list the releases Overture
+  still hosts
+- Custom partitions and tile-by-tile downloads in `record_overture()`
+- Download in one call, without `open_curtain()` first
+- A `predicate` argument (`"within"`, `"contains"`) alongside the current
+  intersects filter
+- Mapping vignette (including Overture's PMTiles through `mapgl`)
+- Performance vignette

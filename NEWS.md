@@ -1,3 +1,91 @@
+# overtureR 0.3.0
+
+## Faster queries
+
+* `open_curtain()` now reads only the Parquet files whose bounding box touches
+`spatial_filter`, using the per-file bounding boxes in Overture's STAC catalog,
+instead of every file in the partition. A cold city-sized `building` query drops
+from about 87 seconds to a few seconds, because DuckDB reads 1 to 3 Parquet
+footers rather than 512. The catalog is read once per release, type and session
+and cached on disk under `tools::R_user_dir("overtureR", "cache")` (releases
+never change, so the cache never goes stale). Turn pruning off with
+`options(overturer_prune = FALSE)`, move or disable the cache with
+`options(overturer_cache_dir = )` and `options(overturer_cache = FALSE)`, or
+clear it with the new `clear_overture_cache()`. Local copies from
+`record_overture()` are not pruned.
+
+* `sf_as_dbplyr()` (and so `sf` and `sfc` spatial filters) sends geometry to
+DuckDB as well-known binary instead of well-known text. Uploading 5,000
+polygons drops from about 14 seconds to under 0.1 seconds, and coordinates keep
+full precision.
+
+* An `sf` spatial filter is now uploaded once and its union kept in a small
+temporary table, instead of leaving a registered data frame and two views
+behind and re-running `ST_Union_Agg()` on every query.
+
+* Connections created by `stage_conn()` (and any connection passed to
+`open_curtain()`) enable DuckDB's Parquet metadata and HTTP metadata caches, so
+repeated queries against the same files skip re-reading their footers.
+
+## New
+
+* `overture_types()` lists the `type` and `theme` pairs in a release, read from
+Overture's catalog, so new types appear without a package update. The built-in
+table (now including `bathymetry`) is the offline fallback, and
+`open_curtain()` names the valid types when given one it doesn't know.
+
+* `clear_overture_cache()` removes the catalog cache.
+
+## Fixes
+
+* `sf`, `sfc` and `bbox` spatial filters in a coordinate reference system other
+than EPSG:4326 are transformed before filtering. Previously their raw
+coordinates were compared with Overture's longitude and latitude, which
+silently returned no rows or the wrong rows. A filter with no coordinate
+reference system is assumed to be EPSG:4326, with a warning.
+
+* `stage_conn()` now passes `dbdir`, `read_only`, `bigint` and `config` on to
+duckdb. Before, only `...` reached `DBI::dbConnect()`, so
+`stage_conn(dbdir = "x.duckdb")` silently opened an in-memory database.
+
+* `stage_conn()` registers its shutdown finalizer once rather than on every
+call, and `strike_stage()` no longer opens a new connection just to close it
+when none is cached.
+
+* `collect()` checks the geometry column's type before converting it. A
+column that is already well-known binary (for example after
+`mutate(geometry = ST_AsWKB(geometry))`) is used as is, and a non-spatial
+column named `geometry` is left alone, where both used to fail with a binder
+error. Geometry is converted with `sf::st_as_sfc()` rather than through GDAL,
+which removes the `OGR: Unsupported geometry type` message on places data.
+Extra arguments such as `collect(x, crs = 3857)` now work.
+
+* `latest_overture_release()` no longer falls back to a hardcoded release
+when the catalog is unreachable, because Overture removes releases after a
+few months and the hardcoded one would itself fail. It now uses the newest
+release in the local catalog cache with a warning, or fails with an error
+that points to `base_url`.
+
+* `duckdb_native_geometry()` compares versions numerically, so a future duckdb
+2.0 will not be treated as pre-1.1.
+
+* An unnamed numeric `spatial_filter` gives a clear error instead of
+`subscript out of bounds`. Passing a single `sfg` point works.
+
+* `record_overture()` checks its input before touching the connection.
+
+* Fixed examples that called a non-existent `exit_stage()` and passed an
+undefined `bbox`, and the getting-started article's references to
+`collect_sf`.
+
+## Tests
+
+* The test suite now runs offline against a few hundred Overture features
+saved under `tests/testthat/fixtures/`, plus a miniature of Overture's STAC
+catalog. It covers each SQL builder, every filter kind, the catalog cache, and
+a regression test for each fix above. Three tests still read the live release;
+they run locally and on a weekly schedule, not on every push.
+
 # overtureR 0.2.6
 
 * Bundle an agent skill at `inst/skills/overturer/` teaching AI coding agents
