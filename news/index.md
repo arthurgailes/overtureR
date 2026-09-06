@@ -7,12 +7,12 @@
 - [`open_curtain()`](https://arthurgailes.github.io/overtureR/reference/open_curtain.md)
   now reads only the Parquet files whose bounding box touches
   `spatial_filter`, using the per-file bounding boxes in Overture’s STAC
-  catalog, instead of every file in the partition. A cold city-sized
-  `building` query drops from about 87 seconds to a few seconds, because
-  DuckDB reads 1 to 3 Parquet footers rather than 512. The catalog is
-  read once per release, type and session and cached on disk under
-  `tools::R_user_dir("overtureR", "cache")` (releases never change, so
-  the cache never goes stale). Turn pruning off with
+  catalog, instead of every file in the partition. In one test a cold
+  city-sized `building` count dropped from about 90 seconds to 1 second,
+  because DuckDB reads 1 to 3 Parquet footers rather than 512. The
+  catalog is read once per release, type and session and cached on disk
+  under `tools::R_user_dir("overtureR", "cache")` (releases never
+  change, so the cache never goes stale). Turn pruning off with
   `options(overturer_prune = FALSE)`, move or disable the cache with
   `options(overturer_cache_dir = )` and
   `options(overturer_cache = FALSE)`, or clear it with the new

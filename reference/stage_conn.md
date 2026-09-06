@@ -89,7 +89,7 @@ connection before removing the cache.
 
 con <- stage_conn()
 #> duckdb keeps downloaded extensions and secrets in a temporary directory:
-#> ℹ /tmp/RtmpvykU0J/duckdb
+#> ℹ /tmp/RtmpVVExLc/duckdb
 #> This is removed when the R session ends.
 #> • Extensions are re-downloaded each session.
 #> • Secrets are lost.
