@@ -8,13 +8,14 @@ sf 1.1.0, and Overture release 2026-08-19.0.
 Items 1 to 8 and 10 to 12 of the original plan shipped on 2026-09-05: STAC file pruning,
 binary `sf` uploads, bug fixes, release pinning, a self-updating type list, the lower fixed
 cost of `open_curtain()`, the offline test suite, the `record_overture()` improvements, the
-`predicate` argument, duckdb 1.1.0 as the floor, and the trimmed roadmap. All of it ships as version 0.3.0.
+`predicate` argument, duckdb 1.1.0 as the floor, the `st_bbox()` and `st_crs()` methods
+copied from duckspatial, and the trimmed roadmap. All of it ships as version 0.3.0.
 
 What remains:
 
 1. Write the performance and mapping articles; refresh docs and the skill.
 2. Feature ideas to consider, including duckspatial interoperability.
-3. Small ideas to copy from duckspatial.
+3. One deferred duckspatial idea: benchmark `wk` for WKB parsing before switching to it.
 
 ## Terms used in this plan
 
@@ -158,17 +159,29 @@ Each is a few lines, adds no dependency, and makes the lazy object behave more l
 Source: duckspatial 1.2.1, `R/duckspatial_df_sf_methods.R` and
 `R/duckspatial_df_dplyr_methods.R`.
 
-- **`st_bbox.overture_call()`** runs `ST_Extent(ST_Collect(LIST(geometry)))` in DuckDB and
-  returns an `sf` bbox in the table's CRS, so users get an extent without a `collect()`.
+Shipped in 0.3.0:
+
+- **`st_bbox.overture_call()`** runs `ST_Extent_Agg(geometry)` in DuckDB and returns an `sf`
+  bbox in the table's CRS, so users get an extent without a `collect()`.
 - **`st_crs.overture_call()`** reads the CRS from the typed `GEOMETRY('OGC:CRS84')` column
   on duckdb >= 1.5, and falls back to EPSG:4326 on older versions, so `sf` generics work on
   the lazy object.
-- **Cache the geometry column type** in the `overture_playbill` attribute when
-  `open_curtain()` builds the table. `collect()` runs a `DESCRIBE` round trip on every call
-  today to learn whether to inject `ST_AsWKB()`.
+
+Dropped:
+
+- **Cache the geometry column type** in the `overture_playbill` attribute. Not done, because
+  the attribute survives `dplyr::mutate()`: after `mutate(geometry = ST_AsWKB(geometry))` the
+  column is `BLOB` but a cached type would still read `GEOMETRY`, so `collect()` would inject
+  `ST_AsWKB()` a second time and fail. `collect()` keeps its `DESCRIBE`, which is negligible
+  next to the data it then pulls. `st_bbox()` and `st_crs()` each run one cheap query only
+  when called, which is the real win over `sf`'s collect-based default.
+
+Deferred:
+
 - **Measure `wk` for WKB parsing.** duckspatial converts WKB with `wk::new_wk_wkb()` before
   `sf::st_as_sfc()`. wk is already in sf's dependency tree through s2, so the cost is nil.
-  Switch only if a benchmark on a large `collect()` shows a real gain.
+  Switch only if a benchmark on a large `collect()` shows a real gain; the offline fixtures
+  are too small to measure it.
 
 **Effort.** Small.
 

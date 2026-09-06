@@ -2,6 +2,8 @@
 
 S3method(collect,overture_call)
 S3method(print,overture_call)
+S3method(sf::st_bbox,overture_call)
+S3method(sf::st_crs,overture_call)
 export(as_overture)
 export(clear_overture_cache)
 export(latest_overture_release)

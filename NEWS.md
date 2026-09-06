@@ -48,6 +48,10 @@ names the valid types when given one it doesn't know.
 
 * `clear_overture_cache()` removes the catalog cache.
 
+* `sf::st_bbox()` and `sf::st_crs()` methods for `overture_call` objects read a
+query's extent and coordinate reference system straight from DuckDB, without
+collecting the rows into R.
+
 ## Local copies
 
 * `record_overture()` writes an `_overture.json` manifest into each `type=`
