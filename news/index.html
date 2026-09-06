@@ -52,6 +52,7 @@
 <li><p><code><a href="../reference/overture_releases.html">overture_releases()</a></code> lists the releases Overture currently hosts.</p></li>
 <li><p><code><a href="../reference/overture_types.html">overture_types()</a></code> lists the <code>type</code> and <code>theme</code> pairs in a release, read from Overture’s catalog, so new types appear without a package update. The built-in table (now including <code>bathymetry</code>) is the offline fallback, and <code><a href="../reference/open_curtain.html">open_curtain()</a></code> names the valid types when given one it doesn’t know.</p></li>
 <li><p><code><a href="../reference/clear_overture_cache.html">clear_overture_cache()</a></code> removes the catalog cache.</p></li>
+<li><p><code><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">sf::st_bbox()</a></code> and <code><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">sf::st_crs()</a></code> methods for <code>overture_call</code> objects read a query’s extent and coordinate reference system straight from DuckDB, without collecting the rows into R.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="local-copies-0-3-0">Local copies<a class="anchor" aria-label="anchor" href="#local-copies-0-3-0"></a></h3>

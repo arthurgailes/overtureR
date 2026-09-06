@@ -17,6 +17,9 @@
   : Retrieve (Spatially Filtered) Overture Datasets
 - [`overture_releases()`](https://arthurgailes.github.io/overtureR/reference/overture_releases.md)
   : List the Overture releases still online
+- [`st_crs(`*`<overture_call>`*`)`](https://arthurgailes.github.io/overtureR/reference/overture_sf_methods.md)
+  [`st_bbox(`*`<overture_call>`*`)`](https://arthurgailes.github.io/overtureR/reference/overture_sf_methods.md)
+  : Extent and coordinate reference system without collecting
 - [`overture_types()`](https://arthurgailes.github.io/overtureR/reference/overture_types.md)
   : List the dataset types in an Overture release
 - [`record_overture()`](https://arthurgailes.github.io/overtureR/reference/record_overture.md)

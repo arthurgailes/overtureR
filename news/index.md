@@ -64,6 +64,13 @@
 - [`clear_overture_cache()`](https://arthurgailes.github.io/overtureR/reference/clear_overture_cache.md)
   removes the catalog cache.
 
+- [`sf::st_bbox()`](https://r-spatial.github.io/sf/reference/st_bbox.html)
+  and
+  [`sf::st_crs()`](https://r-spatial.github.io/sf/reference/st_crs.html)
+  methods for `overture_call` objects read a query’s extent and
+  coordinate reference system straight from DuckDB, without collecting
+  the rows into R.
+
 ### Local copies
 
 - [`record_overture()`](https://arthurgailes.github.io/overtureR/reference/record_overture.md)
