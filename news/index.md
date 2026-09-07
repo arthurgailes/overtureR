@@ -55,11 +55,12 @@
   lists the releases Overture currently hosts.
 
 - [`overture_types()`](https://arthurgailes.github.io/overtureR/reference/overture_types.md)
-  lists the `type` and `theme` pairs in a release, read from Overture’s
-  catalog, so new types appear without a package update. The built-in
-  table (now including `bathymetry`) is the offline fallback, and
+  lists the `type` and `theme` pairs in a release. It reads them from
+  Overture’s catalog, so new types appear without a package update. When
+  the catalog is unreachable, it falls back to a built-in table, which
+  now includes `bathymetry`. If you give
   [`open_curtain()`](https://arthurgailes.github.io/overtureR/reference/open_curtain.md)
-  names the valid types when given one it doesn’t know.
+  a type it doesn’t know, the error names the valid ones.
 
 - [`clear_overture_cache()`](https://arthurgailes.github.io/overtureR/reference/clear_overture_cache.md)
   removes the catalog cache.
@@ -162,9 +163,7 @@
 
 ### Dependencies
 
-- overtureR now requires duckdb 1.1.0 or later, and drops the code paths
-  for older versions (manual WKB casts and the duckdb 1.1.3 extension
-  workaround).
+- overtureR now requires duckdb 1.1.0 or later.
 
 ### Tests
 
