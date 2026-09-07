@@ -28,6 +28,14 @@
 
 ## New
 
+- Bundle an agent skill at `inst/skills/overturer/` teaching AI coding agents
+  the package's API and idioms - chiefly accessing Overture's nested struct
+  columns with `$` (`names$primary`), lazy-then-`collect()` evaluation, and the
+  `type`->`theme` mapping. Ships `SKILL.md` plus `references/data-model.md` (schema
+  and type/theme table) and `references/overture-context.md` (Overture themes,
+  GERS stable ids, licensing/attribution, release cadence, and links).
+  Discoverable by tools following the `inst/skills/` convention (e.g. Posit's
+  `btw`).
 - `open_curtain()` gains a `release` argument to pin a query to one Overture
   release, such as `"2026-08-19.0"`, instead of whichever release is latest when
   the script runs. Set `options(overturer_release = )` to pin a whole session. The
@@ -135,15 +143,6 @@
   they run locally and on a weekly schedule, not on every push.
 
 # overtureR 0.2.6
-
-- Bundle an agent skill at `inst/skills/overturer/` teaching AI coding agents
-  the package's API and idioms - chiefly accessing Overture's nested struct
-  columns with `$` (`names$primary`), lazy-then-`collect()` evaluation, and the
-  `type`->`theme` mapping. Ships `SKILL.md` plus `references/data-model.md` (schema
-  and type/theme table) and `references/overture-context.md` (Overture themes,
-  GERS stable ids, licensing/attribution, release cadence, and links).
-  Discoverable by tools following the `inst/skills/` convention (e.g. Posit's
-  `btw`).
 
 - `open_curtain()`'s `base_url` no longer hardcodes a specific Overture
   release. It now defaults to the latest release, discovered dynamically via
