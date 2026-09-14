@@ -11,3 +11,6 @@ data-raw/overture_schema/tidy
 
 /.quarto/
 inst/doc
+
+# Rendered article previews (generated, not source)
+.dev/previews/
