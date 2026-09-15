@@ -82,7 +82,7 @@ bbox <- c(xmin = -87.65, ymin = 41.87, xmax = -87.61, ymax = 41.89)
 
 open_curtain("building", spatial_filter = bbox) |>  # prune to the area first
   filter(height > 15) |>                             # filter in DuckDB
-  transmute(id, height, name = names$primary) |>     # struct field with $
+  transmute(id, height, name = names$primary, geometry) |>  # keep geometry
   collect()                                          # only now pull to R
 ```
 
@@ -145,7 +145,7 @@ place_time <- system.time(
       names$primary == "Chicago",
       region == "US-IL"
     ) |>
-    transmute(name = names$primary) |>  # keep geometry plus one plain column
+    transmute(name = names$primary, geometry) |>  # keep the geometry column
     collect()
 )
 
@@ -188,7 +188,7 @@ loop <- c(xmin = -87.645, ymin = 41.875, xmax = -87.615, ymax = 41.895)
 building_time <- system.time(
   tall_buildings <- open_curtain("building", spatial_filter = loop) |>
     filter(height > 15) |>
-    transmute(id, height, name = names$primary) |>
+    transmute(id, height, name = names$primary, geometry) |>
     collect()
 )
 
@@ -290,7 +290,7 @@ fanout_time <- system.time(
       bbox <- c(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
       open_curtain("building", spatial_filter = bbox) |>
         filter(height > 15) |>
-        transmute(height, city = !!city) |>
+        transmute(height, city = !!city, geometry) |>
         collect()
     }) |>
     bind_rows()
