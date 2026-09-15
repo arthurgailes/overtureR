@@ -19,7 +19,7 @@ Overture columns like `names`, `bbox`, `categories`, and `sources` are **nested 
 # CORRECT - $ inside dplyr verbs
 open_curtain("place", bbox) |>
   filter(categories$primary == "airport") |>       # struct field in filter
-  transmute(id, name = names$primary, x = bbox$xmin) |>   # and in transmute
+  transmute(id, name = names$primary, geometry) |> # $ in transmute; keep geometry
   collect()
 
 # WRONG - do not do this
@@ -52,9 +52,14 @@ bbox <- c(xmin = -87.65, ymin = 41.87, xmax = -87.61, ymax = 41.89)  # named vec
 
 open_curtain("building", spatial_filter = bbox) |>  # lazy; theme "buildings" inferred
   filter(!is.na(height)) |>                          # filter BEFORE dropping columns
-  transmute(id, height, name = names$primary) |>     # geometry is kept automatically
+  transmute(id, height, name = names$primary, geometry) |>  # name geometry to keep it
   collect()                                          # -> sf, CRS 4326
 ```
+
+**Keep `geometry` to get an `sf` back.** `transmute()` and `select()` drop the
+geometry column like any other column, so name `geometry` in them whenever you
+plan to map or return spatial data. Use `mutate()` instead when you want to keep
+every column. Leave `geometry` out only when you want a plain tibble.
 
 Aggregate in the database when you don't need geometry - `summarise(mean(height, na.rm = TRUE)) |> pull()` runs in DuckDB, no download.
 
@@ -89,7 +94,7 @@ local |> filter(!is.na(height)) |> collect()
 | `filter()` on a column errors after `select`/`transmute` | You dropped it. Filter before selecting. |
 | Reaching for `sql("names.primary")` | Use `names$primary` directly inside the dplyr verb. |
 | "Could not find theme for the provided type" | `type = "*"`/`NULL` without a `theme`, or an unknown `type`. Set `theme`. |
-| Result is a tibble, not sf | Geometry column not named `geometry`, or you called `dplyr::collect()` on a non-`overture_call`. |
+| Result is a tibble, not sf | `transmute()` or `select()` dropped the geometry column. Name `geometry` in them, or use `mutate()`. Also check you called `collect()` on an `overture_call`, not a plain tbl. |
 | Tests/queries fail offline | Every query hits live Overture S3 unless you've `record_overture()`'d a local copy. |
 
 ## Overture background and links
