@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/arthurgailes/overtureR/blob/v0.3.1/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/arthurgailes/overtureR/blob/master/DESCRIPTION)
 
 Gailes A (2026). *overtureR: Load 'Overture' Datasets as 'dbplyr' and
 'sf'-Ready Data Frames*. R package version 0.3.1,
