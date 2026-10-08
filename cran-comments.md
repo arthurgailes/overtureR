@@ -1,3 +1,12 @@
+## Resubmission
+
+The first upload of 0.3.1 gave a NOTE on Debian: the tests used 5.1 times
+as much CPU time as elapsed time. The cause was DuckDB's extension loading,
+which checks each extension's signature on every core. The tests opened a
+new connection, and so loaded the extensions again, for each test. They now
+share one connection that runs queries on one thread, and their CPU time is
+about equal to their elapsed time.
+
 ## overtureR 0.3.1
 
 This release replaces 0.2.5, the current CRAN version. Versions 0.2.6 and

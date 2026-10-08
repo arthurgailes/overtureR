@@ -62,19 +62,60 @@ forget_stac_cache <- function() {
   rm(list = ls(envir = cache), envir = cache)
 }
 
-# A fresh duckdb connection, closed when the calling test ends. Skips the
-# test when DuckDB's extensions can't be installed, as on a machine without
-# network access.
+# A duckdb connection that starts empty and is emptied again when the calling
+# test ends. Skips the test when DuckDB's extensions can't be installed, as on
+# a machine without network access.
 local_conn <- function(env = parent.frame()) {
-  conn <- DBI::dbConnect(duckdb::duckdb())
-  withr::defer(DBI::dbDisconnect(conn, shutdown = TRUE), envir = env)
-  tryCatch(
-    config_extensions(conn),
+  conn <- tryCatch(
+    shared_conn(),
     error = function(e) {
       testthat::skip(paste("duckdb extensions unavailable:", e$message))
     }
   )
+  withr::defer(clear_conn(conn), envir = env)
   conn
+}
+
+# Tests share one connection. Loading DuckDB's extensions checks their
+# signatures on every core, whatever `threads` says, so a new connection per
+# test used several times more CPU time than elapsed time, which CRAN flags.
+# The connection runs queries on one thread for the same reason.
+shared_conn <- local({
+  conn <- NULL
+  function() {
+    if (is.null(conn) || !DBI::dbIsValid(conn)) {
+      conn <<- DBI::dbConnect(duckdb::duckdb(config = list(threads = "1")))
+      withr::defer(
+        DBI::dbDisconnect(conn, shutdown = TRUE),
+        envir = testthat::teardown_env()
+      )
+      config_extensions(conn)
+    }
+    conn
+  }
+})
+
+# Drop the views, registered data frames and tables a test left behind.
+clear_conn <- function(conn) {
+  if (!DBI::dbIsValid(conn)) {
+    return(invisible())
+  }
+  views <- DBI::dbGetQuery(
+    conn, "SELECT view_name FROM duckdb_views() WHERE NOT internal"
+  )$view_name
+  for (view in views) {
+    duckdb::duckdb_unregister(conn, view)
+    DBI::dbExecute(
+      conn, paste("DROP VIEW IF EXISTS", DBI::dbQuoteIdentifier(conn, view))
+    )
+  }
+  tables <- DBI::dbGetQuery(conn, "SELECT table_name FROM duckdb_tables()")
+  for (table in tables$table_name) {
+    DBI::dbExecute(
+      conn, paste("DROP TABLE IF EXISTS", DBI::dbQuoteIdentifier(conn, table))
+    )
+  }
+  invisible()
 }
 
 # An overture_call over the fixture data.
