@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">overtureR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,7 +19,8 @@
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting_started.html">Raising the Curtain: Getting Started with overtureR</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/ai-assisted-queries.html">Ask Overture in Plain Language</a></li>
+    <li><a class="dropdown-item" href="../articles/getting_started.html">Raising the Curtain: Getting Started with overtureR</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -37,6 +38,12 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.1" id="overturer-031">overtureR 0.3.1<a class="anchor" aria-label="anchor" href="#overturer-031"></a></h2>
+<ul><li>New article “Ask Overture in Plain Language” shows how to drive overtureR from an LLM agent, using ellmer and btw with the bundled skill, and renders the results as interactive maplibre maps.</li>
+<li>Corrected the bundled skill: <code><a href="https://dplyr.tidyverse.org/reference/transmute.html" class="external-link">transmute()</a></code> and <code><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select()</a></code> drop the <code>geometry</code> column, so the examples now name <code>geometry</code> and a note explains when to keep it.</li>
+<li>Overture removed the <code>categories</code> column from places in release 2026-09-23.0. The bundled skill, README and getting-started article now use <code>taxonomy$primary</code> and <code>basic_category</code> instead.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="overturer-030">overtureR 0.3.0<a class="anchor" aria-label="anchor" href="#overturer-030"></a></h2>
 <div class="section level3">
 <h3 id="faster-queries-0-3-0">Faster queries<a class="anchor" aria-label="anchor" href="#faster-queries-0-3-0"></a></h3>
@@ -47,7 +54,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="new-0-3-0">New<a class="anchor" aria-label="anchor" href="#new-0-3-0"></a></h3>
-<ul><li><p><code><a href="../reference/open_curtain.html">open_curtain()</a></code> gains a <code>release</code> argument to pin a query to one Overture release, such as <code>"2026-08-19.0"</code>, instead of whichever release is latest when the script runs. Set <code>options(overturer_release = )</code> to pin a whole session. The release is recorded on the result, and the new <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> method for <code>overture_call</code> objects shows it. <code>base_url</code> now defaults to <code>NULL</code> and is built from <code>release</code>.</p></li>
+<ul><li><p>Bundle an agent skill at <code>inst/skills/overturer/</code> teaching AI coding agents the package’s API and idioms - chiefly accessing Overture’s nested struct columns with <code>$</code> (<code>names$primary</code>), lazy-then-<code><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect()</a></code> evaluation, and the <code>type</code>-&gt;<code>theme</code> mapping. Ships <code>SKILL.md</code> plus <code>references/data-model.md</code> (schema and type/theme table) and <code>references/overture-context.md</code> (Overture themes, GERS stable ids, licensing/attribution, release cadence, and links). Discoverable by tools following the <code>inst/skills/</code> convention (e.g. Posit’s <code>btw</code>).</p></li>
+<li><p><code><a href="../reference/open_curtain.html">open_curtain()</a></code> gains a <code>release</code> argument to pin a query to one Overture release, such as <code>"2026-08-19.0"</code>, instead of whichever release is latest when the script runs. Set <code>options(overturer_release = )</code> to pin a whole session. The release is recorded on the result, and the new <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> method for <code>overture_call</code> objects shows it. <code>base_url</code> now defaults to <code>NULL</code> and is built from <code>release</code>.</p></li>
 <li><p><code><a href="../reference/open_curtain.html">open_curtain()</a></code> gains a <code>predicate</code> argument: <code>"intersects"</code> (the default), <code>"within"</code> or <code>"contains"</code>, so a polygon filter can keep only the features fully inside it, or a point can find the feature around it.</p></li>
 <li><p><code><a href="../reference/overture_releases.html">overture_releases()</a></code> lists the releases Overture currently hosts.</p></li>
 <li><p><code><a href="../reference/overture_types.html">overture_types()</a></code> lists the <code>type</code> and <code>theme</code> pairs in a release. It reads them from Overture’s catalog, so new types appear without a package update. When the catalog is unreachable, it falls back to a built-in table, which now includes <code>bathymetry</code>. If you give <code><a href="../reference/open_curtain.html">open_curtain()</a></code> a type it doesn’t know, the error names the valid ones.</p></li>
@@ -86,8 +94,7 @@
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.6" id="overturer-026">overtureR 0.2.6<a class="anchor" aria-label="anchor" href="#overturer-026"></a></h2>
-<ul><li><p>Bundle an agent skill at <code>inst/skills/overturer/</code> teaching AI coding agents the package’s API and idioms - chiefly accessing Overture’s nested struct columns with <code>$</code> (<code>names$primary</code>), lazy-then-<code><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect()</a></code> evaluation, and the <code>type</code>-&gt;<code>theme</code> mapping. Ships <code>SKILL.md</code> plus <code>references/data-model.md</code> (schema and type/theme table) and <code>references/overture-context.md</code> (Overture themes, GERS stable ids, licensing/attribution, release cadence, and links). Discoverable by tools following the <code>inst/skills/</code> convention (e.g. Posit’s <code>btw</code>).</p></li>
-<li><p><code><a href="../reference/open_curtain.html">open_curtain()</a></code>’s <code>base_url</code> no longer hardcodes a specific Overture release. It now defaults to the latest release, discovered dynamically via the new exported <code><a href="../reference/latest_overture_release.html">latest_overture_release()</a></code> (queries Overture’s STAC catalog and caches the result for the session), so the package doesn’t need a release-bump update every time Overture cuts a new release.</p></li>
+<ul><li><p><code><a href="../reference/open_curtain.html">open_curtain()</a></code>’s <code>base_url</code> no longer hardcodes a specific Overture release. It now defaults to the latest release, discovered dynamically via the new exported <code><a href="../reference/latest_overture_release.html">latest_overture_release()</a></code> (queries Overture’s STAC catalog and caches the result for the session), so the package doesn’t need a release-bump update every time Overture cuts a new release.</p></li>
 <li><p>Fix <code><a href="../reference/record_overture.html">record_overture()</a></code> producing local Parquet files that couldn’t be <code><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect()</a></code>-ed back on duckdb &gt;= 1.1: geometry was being pre-cast to WKB before writing, which loses the GeoParquet metadata that tells DuckDB to read the column back as native <code>GEOMETRY</code>, so the later <code>ST_AsWKB()</code> call in <code><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect()</a></code> failed on what was now a plain <code>BLOB</code> column. The WKB cast is now skipped on duckdb &gt;= 1.1, matching how <code><a href="../reference/open_curtain.html">open_curtain()</a></code> already treats those versions.</p></li>
 </ul></div>
     <div class="section level2">

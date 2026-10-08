@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">overtureR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,8 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/getting_started.html">Raising the Curtain: Getting Started with overtureR</a></li>
+<li><a class="dropdown-item" href="../articles/ai-assisted-queries.html">Ask Overture in Plain Language</a></li>
+    <li><a class="dropdown-item" href="../articles/getting_started.html">Raising the Curtain: Getting Started with overtureR</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -107,23 +108,24 @@ airport:</p>
 <span></span>
 <span><span class="va">reagan_airport</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/open_curtain.html">open_curtain</a></span><span class="op">(</span><span class="st">"place"</span>, spatial_filter <span class="op">=</span> <span class="va">dc_catchment</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">names</span><span class="op">$</span><span class="va">primary</span> <span class="op">==</span> <span class="st">"Ronald Reagan Washington National Airport"</span>,</span>
-<span>    <span class="va">categories</span><span class="op">$</span><span class="va">primary</span> <span class="op">==</span> <span class="st">"airport"</span></span>
+<span>    <span class="va">basic_category</span> <span class="op">==</span> <span class="st">"airport"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^Ronald Reagan Washington National Airport"</span>, <span class="va">names</span><span class="op">$</span><span class="va">primary</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># several places share the name; keep the most reliable one</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_max</a></span><span class="op">(</span><span class="va">confidence</span>, n <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">reagan_airport</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Simple feature collection with 1 feature and 18 fields</span></span>
+<span><span class="co">#&gt; Simple feature collection with 1 feature and 17 fields</span></span>
 <span><span class="co">#&gt; Geometry type: POINT</span></span>
 <span><span class="co">#&gt; Dimension:     XY</span></span>
-<span><span class="co">#&gt; Bounding box:  xmin: -76.95801 ymin: 38.92816 xmax: -76.95801 ymax: 38.92816</span></span>
+<span><span class="co">#&gt; Bounding box:  xmin: -77.04273 ymin: 38.84835 xmax: -77.04273 ymax: 38.84835</span></span>
 <span><span class="co">#&gt; Geodetic CRS:  WGS 84</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 19</span></span></span>
-<span><span class="co">#&gt;   id                 geometry categories$primary confidence websites emails</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;POINT [°]&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;list&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 61187… (-76.95801 38.92816) airport                 0.972 <span style="color: #949494;">&lt;NULL&gt;</span>   <span style="color: #949494;">&lt;NULL&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 14 more variables: categories$alternate &lt;list&gt;, socials &lt;list&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   phones &lt;list&gt;, brand &lt;df[,2]&gt;, addresses &lt;list&gt;, names &lt;df[,3]&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 18</span></span></span>
+<span><span class="co">#&gt;   id                     geometry confidence websites  emails socials   phones</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;POINT [°]&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;list&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 9bddff21-… (-77.04273 38.84835)      0.976 <span style="color: #949494;">&lt;chr [1]&gt;</span> <span style="color: #949494;">&lt;NULL&gt;</span> <span style="color: #949494;">&lt;chr [1]&gt;</span> <span style="color: #949494;">&lt;NULL&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more variables: brand &lt;df[,2]&gt;, addresses &lt;list&gt;, names &lt;df[,3]&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   sources &lt;list&gt;, operating_status &lt;chr&gt;, basic_category &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   taxonomy &lt;df[,3]&gt;, version &lt;int&gt;, bbox &lt;df[,4]&gt;, theme &lt;chr&gt;, type &lt;chr&gt;</span></span></span></code></pre></div>
 <p>By default, <code>open_curtain</code> would search through every
@@ -207,30 +209,34 @@ elements we’ve gathered:</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">dc_transit</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Simple feature collection with 16 features and 2 fields</span></span>
+<span><span class="co">#&gt; Simple feature collection with 20 features and 2 fields</span></span>
 <span><span class="co">#&gt; Geometry type: LINESTRING</span></span>
 <span><span class="co">#&gt; Dimension:     XY</span></span>
-<span><span class="co">#&gt; Bounding box:  xmin: -77.07099 ymin: 38.87016 xmax: -76.89703 ymax: 38.90138</span></span>
+<span><span class="co">#&gt; Bounding box:  xmin: -77.07099 ymin: 38.81561 xmax: -76.96203 ymax: 38.90138</span></span>
 <span><span class="co">#&gt; Geodetic CRS:  WGS 84</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 16 × 3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 3</span></span></span>
 <span><span class="co">#&gt;    id                                   names$primary                   geometry</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;LINESTRING [°]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 19851ca0-83f2-4e75-9bfd-62b2db763176 Washington Me… (-77.05259 38.87016, -77…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 29d8560d-34fe-47f5-8b2c-c5c276158888 Washington Me… (-77.06368 38.88548, -77…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> f3be69a6-4842-4960-876d-974f53fd1b0a Washington Me… (-77.07089 38.89466, -77…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 2f677d3b-22eb-4da0-9190-006a8ba0f170 Washington Me… (-77.06389 38.88592, -77…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 5905e0a3-5de7-4bc7-b03e-c9e4575beb18 Washington Me… (-77.06363 38.8855, -77.…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 1992200a-1872-471b-ae55-7063c6922625 Washington Me… (-77.06394 38.8859, -77.…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> ea9a4d22-30fa-4643-b073-3079c178bd53 Washington Me… (-77.06174 38.88253, -77…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 991babf5-2254-41c0-815f-249582189435 Washington Me… (-77.06174 38.88253, -77…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 516b8b21-6fe1-4836-94ed-daed052376e6 Washington Me… (-76.96203 38.8974, -76.…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 22be2fe4-155b-4fc6-8ea7-bb40ee6e9def Washington Me… (-77.07085 38.89466, -77…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> 766a668b-0b87-46af-a517-049af37f468e Washington Me… (-76.95847 38.89692, -76…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> 948a1b5e-5a65-4d66-b4bd-c9fc0a9b9967 Washington Me… (-76.96205 38.89731, -76…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> 4c24e61d-0d1f-4ceb-8e55-bdf7deb1bff6 Washington Me… (-76.95801 38.89686, -76…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> 3d279ff2-a480-40b1-a40c-607cd10bd293 Washington Me… (-76.95849 38.89684, -76…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> da53a8d2-4a96-4051-8d57-34ce0430a657 Washington Me… (-76.89703 38.88678, -76…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> 01ae58ce-08a2-4c71-a2c7-c8338c85e1f9 Washington Me… (-76.95803 38.89678, -76…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 2f677d3b-22eb-4da0-9190-006a8ba0f170 Washington Me… (-77.06389 38.88592, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> f3be69a6-4842-4960-876d-974f53fd1b0a Washington Me… (-77.07089 38.89466, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 1992200a-1872-471b-ae55-7063c6922625 Washington Me… (-77.06394 38.8859, -77.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 5905e0a3-5de7-4bc7-b03e-c9e4575beb18 Washington Me… (-77.06363 38.8855, -77.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> ea9a4d22-30fa-4643-b073-3079c178bd53 Washington Me… (-77.06174 38.88253, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 991babf5-2254-41c0-815f-249582189435 Washington Me… (-77.06174 38.88253, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 29d8560d-34fe-47f5-8b2c-c5c276158888 Washington Me… (-77.06368 38.88548, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 19851ca0-83f2-4e75-9bfd-62b2db763176 Washington Me… (-77.05259 38.87016, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 42842d38-b263-4d0a-857f-022bff20cea5 Washington Me… (-77.05904 38.86444, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 44644aa4-ab84-46ef-9916-72fcdc14aa00 Washington Me… (-77.05269 38.87024, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> e9e87c62-1ddb-493c-8b13-381f023e58c5 Washington Me… (-77.05915 38.86413, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> 10a7eab7-6610-47f3-9658-34dd22b77c67 Washington Me… (-77.05907 38.86444, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> 8bdc65a2-fbeb-4f2d-83e8-06cbd88ff8a1 Washington Me… (-77.05918 38.86414, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> 0d9f5fd8-3893-439c-ac61-0fafe2231737 Washington Me… (-77.04461 38.85512, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> 92b822b6-1d5a-4eee-9ac4-255072259954 Washington Me… (-77.05255 38.81561, -77…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> f93c1c51-85b9-49c9-a5b2-7f4769586ca7 Washington Me… (-77.04351 38.8519, -77.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">17</span> 3442c5c9-07e9-47f9-924a-bf91f726720c Washington Me… (-77.0433 38.85196, -77.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">18</span> 6467debb-6376-42da-b19a-89e22707b65e Washington Me… (-77.0448 38.85507, -77.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">19</span> 516b8b21-6fe1-4836-94ed-daed052376e6 Washington Me… (-76.96203 38.8974, -76.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">20</span> 22be2fe4-155b-4fc6-8ea7-bb40ee6e9def Washington Me… (-77.07085 38.89466, -77…</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: names$common &lt;list&gt;, $rules &lt;list&gt;</span></span></span></code></pre></div>
 <p>This final step uses ggplot2 to create a map that displays the
 airport, the Kennedy Center, and the Metro Blue Line connecting them.

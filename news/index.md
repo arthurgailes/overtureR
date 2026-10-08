@@ -1,5 +1,19 @@
 # Changelog
 
+## overtureR 0.3.1
+
+- New article “Ask Overture in Plain Language” shows how to drive
+  overtureR from an LLM agent, using ellmer and btw with the bundled
+  skill, and renders the results as interactive maplibre maps.
+- Corrected the bundled skill:
+  [`transmute()`](https://dplyr.tidyverse.org/reference/transmute.html)
+  and [`select()`](https://dplyr.tidyverse.org/reference/select.html)
+  drop the `geometry` column, so the examples now name `geometry` and a
+  note explains when to keep it.
+- Overture removed the `categories` column from places in release
+  2026-09-23.0. The bundled skill, README and getting-started article
+  now use `taxonomy$primary` and `basic_category` instead.
+
 ## overtureR 0.3.0
 
 ### Faster queries
@@ -36,6 +50,16 @@
   queries against the same files skip re-reading their footers.
 
 ### New
+
+- Bundle an agent skill at `inst/skills/overturer/` teaching AI coding
+  agents the package’s API and idioms - chiefly accessing Overture’s
+  nested struct columns with `$` (`names$primary`),
+  lazy-then-[`collect()`](https://dplyr.tidyverse.org/reference/compute.html)
+  evaluation, and the `type`-\>`theme` mapping. Ships `SKILL.md` plus
+  `references/data-model.md` (schema and type/theme table) and
+  `references/overture-context.md` (Overture themes, GERS stable ids,
+  licensing/attribution, release cadence, and links). Discoverable by
+  tools following the `inst/skills/` convention (e.g. Posit’s `btw`).
 
 - [`open_curtain()`](https://arthurgailes.github.io/overtureR/reference/open_curtain.md)
   gains a `release` argument to pin a query to one Overture release,
@@ -175,16 +199,6 @@
   weekly schedule, not on every push.
 
 ## overtureR 0.2.6
-
-- Bundle an agent skill at `inst/skills/overturer/` teaching AI coding
-  agents the package’s API and idioms - chiefly accessing Overture’s
-  nested struct columns with `$` (`names$primary`),
-  lazy-then-[`collect()`](https://dplyr.tidyverse.org/reference/compute.html)
-  evaluation, and the `type`-\>`theme` mapping. Ships `SKILL.md` plus
-  `references/data-model.md` (schema and type/theme table) and
-  `references/overture-context.md` (Overture themes, GERS stable ids,
-  licensing/attribution, release cadence, and links). Discoverable by
-  tools following the `inst/skills/` convention (e.g. Posit’s `btw`).
 
 - [`open_curtain()`](https://arthurgailes.github.io/overtureR/reference/open_curtain.md)’s
   `base_url` no longer hardcodes a specific Overture release. It now
