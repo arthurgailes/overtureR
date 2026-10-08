@@ -15,7 +15,7 @@ theme, and infers the theme from the type (see the `type`->`theme` table in
 | Theme | Holds | Use it when you need |
 |-------|-------|----------------------|
 | `buildings` | Building footprints and parts (`height`, `num_floors` where known) | Building shapes or heights |
-| `places` | Points of interest - businesses, landmarks - with `categories`, `names`, `confidence` | Named locations or POIs by category |
+| `places` | Points of interest - businesses, landmarks - with `taxonomy`, `basic_category`, `names`, `confidence` | Named locations or POIs by category |
 | `transportation` | Road and rail `segment`s plus `connector`s | A street network or routing graph |
 | `divisions` | Administrative areas and boundaries (country, region, county) | Boundaries or a place to clip other data to |
 | `addresses` | Postal address points | Address-level points |

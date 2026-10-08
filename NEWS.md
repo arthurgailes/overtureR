@@ -2,6 +2,7 @@
 
 - New article "Ask Overture in Plain Language" shows how to drive overtureR from an LLM agent, using ellmer and btw with the bundled skill, and renders the results as interactive maplibre maps.
 - Corrected the bundled skill: `transmute()` and `select()` drop the `geometry` column, so the examples now name `geometry` and a note explains when to keep it.
+- Overture removed the `categories` column from places in release 2026-09-23.0. The bundled skill, README and getting-started article now use `taxonomy$primary` and `basic_category` instead.
 
 # overtureR 0.3.0
 

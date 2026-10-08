@@ -76,7 +76,7 @@ mountains <- open_curtain(type = "*", theme = "places") |>
     primary_name = names$primary,
     x = bbox$xmin,
     y = bbox$ymin,
-    main_category = categories$primary,
+    main_category = taxonomy$primary,
     primary_source = sources[[1]]$dataset,
     confidence,
     geometry # currently no duckdb spatial implementation
@@ -84,17 +84,17 @@ mountains <- open_curtain(type = "*", theme = "places") |>
   filter(main_category == "mountain" & confidence > .90)
 
 head(mountains)
-#> # Overture release 2026-08-19.0, theme places
+#> # Overture release 2026-09-23.1, theme places
 #> # Source:   SQL [?? x 8]
 #> # Database: DuckDB 1.5.2 [Arthur.Gailes@Windows 10 x64:R 4.5.0/:memory:]
-#>   id            primary_name     x     y main_category primary_source confidence
-#>   <chr>         <chr>        <dbl> <dbl> <chr>         <chr>               <dbl>
-#> 1 0de5d733-2fc… Vallée De L… -149. -17.6 mountain      meta                0.931
-#> 2 a5a93127-85f… Mont Rotui   -150. -17.5 mountain      meta                0.912
-#> 3 d6ea3b50-3a9… Vallée De T… -150. -17.6 mountain      meta                0.969
-#> 4 c3ce4dc2-cef… Belvédère D… -150. -17.5 mountain      meta                0.962
-#> 5 34e195ed-66a… Mont Popoti  -152. -16.5 mountain      meta                0.917
-#> 6 2bfb43ed-753… Vaipao Vall… -151. -16.7 mountain      meta                0.912
+#>   id           primary_name      x     y main_category primary_source confidence
+#>   <chr>        <chr>         <dbl> <dbl> <chr>         <chr>               <dbl>
+#> 1 0de5d733-2f… "Vallée De … -149.  -17.6 mountain      meta                0.918
+#> 2 d6ea3b50-3a… "Vallée De … -150.  -17.6 mountain      meta                0.959
+#> 3 c3ce4dc2-ce… "Belvédère … -150.  -17.5 mountain      meta                0.954
+#> 4 34e195ed-66… "Mont Popot… -152.  -16.5 mountain      meta                0.912
+#> 5 32bfc243-31… "\"Gimnasio…  -99.9  16.9 mountain      meta                0.955
+#> 6 33348e6e-5b… "Minera Med…  -99.7  18.0 mountain      meta                0.926
 #> # ℹ 1 more variable: geometry <POINT [°]>
 ```
 

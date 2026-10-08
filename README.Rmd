@@ -105,7 +105,7 @@ mountains <- open_curtain(type = "*", theme = "places") |>
     primary_name = names$primary,
     x = bbox$xmin,
     y = bbox$ymin,
-    main_category = categories$primary,
+    main_category = taxonomy$primary,
     primary_source = sources[[1]]$dataset,
     confidence,
     geometry # currently no duckdb spatial implementation

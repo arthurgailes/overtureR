@@ -34,10 +34,15 @@ structs, so index with `[[1]]` first.
 | `names$primary` | Primary display name (most common lookup) |
 | `names$common` | Localized/common names (nested further) |
 | `bbox$xmin`, `bbox$ymin`, `bbox$xmax`, `bbox$ymax` | Per-row bounding box (cheap coordinates without touching geometry) |
-| `categories$primary` | Primary category (places; e.g. `"airport"`, `"restaurant"`) |
-| `categories$alternate` | Alternate categories (list) |
+| `taxonomy$primary` | Most specific category (places; e.g. `"airport_terminal"`, `"italian_restaurant"`) |
+| `taxonomy$hierarchy` | Category path from broad to specific (list) |
+| `taxonomy$alternates` | Alternate categories (list) |
 | `sources[[1]]$dataset` | Source dataset of the first provenance record |
 | `sources[[1]]$record_id` | Source record id |
+
+Places also have `basic_category`, a plain column with the broad category (`"airport"`,
+`"restaurant"`). Filter on it to catch every subtype. Releases before 2026-09-23.0 also had
+`categories$primary` and `categories$alternate`; those fields no longer exist.
 
 Text search on names uses base R string functions inside `filter()`, which dbplyr
 pushes down to SQL:

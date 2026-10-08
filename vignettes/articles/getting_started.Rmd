@@ -54,9 +54,11 @@ dc_catchment <- st_geometry(dc) |>
 
 reagan_airport <- open_curtain("place", spatial_filter = dc_catchment) |>
   filter(
-    names$primary == "Ronald Reagan Washington National Airport",
-    categories$primary == "airport"
+    basic_category == "airport",
+    grepl("^Ronald Reagan Washington National Airport", names$primary)
   ) |>
+  # several places share the name; keep the most reliable one
+  slice_max(confidence, n = 1) |>
   collect()
 
 print(reagan_airport)

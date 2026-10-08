@@ -13,12 +13,12 @@ overtureR queries [Overture Maps](https://overturemaps.org/) Parquet releases (f
 
 ## The one thing agents get wrong: nested struct columns
 
-Overture columns like `names`, `bbox`, `categories`, and `sources` are **nested structs**. Access their fields with R's `$` **inside dplyr verbs** - dbplyr translates it to a DuckDB struct field access. Do NOT reach for `sql("names.primary")` or `struct_extract()`.
+Overture columns like `names`, `bbox`, `taxonomy`, and `sources` are **nested structs**. Access their fields with R's `$` **inside dplyr verbs** - dbplyr translates it to a DuckDB struct field access. Do NOT reach for `sql("names.primary")` or `struct_extract()`.
 
 ```r
 # CORRECT - $ inside dplyr verbs
 open_curtain("place", bbox) |>
-  filter(categories$primary == "airport") |>       # struct field in filter
+  filter(taxonomy$primary == "airport") |>         # struct field in filter
   transmute(id, name = names$primary, geometry) |> # $ in transmute; keep geometry
   collect()
 
@@ -27,7 +27,12 @@ mutate(name = sql("names.primary"))          # unnecessary raw SQL
 mutate(name = struct_extract(names, "primary"))
 ```
 
-Common struct fields: `names$primary`, `bbox$xmin`/`$ymin`/`$xmax`/`$ymax`, `categories$primary`, `sources[[1]]$dataset`. See `references/data-model.md` for the schema and full `type`->`theme` table.
+Common struct fields: `names$primary`, `bbox$xmin`/`$ymin`/`$xmax`/`$ymax`, `taxonomy$primary`, `sources[[1]]$dataset`. See `references/data-model.md` for the schema and full `type`->`theme` table.
+
+Places carry two category fields. `taxonomy$primary` is the most specific category
+(`"airport_terminal"`, `"italian_restaurant"`). `basic_category` is a plain column with
+the broad one (`"airport"`, `"restaurant"`); filter on it to catch every subtype.
+Releases before 2026-09-23.0 also had `categories$primary`, which no longer exists.
 
 ## Quick reference
 
@@ -93,6 +98,7 @@ local |> filter(!is.na(height)) |> collect()
 | Query hangs / tries to download everything | No `spatial_filter`, or `collect()` before filtering. Filter in-DB first. |
 | `filter()` on a column errors after `select`/`transmute` | You dropped it. Filter before selecting. |
 | Reaching for `sql("names.primary")` | Use `names$primary` directly inside the dplyr verb. |
+| "Object `categories` not found" on places | Overture removed `categories` in release 2026-09-23.0. Use `taxonomy$primary` or `basic_category`. |
 | "Could not find theme for the provided type" | `type = "*"`/`NULL` without a `theme`, or an unknown `type`. Set `theme`. |
 | Result is a tibble, not sf | `transmute()` or `select()` dropped the geometry column. Name `geometry` in them, or use `mutate()`. Also check you called `collect()` on an `overture_call`, not a plain tbl. |
 | Tests/queries fail offline | Every query hits live Overture S3 unless you've `record_overture()`'d a local copy. |
