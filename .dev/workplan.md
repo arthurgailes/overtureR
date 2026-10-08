@@ -72,9 +72,33 @@ or `sf`. None is measured or scoped. The starred ones look most useful relative 
 
 **Finding an area to filter by**
 
-- * `division_area("Philadelphia", country = "US")` looks up a boundary by name and subtype
-  and returns it as an `sf` or lazy table you can pass straight to `spatial_filter`. Most
-  users start by hunting for a boundary; today that takes a manual filter on `division_area`.
+- * `call_place("San Francisco", country = "US")` looks up an Overture division by name and
+  returns its boundary as a lazy `overture_call` you pass straight to `spatial_filter` (or
+  `collect()` to an `sf` polygon). This is the missing step behind natural-language queries:
+  `open_curtain()` takes only a spatial filter, never a name, so "buildings in San Francisco"
+  needs a name-to-geometry resolver. `call_place()` resolves the name eagerly against the
+  `division` type (`names$primary ILIKE name`, narrowed by `country` and `subtype`), prints
+  "Found N candidates; returning the best: ...", and hands back the matching `division_area`
+  polygon. It returns one best match by default and all matches with `multiple = TRUE`
+  (default from `getOption("overturer_division_multiple", FALSE)`). The return type is always
+  a lazy `overture_call`, whether 1 row or N. Name resolution is a non-spatial scan of the
+  global `division` partition, so STAC bbox pruning cannot help it; a spike must confirm the
+  cold cost (cache like the catalog if slow) and which fields exist to rank "best". Pair it
+  with a vignette wiring ellmer + btw + the bundled skill into a natural-language loop over
+  `call_place()`; ellmer and btw go in Suggests, not Imports. Named 2026-09-14; supersedes the
+  earlier `division_area()` working name, which collided with the Overture type string.
+  - *Spike, 2026-09-14 (release 2026-08-19.0):* a cold exact-name scan of `division` took
+    about 19 seconds, so `call_place()` must cache the name-to-id result on disk like the
+    STAC catalog. `"San Francisco"` matched 766 divisions worldwide (541 localities, 160
+    neighborhoods, 9 counties; countries led by MX, PH, EC), so narrowing and ranking are
+    required, not optional. `population` is the one strong prominence signal: San Francisco,
+    US-CA carries 873,965 while most of the 766 have none. So the best-match rule is: apply
+    the `country`, `subtype` and `region` filters, order by population descending with nulls
+    last, then break ties by a subtype priority (locality and county above neighborhood).
+    `population` lives on `division`, not `division_area`, so resolve and rank on `division`,
+    take the winner's id and bbox, then fetch the `division_area` polygon where
+    `division_id` matches, passing that bbox as the spatial filter so STAC pruning speeds the
+    second fetch. Cache both steps.
 - `division_hierarchy(id)` walks `parent_division_id` up to the country, or lists children.
 - `spatial_filter` as a point plus a radius in meters, using `ST_DWithin_Spheroid` in
   DuckDB.

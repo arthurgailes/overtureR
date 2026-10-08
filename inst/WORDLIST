@@ -1,5 +1,6 @@
 bbox
 bigint
+btw
 CMD
 Codecov
 dbplyr
@@ -9,6 +10,8 @@ Discoverable
 duckdb
 DuckDB
 DuckDB's
+ellmer
+ellmer's
 EPSG
 finalizer
 GDAL
@@ -21,6 +24,11 @@ hardcodes
 hardcoding
 interoperable
 Lifecycle
+LLM
+mapgl
+maplibre
+ODbL
+OpenStreetMap
 overtureR's
 PMTiles
 Posit's
@@ -31,5 +39,7 @@ sfg
 sql
 STAC
 struct
+subagent
+subagents
 tbl
 WKB
