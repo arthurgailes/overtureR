@@ -179,7 +179,7 @@ maplibre(
 ### Step 2: fetch the buildings
 
 The agent then queries buildings inside a tight downtown box and keeps the tall
-ones. Five stories is roughly 15 metres. The spatial filter is what keeps this
+ones. Five stories is roughly 15 meters. The spatial filter is what keeps this
 fast: DuckDB prunes to the area before it reads any geometry.
 
 ```{r chicago-buildings}
@@ -211,7 +211,7 @@ tall_buildings |>
 ```
 
 The result is an ordinary `sf` object, so you can map it. mapgl draws the
-footprints as 3D blocks, extruded and coloured by height:
+footprints as 3D blocks, extruded and colored by height:
 
 ```{r chicago-map}
 maplibre(
