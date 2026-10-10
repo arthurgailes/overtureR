@@ -9,7 +9,8 @@ Items 1 to 8 and 10 to 12 of the original plan shipped on 2026-09-05: STAC file 
 binary `sf` uploads, bug fixes, release pinning, a self-updating type list, the lower fixed
 cost of `open_curtain()`, the offline test suite, the `record_overture()` improvements, the
 `predicate` argument, duckdb 1.1.0 as the floor, the `st_bbox()` and `st_crs()` methods
-copied from duckspatial, and the trimmed roadmap. All of it ships as version 0.3.0.
+copied from duckspatial, and the trimmed roadmap. Versions 0.2.6 and 0.3.0 never reached
+CRAN. All of it, plus the AI-assisted queries article, reached CRAN as 0.3.1 on 2026-10-08.
 
 What remains:
 
@@ -211,8 +212,18 @@ Deferred:
 
 ## In what order should you ship?
 
-Submit 0.3.0 to CRAN. Then item 1, the articles, which need no code. Items 2 and 3 are
-unscheduled.
+0.3.1 is on CRAN (2026-10-08). Next is item 1, the articles, which need no code. Items 2
+and 3 are unscheduled.
+
+Lessons from the 0.3.1 release:
+
+- **Overture changes its schema between releases.** Release 2026-09-23.0 removed
+  `categories` from places in favor of `taxonomy` and `basic_category`, which broke the
+  getting-started article and the skill. Re-render the articles against the latest
+  release before each submission.
+- **CRAN limits tests to two cores.** Loading DuckDB's extensions checks their signatures
+  on every core, whatever `threads` says, so tests share one connection
+  (`tests/testthat/helper.R`). Don't open a new connection per test.
 
 ## Appendix: how the tests were run
 
