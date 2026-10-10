@@ -197,7 +197,7 @@ lookup takes:</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">chicago</span><span class="op">)</span>,</span>
 <span>  <span class="va">place_time</span><span class="op">[[</span><span class="st">"elapsed"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "Resolved 1 boundary in 8.1 seconds."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "Resolved 1 boundary in 8.0 seconds."</span></span></code></pre></div>
 <p>Place-name lookup is a manual step today: you filter
 <code>division_area</code> on <code>names$primary</code>. A future
 <code>call_place()</code> helper will fold this into one call, but the
@@ -242,7 +242,7 @@ reads any geometry.</p>
 <span>  <span class="va">building_time</span><span class="op">[[</span><span class="st">"elapsed"</span><span class="op">]</span><span class="op">]</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">tall_buildings</span><span class="op">$</span><span class="va">height</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "Fetched 1023 buildings over 15 m in 7.8 seconds; tallest is 340 m."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "Fetched 1023 buildings over 15 m in 27.8 seconds; tallest is 340 m."</span></span></code></pre></div>
 <p>The tallest few give a sense of the data:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tall_buildings</span> <span class="op">|&gt;</span></span>
@@ -381,7 +381,7 @@ a live model:</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/n_distinct.html" class="external-link">n_distinct</a></span><span class="op">(</span><span class="va">tall_by_city</span><span class="op">$</span><span class="va">city</span><span class="op">)</span>,</span>
 <span>  <span class="va">fanout_time</span><span class="op">[[</span><span class="st">"elapsed"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "Fetched 1676 tall buildings across 3 cities in 3.4 seconds."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "Fetched 1676 tall buildings across 3 cities in 3.7 seconds."</span></span></code></pre></div>
 <p>The count per city is the comparison you asked for:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tall_by_city</span> <span class="op">|&gt;</span></span>

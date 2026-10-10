@@ -2,6 +2,8 @@
 
 ## overtureR 0.3.1
 
+CRAN release: 2026-10-08
+
 - New article “Ask Overture in Plain Language” shows how to drive
   overtureR from an LLM agent, using ellmer and btw with the bundled
   skill, and renders the results as interactive maplibre maps.

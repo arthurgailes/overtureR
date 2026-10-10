@@ -154,7 +154,7 @@ sprintf(
   nrow(chicago),
   place_time[["elapsed"]]
 )
-#> [1] "Resolved 1 boundary in 8.1 seconds."
+#> [1] "Resolved 1 boundary in 8.0 seconds."
 ```
 
 Place-name lookup is a manual step today: you filter `division_area` on
@@ -202,7 +202,7 @@ sprintf(
   building_time[["elapsed"]],
   max(tall_buildings$height)
 )
-#> [1] "Fetched 1023 buildings over 15 m in 7.8 seconds; tallest is 340 m."
+#> [1] "Fetched 1023 buildings over 15 m in 27.8 seconds; tallest is 340 m."
 ```
 
 The tallest few give a sense of the data:
@@ -323,7 +323,7 @@ sprintf(
   n_distinct(tall_by_city$city),
   fanout_time[["elapsed"]]
 )
-#> [1] "Fetched 1676 tall buildings across 3 cities in 3.4 seconds."
+#> [1] "Fetched 1676 tall buildings across 3 cities in 3.7 seconds."
 ```
 
 The count per city is the comparison you asked for:
