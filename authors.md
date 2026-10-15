@@ -11,13 +11,13 @@ Source:
 [`DESCRIPTION`](https://github.com/arthurgailes/overtureR/blob/master/DESCRIPTION)
 
 Gailes A (2026). *overtureR: Load 'Overture' Datasets as 'dbplyr' and
-'sf'-Ready Data Frames*. R package version 0.3.1,
+'sf'-Ready Data Frames*. R package version 0.3.2,
 <https://github.com/arthurgailes/overtureR>.
 
     @Manual{,
       title = {overtureR: Load 'Overture' Datasets as 'dbplyr' and 'sf'-Ready Data Frames},
       author = {Arthur Gailes},
       year = {2026},
-      note = {R package version 0.3.1},
+      note = {R package version 0.3.2},
       url = {https://github.com/arthurgailes/overtureR},
     }
