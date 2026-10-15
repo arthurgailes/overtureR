@@ -90,7 +90,8 @@ test_that("type = '*' reads every type in the theme", {
   sql <- view_sql(conn, "star")
   expect_match(sql, "fixture-building.zstd", fixed = TRUE)
   expect_match(sql, "fixture-building_part.zstd", fixed = TRUE)
-  expect_match(sql, "union_by_name = CAST('t' AS BOOLEAN)", fixed = TRUE)
+  # duckdb 1.x writes TRUE back as CAST('t' AS BOOLEAN), duckdb 2.0 as true
+  expect_match(sql, "union_by_name = (true|CAST\\('t' AS BOOLEAN\\))")
   # the two types have different columns; printing reads all of them
   expect_output(print(all_types), "theme buildings", fixed = TRUE)
   expect_s3_class(collect(head(all_types, 3)), "sf")
@@ -139,8 +140,7 @@ test_that("read_opts are passed to read_parquet", {
   )
 
   expect_match(
-    view_sql(conn, "opts"), "filename = CAST('t' AS BOOLEAN)",
-    fixed = TRUE
+    view_sql(conn, "opts"), "filename = (true|CAST\\('t' AS BOOLEAN\\))"
   )
   expect_true("filename" %in% colnames(buildings))
 })
