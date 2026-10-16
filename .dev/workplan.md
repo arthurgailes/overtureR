@@ -59,9 +59,10 @@ Overture already publishes. Everything else is smaller.
   collect, why `spatial_filter` matters, warm versus cold queries, when to use
   `record_overture()`, and how to pin a release.
 - A **mapping article** using `mapgl` or `ggplot2` on a saved local copy, so it knits offline.
-- Update the getting-started article to cover `release =`, `predicate =`,
-  `overture_types()`, `overture_releases()`, file skipping, and the `record_overture()`
-  manifest and `grid`. The README roadmap and the skill were updated on 2026-09-05.
+- *Done 2026-10-15:* the getting-started article covers `release =`, `predicate =`,
+  `overture_types()`, `overture_releases()`, file skipping, and `record_overture()` with
+  `grid`, rendered against release 2026-09-23.1. The README roadmap and the skill were
+  updated on 2026-09-05.
 - Add `bathymetry` to `references/data-model.md`.
 
 **Effort.** Small to medium. The API it documents is now in place.
@@ -212,10 +213,10 @@ Deferred:
 
 ## In what order should you ship?
 
-0.3.1 is on CRAN (2026-10-08). Next is item 1, the articles, which need no code. Items 2
-and 3 are unscheduled.
+0.3.2 is on CRAN (2026-10-15). It only fixes two tests that failed with duckdb 2.0 (#5).
+Next is item 1, the articles, which need no code. Items 2 and 3 are unscheduled.
 
-Lessons from the 0.3.1 release:
+Lessons from the 0.3.1 and 0.3.2 releases:
 
 - **Overture changes its schema between releases.** Release 2026-09-23.0 removed
   `categories` from places in favor of `taxonomy` and `basic_category`, which broke the
@@ -224,6 +225,12 @@ Lessons from the 0.3.1 release:
 - **CRAN limits tests to two cores.** Loading DuckDB's extensions checks their signatures
   on every core, whatever `threads` says, so tests share one connection
   (`tests/testthat/helper.R`). Don't open a new connection per test.
+- **Don't match DuckDB's rendered SQL literally.** DuckDB 2.0 writes a `TRUE` option in
+  view SQL as `true`, where 1.x wrote `CAST('t' AS BOOLEAN)`. Test the effect, or accept
+  every spelling.
+- **DuckDB dev builds have no extensions.** The r-universe `duckdb.2.0.dev` build loads,
+  but neither the core nor the nightly channel serves `httpfs` or `spatial` for it, so
+  the full suite can't run against an unreleased DuckDB.
 
 ## Appendix: how the tests were run
 
