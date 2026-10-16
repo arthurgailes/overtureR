@@ -2,6 +2,8 @@
 
 ## overtureR 0.3.2
 
+CRAN release: 2026-10-15
+
 - Tests now accept how duckdb 2.0 writes boolean options in view SQL
   (`true` rather than `CAST('t' AS BOOLEAN)`), so the package passes its
   checks with duckdb 2.0
